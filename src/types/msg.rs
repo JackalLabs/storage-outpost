@@ -62,3 +62,18 @@ pub enum ExecuteMsg {
     },
 }
 
+/// The messages to query the ICA controller contract.
+#[cw_serde]
+#[derive(QueryResponses)]
+pub enum QueryMsg {
+    /// GetChannel returns the IBC channel info.
+    #[returns(crate::types::state::ChannelState)]
+    GetChannel {},
+    /// GetContractState returns the contact's state.
+    #[returns(crate::types::state::ContractState)]
+    GetContractState {},
+    /// GetCallbackCounter returns the callback counter.
+    #[returns(crate::types::state::CallbackCounter)]
+    GetCallbackCounter {},
+}
+
