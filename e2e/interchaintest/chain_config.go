@@ -39,8 +39,8 @@ var chainSpecs = []*interchaintest.ChainSpec{
 			ChainID: "simd-1",
 			Images: []ibc.DockerImage{
 				{
-					Repository: "ghcr.io/cosmos/ibc-go-simd",
-					Version:    "v7.3.0",
+					Repository: "ghcr.io/cosmos/ibc-go-simd", // FOR LOCAL IMAGE USE: Docker Image Name
+					Version:    "v7.3.0",                     // FOR LOCAL IMAGE USE: Docker Image Tag
 				},
 			},
 			Bin:                    "simd",
