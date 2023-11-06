@@ -2,9 +2,17 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"testing"
+
+	sdkmath "cosmossdk.io/math"
+	"github.com/cosmos/gogoproto/proto"
+
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 
 	mysuite "github.com/JackalLabs/cw-ica-controller/e2e/interchaintest/testsuite"
 	"github.com/JackalLabs/cw-ica-controller/e2e/interchaintest/types"
@@ -195,6 +203,112 @@ func (s *ContractTestSuite) TestIcaRelayerInstantiatedChannelHandshake() {
 
 		s.Require().Equal(wasmdUser.FormattedAddress(), contractState.Admin)
 		s.Require().Equal(wasmdChannel.ChannelID, contractState.IcaInfo.ChannelID)
+	})
+}
+
+func (s *ContractTestSuite) TestIcaContractExecutionProto3JsonEncoding() {
+	s.IcaContractExecutionTestWithEncoding(icatypes.EncodingProto3JSON)
+}
+
+func (s *ContractTestSuite) TestIcaContractExecutionProtobufEncoding() {
+	s.IcaContractExecutionTestWithEncoding(icatypes.EncodingProtobuf)
+}
+
+func (s *ContractTestSuite) IcaContractExecutionTestWithEncoding(encoding string) {
+	ctx := context.Background()
+
+	// This starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
+	// sets up the contract and does the channel handshake for the contract test suite.
+	s.SetupContractTestSuite(ctx, encoding)
+	wasmd, simd := s.ChainA, s.ChainB
+	wasmdUser, simdUser := s.UserA, s.UserB
+
+	// Fund the ICA address:
+	s.FundAddressChainB(ctx, s.IcaAddress)
+
+	s.Run(fmt.Sprintf("TestSendPredefinedActionSuccess-%s", encoding), func() {
+		err := s.Contract.ExecPredefinedAction(ctx, wasmdUser.KeyName(), simdUser.FormattedAddress())
+		s.Require().NoError(err)
+
+		err = testutil.WaitForBlocks(ctx, 6, wasmd, simd)
+		s.Require().NoError(err)
+
+		icaBalance, err := simd.GetBalance(ctx, s.IcaAddress, simd.Config().Denom)
+		s.Require().NoError(err)
+		s.Require().Equal(sdkmath.NewInt(1000000000-100), icaBalance)
+
+		// Check if contract callsbacks were executed:
+		callbackCounter, err := s.Contract.QueryCallbackCounter(ctx)
+		s.Require().NoError(err)
+
+		s.Require().Equal(uint64(1), callbackCounter.Success)
+		s.Require().Equal(uint64(0), callbackCounter.Error)
+		s.Require().Equal(uint64(0), callbackCounter.Timeout)
+	})
+
+	s.Run(fmt.Sprintf("TestSendCustomIcaMessagesSuccess-%s", encoding), func() {
+		// Send custom ICA messages through the contract:
+		// Let's create a governance proposal on simd and deposit some funds to it.
+		testProposal := govtypes.TextProposal{
+			Title:       "IBC Gov Proposal",
+			Description: "tokens for all!",
+		}
+		protoAny, err := codectypes.NewAnyWithValue(&testProposal)
+		s.Require().NoError(err)
+		proposalMsg := &govtypes.MsgSubmitProposal{
+			Content:        protoAny,
+			InitialDeposit: sdk.NewCoins(sdk.NewCoin(simd.Config().Denom, sdkmath.NewInt(5000))),
+			Proposer:       s.IcaAddress,
+		}
+
+		// Create deposit message:
+		depositMsg := &govtypes.MsgDeposit{
+			ProposalId: 1,
+			Depositor:  s.IcaAddress,
+			Amount:     sdk.NewCoins(sdk.NewCoin(simd.Config().Denom, sdkmath.NewInt(10000000))),
+		}
+
+		// Execute the contract:
+		err = s.Contract.ExecCustomIcaMessages(ctx, wasmdUser.KeyName(), []proto.Message{proposalMsg, depositMsg}, encoding, nil, nil)
+		s.Require().NoError(err)
+
+		err = testutil.WaitForBlocks(ctx, 5, wasmd, simd)
+		s.Require().NoError(err)
+
+		// Check if contract callbacks were executed:
+		callbackCounter, err := s.Contract.QueryCallbackCounter(ctx)
+		s.Require().NoError(err)
+
+		s.Require().Equal(uint64(2), callbackCounter.Success)
+		s.Require().Equal(uint64(0), callbackCounter.Error)
+
+		// Check if the proposal was created:
+		proposal, err := simd.QueryProposal(ctx, "1")
+		s.Require().NoError(err)
+		s.Require().Equal(simd.Config().Denom, proposal.TotalDeposit[0].Denom)
+		s.Require().Equal(fmt.Sprint(10000000+5000), proposal.TotalDeposit[0].Amount)
+		// We do not check title and description of the proposal because this is a legacy proposal.
+	})
+
+	s.Run(fmt.Sprintf("TestSendCustomIcaMessagesError-%s", encoding), func() {
+		// Test erroneous callback:
+		// Send incorrect custom ICA messages through the contract:
+		badMessage := base64.StdEncoding.EncodeToString([]byte("bad message"))
+		badCustomMsg := `{"send_custom_ica_messages":{"messages":"` + badMessage + `"}}`
+
+		// Execute the contract:
+		err := s.Contract.Execute(ctx, wasmdUser.KeyName(), badCustomMsg)
+		s.Require().NoError(err)
+
+		err = testutil.WaitForBlocks(ctx, 5, wasmd, simd)
+		s.Require().NoError(err)
+
+		// Check if contract callbacks were executed:
+		callbackCounter, err := s.Contract.QueryCallbackCounter(ctx)
+		s.Require().NoError(err)
+		s.Require().Equal(uint64(2), callbackCounter.Success)
+		s.Require().Equal(uint64(1), callbackCounter.Error)
+		s.Require().Equal(uint64(0), callbackCounter.Timeout)
 	})
 }
 
