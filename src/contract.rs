@@ -4,6 +4,7 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
 
+use crate::ibc::types::stargate::channel::new_ica_channel_open_init_cosmos_msg;
 use crate::types::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::types::state::{
     CallbackCounter, ChannelState, ContractState, CALLBACK_COUNTER, CHANNEL_STATE, STATE,
@@ -47,6 +48,7 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
+        ExecuteMsg::CreateChannel(options) => execute::create_channel(deps, env, info, options),
         ExecuteMsg::SendCustomIcaMessages {
             messages,
             packet_memo,
@@ -80,15 +82,37 @@ mod execute {
 
     use crate::{
         ibc::types::{metadata::TxEncoding, packet::IcaPacketData},
-        types::cosmos_msg::ExampleCosmosMessages,
+        types::{cosmos_msg::ExampleCosmosMessages, msg::options::ChannelOpenInitOptions},
     };
 
-    use cosmos_sdk_proto::{
-        cosmos::{bank::v1beta1::MsgSend, base::v1beta1::Coin}, 
-        traits::MessageExt,
-    };
+    use cosmos_sdk_proto::cosmos::{bank::v1beta1::MsgSend, base::v1beta1::Coin};
+    use cosmos_sdk_proto::Any;
 
     use super::*;
+
+    /// Submits a stargate MsgChannelOpenInit to the chain.
+    pub fn create_channel(
+        deps: DepsMut,
+        env: Env,
+        info: MessageInfo,
+        options: ChannelOpenInitOptions,
+    ) -> Result<Response, ContractError> {
+        let mut contract_state = STATE.load(deps.storage)?;
+        contract_state.verify_admin(info.sender)?;
+
+        contract_state.enable_channel_open_init();
+        STATE.save(deps.storage, &contract_state)?;
+
+        let ica_channel_open_init_msg = new_ica_channel_open_init_cosmos_msg(
+            env.contract.address.to_string(),
+            options.connection_id,
+            options.counterparty_port_id,
+            options.counterparty_connection_id,
+            options.tx_encoding,
+        );
+
+        Ok(Response::new().add_message(ica_channel_open_init_msg))
+    }
 
     // Sends custom messages to the ICA host.
     pub fn send_custom_ica_messages(
@@ -130,7 +154,10 @@ mod execute {
                         amount: "100".to_string(),
                     }]
                 };
-                IcaPacketData::from_proto_anys(vec![predefined_proto_message.to_any()?], None)
+                IcaPacketData::from_proto_anys(
+                    vec![Any::from_msg(&predefined_proto_message)?],
+                    None,
+                )
             }
             TxEncoding::Proto3Json => {
                 let predefined_json_message = ExampleCosmosMessages::MsgSend {

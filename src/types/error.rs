@@ -24,8 +24,14 @@ pub enum ContractError {
     #[error("prost encoding error: {0}")]
     ProstEncodeError(#[from] cosmos_sdk_proto::prost::EncodeError),
 
+    #[error("semver parse error: {0}")]
+    SemverError(#[from] semver::Error),
+
     #[error("unauthorized")]
     Unauthorized {},
+
+    #[error("invalid migration version: expected {expected}, got {actual}")]
+    InvalidMigrationVersion { expected: String, actual: String },
 
     #[error("invalid channel ordering")]
     InvalidChannelOrdering {},
@@ -38,6 +44,9 @@ pub enum ContractError {
 
     #[error("invalid interchain accounts version: expected {expected}, got {actual}")]
     InvalidVersion { expected: String, actual: String },
+
+    #[error("MsgChannelOpenInit is not allowed")]
+    ChannelOpenInitNotAllowed {},
 
     #[error("codec is not supported: unsupported codec format {0}")]
     UnsupportedCodec(String),
