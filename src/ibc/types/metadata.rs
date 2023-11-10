@@ -119,7 +119,7 @@ impl IcaMetadata {
             validate_ica_address(&self.address)?;
         }
         if self.tx_type != "sdk_multi_msg" {
-            return Err(ContractError::UnsupportedTxType((self.tx_type.clone())));
+            return Err(ContractError::UnsupportedTxType(self.tx_type.clone()));
         }
         Ok(())
     }

@@ -12,7 +12,7 @@ pub struct InstantiateMsg {
     /// If not specified, the sender is the admin.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub admin: Option<String>,
-    // The options to initialize the IBC channel upon contract instantiation.
+    /// The options to initialize the IBC channel upon contract instantiation.
     /// If not specified, the IBC channel is not initialized, and the relayer must.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub channel_open_init_options: Option<options::ChannelOpenInitOptions>,

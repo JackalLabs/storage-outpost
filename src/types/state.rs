@@ -155,7 +155,6 @@ mod contract {
     }
 }
 
-
 mod channel {
     use super::*;
 

@@ -1,25 +1,21 @@
 //! This module handles the execution logic of the contract.
 
-#[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
 
 use crate::ibc::types::stargate::channel::new_ica_channel_open_init_cosmos_msg;
-use crate::types::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
+use crate::types::keys::{CONTRACT_NAME, CONTRACT_VERSION};
+use crate::types::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::types::state::{
     CallbackCounter, ChannelState, ContractState, CALLBACK_COUNTER, CHANNEL_STATE, STATE,
 };
 use crate::types::ContractError;
 
-// version info for migration
-const CONTRACT_NAME: &str = "crates.io:cw-ica-controller";
-const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
-
 /// Instantiates the contract.
-#[cfg_attr(not(feature = "library"), entry_point)]
+#[entry_point]
 pub fn instantiate(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
@@ -36,11 +32,24 @@ pub fn instantiate(
     // Initialize the callback counter.
     CALLBACK_COUNTER.save(deps.storage, &CallbackCounter::default())?;
 
-    Ok(Response::default())
+    // If channel open init options are provided, open the channel.
+    if let Some(channel_open_init_options) = msg.channel_open_init_options {
+        let ica_channel_open_init_msg = new_ica_channel_open_init_cosmos_msg(
+            env.contract.address.to_string(),
+            channel_open_init_options.connection_id,
+            channel_open_init_options.counterparty_port_id,
+            channel_open_init_options.counterparty_connection_id,
+            channel_open_init_options.tx_encoding,
+        );
+
+        Ok(Response::new().add_message(ica_channel_open_init_msg))
+    } else {
+        Ok(Response::default())
+    }
 }
 
 /// Handles the execution of the contract.
-#[cfg_attr(not(feature = "library"), entry_point)]
+#[entry_point]
 pub fn execute(
     deps: DepsMut,
     env: Env,
@@ -68,13 +77,25 @@ pub fn execute(
 }
 
 /// Handles the query of the contract.
-#[cfg_attr(not(feature = "library"), entry_point)]
+#[entry_point]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::GetContractState {} => to_binary(&query::state(deps)?),
         QueryMsg::GetChannel {} => to_binary(&query::channel(deps)?),
         QueryMsg::GetCallbackCounter {} => to_binary(&query::callback_counter(deps)?),
     }
+}
+
+/// Migrate contract if version is lower than current version
+#[entry_point]
+pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> Result<Response, ContractError> {
+    migrate::validate_semver(deps.as_ref())?;
+
+    cw2::set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+    // If state structure changed in any contract version in the way migration is needed, it
+    // should occur here
+
+    Ok(Response::default())
 }
 
 mod execute {
@@ -152,7 +173,7 @@ mod execute {
                     amount: vec![Coin {
                         denom: "stake".to_string(),
                         amount: "100".to_string(),
-                    }]
+                    }],
                 };
                 IcaPacketData::from_proto_anys(
                     vec![Any::from_msg(&predefined_proto_message)?],
@@ -191,5 +212,29 @@ mod query {
     /// Returns the saved callback counter.
     pub fn callback_counter(deps: Deps) -> StdResult<CallbackCounter> {
         CALLBACK_COUNTER.load(deps.storage)
+    }
+}
+
+mod migrate {
+    use super::*;
+
+    pub fn validate_semver(deps: Deps) -> Result<(), ContractError> {
+        let prev_cw2_version = cw2::get_contract_version(deps.storage)?;
+        if prev_cw2_version.contract != CONTRACT_NAME {
+            return Err(ContractError::InvalidMigrationVersion {
+                expected: CONTRACT_NAME.to_string(),
+                actual: prev_cw2_version.contract,
+            });
+        }
+
+        let version: semver::Version = CONTRACT_VERSION.parse()?;
+        let prev_version: semver::Version = prev_cw2_version.version.parse()?;
+        if prev_version >= version {
+            return Err(ContractError::InvalidMigrationVersion {
+                expected: format!("> {}", prev_version),
+                actual: CONTRACT_VERSION.to_string(),
+            });
+        }
+        Ok(())
     }
 }
