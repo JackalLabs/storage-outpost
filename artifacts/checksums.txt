@@ -1,1 +1,1 @@
-e15c57528cbb8c3e766346272dcbb384bf7e8e62e4e39df636a74ec496c0abf4  cw_ica_controller.wasm
+1599c9f1caa8ff0ef192a725f296592b5c0e20db57c844d2615cb31cef237d2b  cw_ica_controller.wasm

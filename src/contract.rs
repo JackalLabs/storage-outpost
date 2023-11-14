@@ -73,6 +73,10 @@ pub fn execute(
         ExecuteMsg::SendPredefinedAction { to_address } => {
             execute::send_predefined_action(deps, env, info, to_address)
         }
+        // If we send with protobuf encoding specified, perhaps the ica info need not be set beforehand?
+        ExecuteMsg::SendCoinsProto { recipient_address } => {
+            execute::send_coins_proto(deps, env, info, recipient_address)
+        }
     }
 }
 
@@ -194,6 +198,36 @@ mod execute {
 
         Ok(Response::default().add_message(send_packet_msg))
     }
+
+    /// Send coins using protobuf encoding 
+    pub fn send_coins_proto(
+        deps: DepsMut,
+        env: Env,
+        info: MessageInfo,
+        recipient_address: String,
+    ) -> Result<Response, ContractError> {
+        let contract_state = STATE.load(deps.storage)?;
+        contract_state.verify_admin(info.sender)?;
+        let ica_info = contract_state.get_ica_info()?;
+
+        let proto_message = MsgSend {
+            from_address: ica_info.ica_address,
+            to_address: recipient_address,
+            amount: vec![Coin {
+                denom: "stake".to_string(),
+                amount: "490".to_string(),
+            }],
+        };
+
+        let ica_packet = IcaPacketData::from_proto_anys(
+            vec![Any::from_msg(&proto_message).unwrap()],
+            None,
+        );
+
+        let send_packet_msg = ica_packet.to_ibc_msg(&env, &ica_info.channel_id, None)?;
+
+        Ok(Response::default().add_message(send_packet_msg))
+    }
 }
 
 mod query {
@@ -307,8 +341,6 @@ mod tests {
             Ok(state)
         })
         .unwrap();
-
-
 
         let contract_state = STATE.load(&deps.storage).unwrap();
         contract_state.verify_admin(info.sender.clone()).unwrap();

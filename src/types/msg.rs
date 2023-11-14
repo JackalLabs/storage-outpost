@@ -68,6 +68,11 @@ pub enum ExecuteMsg {
         /// The recipient's address, on the counterparty chain, to send the tokens to from ICA host.
         to_address: String,
     },
+    /// sending tokens with the protobuf encoding scheme
+    SendCoinsProto {
+        /// The recipient's address, on the counterparty chain, to send the tokens to from ICA host.
+        recipient_address: String,
+    },
 }
 
 /// The messages to query the ICA controller contract.
