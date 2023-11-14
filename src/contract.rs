@@ -238,3 +238,105 @@ mod migrate {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::ibc::types::{metadata::TxEncoding, packet::IcaPacketData};
+
+    use super::*;
+    use cosmos_sdk_proto::Any;
+    use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
+    use cosmos_sdk_proto::cosmos::base::v1beta1::Coin;
+    use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
+    use cosmwasm_std::{Api, SubMsg};
+
+    #[test]
+    fn test_instantiate() {
+        let mut deps = mock_dependencies();
+        let env = mock_env();
+        let info = mock_info("creator", &[]);
+
+        let msg = InstantiateMsg {
+            admin: None,
+            channel_open_init_options: None,
+        };
+
+        // Ensure the contract is instantiated successfully
+        let res = instantiate(deps.as_mut(), env, info.clone(), msg).unwrap();
+        assert_eq!(0, res.messages.len());
+
+        // Ensure the admin is saved correctly
+        let state = STATE.load(&deps.storage).unwrap();
+        assert_eq!(state.admin, info.sender);
+
+        // Ensure the callback counter is initialized correctly
+        let counter = CALLBACK_COUNTER.load(&deps.storage).unwrap();
+        assert_eq!(counter.success, 0);
+        assert_eq!(counter.error, 0);
+        assert_eq!(counter.timeout, 0);
+
+        // Ensure that the contract name and version are saved correctly
+        let contract_version = cw2::get_contract_version(&deps.storage).unwrap();
+        assert_eq!(contract_version.contract, CONTRACT_NAME);
+        assert_eq!(contract_version.version, CONTRACT_VERSION);
+    }
+
+    #[test]
+    fn test_execute_send_custom_proto_ica_messages() {
+        let mut deps = mock_dependencies();
+
+        let env = mock_env();
+        let info = mock_info("creator", &[]);
+
+        // Instantiate the contract
+        let _res = instantiate(
+            deps.as_mut(),
+            env.clone(),
+            info.clone(),
+            InstantiateMsg {
+                admin: None,
+                channel_open_init_options: None
+            },
+        )
+        .unwrap();
+
+        // NOTE: when is the ica info set automatically? 
+        STATE
+        .update(&mut deps.storage, |mut state| -> StdResult<ContractState> {
+            state.set_ica_info("ica_address", "channel-0", TxEncoding::Protobuf);
+            Ok(state)
+        })
+        .unwrap();
+
+
+
+        let contract_state = STATE.load(&deps.storage).unwrap();
+        contract_state.verify_admin(info.sender.clone()).unwrap();
+        let ica_info = contract_state.get_ica_info().unwrap();
+
+
+        let proto_message = MsgSend {
+            from_address: ica_info.ica_address,
+            to_address: "cosmos15ulrf36d4wdtrtqzkgaan9ylwuhs7k7qz753uk".to_string(),
+            amount: vec![Coin {
+                denom: "stake".to_string(),
+                amount: "100".to_string(),
+            }],
+        };
+
+        let ica_packet = IcaPacketData::from_proto_anys(
+            vec![Any::from_msg(&proto_message).unwrap()],
+            None,
+        );
+
+        let msg = ExecuteMsg::SendCustomIcaMessages { 
+            messages: to_binary(&ica_packet.data).unwrap(), 
+            packet_memo: None, 
+            timeout_seconds: None,
+        };
+        let res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
+
+
+    }
+
+}
