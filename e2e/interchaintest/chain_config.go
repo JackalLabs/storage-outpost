@@ -31,22 +31,22 @@ var chainSpecs = []*interchaintest.ChainSpec{
 			UsingNewGenesisCommand: true,
 		},
 	},
-	// -- IBC-GO --
+	// -- CANINED --
 	{
 		ChainConfig: ibc.ChainConfig{
 			Type:    "cosmos",
-			Name:    "ibc-go-simd",
-			ChainID: "simd-1",
+			Name:    "canined",
+			ChainID: "jackal-1",
 			Images: []ibc.DockerImage{
 				{
-					Repository: "ghcr.io/cosmos/ibc-go-simd", // FOR LOCAL IMAGE USE: Docker Image Name
-					Version:    "v7.3.0",                     // FOR LOCAL IMAGE USE: Docker Image Tag
+					Repository: "github.com/JackalLabs/canine-chain", // FOR LOCAL IMAGE USE: Docker Image Name
+					Version:    "v3.0.2",                             // FOR LOCAL IMAGE USE: Docker Image Tag
 				},
 			},
-			Bin:                    "simd",
-			Bech32Prefix:           "cosmos",
-			Denom:                  "stake",
-			GasPrices:              "0.00stake",
+			Bin:                    "canined",
+			Bech32Prefix:           "jkl",
+			Denom:                  "jkl", // do we have to use ujkl or is jkl ok?
+			GasPrices:              "0.00ujkl",
 			GasAdjustment:          1.3,
 			TrustingPeriod:         "508h",
 			NoHostMount:            false,
