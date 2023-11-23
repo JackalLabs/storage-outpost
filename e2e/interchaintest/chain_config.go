@@ -39,8 +39,9 @@ var chainSpecs = []*interchaintest.ChainSpec{
 			ChainID: "jackal-1",
 			Images: []ibc.DockerImage{
 				{
-					Repository: "github.com/JackalLabs/canine-chain", // FOR LOCAL IMAGE USE: Docker Image Name
-					Version:    "v3.0.2",                             // FOR LOCAL IMAGE USE: Docker Image Tag
+					Repository: "github.com/jackalLabs/canine-chain/v3", // FOR LOCAL IMAGE USE: Docker Image Name
+					// issue: we tried both the github link and the module declaration but both cause the image not to be pulled
+					Version: "v3.0.2", // FOR LOCAL IMAGE USE: Docker Image Tag
 				},
 			},
 			Bin:                    "canined",
