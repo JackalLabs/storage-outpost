@@ -51,6 +51,5 @@ thiserror = { version = "1.0.31" }
 cosmos-sdk-proto = { version = "0.20.0", default-features = false }
 semver = "1.0"
 
-
 [dev-dependencies]
 cw-multi-test = "0.16.5"

@@ -47,6 +47,8 @@ func (s *ContractTestSuite) SetupContractTestSuite(ctx context.Context, encoding
 			`"controller_connection_id":"%s",`+
 			`"host_connection_id":"%s",`+
 			`"address":"",`+ // NOTE: why is the address initially empty?
+			// update: looks like this is the jkl account (host) that the ica controller
+			// commands, and is created after the channel handshake
 			`"encoding":"%s",`+
 			`"tx_type":"%s"}`,
 		icatypes.Version, s.ChainAConnID, s.ChainBConnID,
@@ -80,9 +82,13 @@ func (s *ContractTestSuite) TestIcaContractChannelHandshake() {
 	// This starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
 	// sets up the contract and does the channel handshake for the contract test suite.
 	s.SetupContractTestSuite(ctx, icatypes.EncodingProto3JSON)
-	wasmd, simd := s.ChainA, s.ChainB
+	wasmd, canined := s.ChainA, s.ChainB
+
+	initLogger()
+	infoLogger.Printf("jackal chain is: %v", canined)
+
 	wasmdUser := s.UserA
-	fmt.Println(simd)
+	fmt.Println(canined)
 	fmt.Println(wasmdUser)
 	s.Run("TestChannelHandshakeSuccess", func() {
 		// Test if the handshake was successful
@@ -96,7 +102,7 @@ func (s *ContractTestSuite) TestIcaContractChannelHandshake() {
 		s.Require().Equal(icatypes.HostPortID, wasmdChannel.Counterparty.PortID)
 		s.Require().Equal(channeltypes.OPEN.String(), wasmdChannel.State)
 
-		simdChannels, err := s.Relayer.GetChannels(ctx, s.ExecRep, simd.Config().ChainID)
+		simdChannels, err := s.Relayer.GetChannels(ctx, s.ExecRep, canined.Config().ChainID)
 		s.Require().NoError(err)
 
 		simdChannel := simdChannels[0]
