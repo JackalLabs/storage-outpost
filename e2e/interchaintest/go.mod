@@ -1,4 +1,4 @@
-module github.com/JackalLabs/cw-ica-controller/e2e/interchaintest
+module github.com/JackalLabs/storage-outpost/e2e/interchaintest
 
 go 1.20
 

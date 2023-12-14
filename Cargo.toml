@@ -1,7 +1,7 @@
 [package]
-name = "cw-ica-controller"
+name = "storage-outpost"
 version = "0.1.0"
-authors = ["BiPhan4 <biphan374@gmail.com>"]
+authors = ["Bi Phan <bi@jackallabs.io>"]
 edition = "2021"
 
 exclude = [

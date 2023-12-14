@@ -1,1 +1,0 @@
-8e81733ba07e6a7d3aa84bf228cfb3153bd9541d62a57dd1f7b0c39804b1bb6e  /target/wasm32-unknown-unknown/release/cw_ica_controller.wasm

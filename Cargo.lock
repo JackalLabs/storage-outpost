@@ -234,23 +234,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cw-ica-controller"
-version = "0.1.0"
-dependencies = [
- "cosmos-sdk-proto",
- "cosmwasm-schema",
- "cosmwasm-std",
- "cw-multi-test",
- "cw-storage-plus",
- "cw2",
- "schemars",
- "semver",
- "serde",
- "serde-json-wasm",
- "thiserror",
-]
-
-[[package]]
 name = "cw-multi-test"
 version = "0.16.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -971,6 +954,23 @@ checksum = "9d1e996ef02c474957d681f1b05213dfb0abab947b446a62d37770b23500184a"
 dependencies = [
  "base64ct",
  "der 0.7.8",
+]
+
+[[package]]
+name = "storage-outpost"
+version = "0.1.0"
+dependencies = [
+ "cosmos-sdk-proto",
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw-multi-test",
+ "cw-storage-plus",
+ "cw2",
+ "schemars",
+ "semver",
+ "serde",
+ "serde-json-wasm",
+ "thiserror",
 ]
 
 [[package]]

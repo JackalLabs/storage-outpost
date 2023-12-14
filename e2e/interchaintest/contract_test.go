@@ -14,8 +14,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 
-	mysuite "github.com/JackalLabs/cw-ica-controller/e2e/interchaintest/testsuite"
-	"github.com/JackalLabs/cw-ica-controller/e2e/interchaintest/types"
+	mysuite "github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
+	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
