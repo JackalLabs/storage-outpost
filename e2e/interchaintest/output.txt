@@ -1,9 +1,0 @@
-=== RUN   TestWithContractTestSuite
-=== RUN   TestWithContractTestSuite/TestIcaContractChannelHandshake
-    setup.go:116: Failed to stop container fb37b828829201f228f6de4941260491afa566fed1ec15b2c6cab7316963a989 during docker cleanup: Error response from daemon: cannot stop container: fb37b828829201f228f6de4941260491afa566fed1ec15b2c6cab7316963a989: permission denied
-    setup.go:125: Failed to wait for container fb37b828829201f228f6de4941260491afa566fed1ec15b2c6cab7316963a989 during docker cleanup: Post "http://%2Fvar%2Frun%2Fdocker.sock/v1.41/containers/fb37b828829201f228f6de4941260491afa566fed1ec15b2c6cab7316963a989/wait?condition=not-running": context deadline exceeded
-    setup.go:157: Failed to remove container fb37b828829201f228f6de4941260491afa566fed1ec15b2c6cab7316963a989 during docker cleanup: Error response from daemon: Could not kill running container fb37b828829201f228f6de4941260491afa566fed1ec15b2c6cab7316963a989, cannot remove - permission denied
-    setup.go:116: Failed to stop container f2569bb55b57214d885e9baf5fbbd7e7575b9db5813265e60682cf14ab37e734 during docker cleanup: Error response from daemon: cannot stop container: f2569bb55b57214d885e9baf5fbbd7e7575b9db5813265e60682cf14ab37e734: permission denied
-    setup.go:123: Timed out waiting for container f2569bb55b57214d885e9baf5fbbd7e7575b9db5813265e60682cf14ab37e734
-FAIL	github.com/JackalLabs/cw-ica-controller/e2e/interchaintest	46.869s
-FAIL
