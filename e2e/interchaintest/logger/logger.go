@@ -6,12 +6,12 @@ import (
 )
 
 var (
-	infoLogger  *log.Logger
-	errorLogger *log.Logger
+	InfoLogger  *log.Logger
+	ErrorLogger *log.Logger
 )
 
 func InitLogger() {
-	path := "e2e/interchaintest/"
+	path := "logs/"
 
 	// Create directory if it doesn't exist
 	if _, err := os.Stat(path); os.IsNotExist(err) {
@@ -26,6 +26,16 @@ func InitLogger() {
 		log.Fatal(err)
 	}
 
-	infoLogger = log.New(file, "INFO: ", log.Ldate|log.Ltime)
-	errorLogger = log.New(file, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+	InfoLogger = log.New(file, "INFO: ", log.Ldate|log.Ltime)
+	ErrorLogger = log.New(file, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+}
+
+// Exported function for info logging
+func LogInfo(v ...interface{}) {
+	InfoLogger.Println(v...)
+}
+
+// Exported function for err logging
+func LogError(v ...interface{}) {
+	ErrorLogger.Println(v...)
 }

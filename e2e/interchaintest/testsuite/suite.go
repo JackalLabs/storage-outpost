@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
 
+	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	interchaintest "github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
@@ -107,6 +108,7 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 	err = testutil.WaitForBlocks(ctx, 2, s.ChainA, s.ChainB)
 	s.Require().NoError(err)
 
+	logger.InitLogger()
 	// Query for the newly created connection in wasmd
 	connections, err := s.Relayer.GetConnections(ctx, s.ExecRep, s.ChainA.Config().ChainID)
 	s.Require().NoError(err)
