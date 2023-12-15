@@ -1,4 +1,4 @@
-INFO: 2023/12/15 18:11:52 {
+INFO: 2023/12/15 18:26:53 {
   "id": "connection-0",
   "client_id": "07-tendermint-0",
   "versions": [
@@ -14,6 +14,28 @@ INFO: 2023/12/15 18:11:52 {
   "counterparty": {
     "client_id": "07-tendermint-0",
     "connection_id": "connection-0",
+    "prefix": {
+      "key_prefix": "aWJj"
+    }
+  },
+  "delay_period": "0"
+}
+INFO: 2023/12/15 18:26:53 {
+  "id": "connection-localhost",
+  "client_id": "09-localhost",
+  "versions": [
+    {
+      "identifier": "1",
+      "features": [
+        "ORDER_ORDERED",
+        "ORDER_UNORDERED"
+      ]
+    }
+  ],
+  "state": "STATE_OPEN",
+  "counterparty": {
+    "client_id": "09-localhost",
+    "connection_id": "connection-localhost",
     "prefix": {
       "key_prefix": "aWJj"
     }

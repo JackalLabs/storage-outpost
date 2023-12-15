@@ -110,18 +110,29 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 	s.Require().NoError(err)
 
 	logger.InitLogger()
-	// Query for the newly created connection in wasmd
+	// Query for the newly created connections in wasmd
 	connections, err := s.Relayer.GetConnections(ctx, s.ExecRep, s.ChainA.Config().ChainID)
 	s.Require().NoError(err)
-	// log the connections
 
-	jsonBytes, err := json.MarshalIndent(connections[0], "", "  ")
+	// log first wasmd connection
+	connection0JsonBytes, err := json.MarshalIndent(connections[0], "", "  ")
 
 	if err != nil {
 		// handle error
 		logger.LogError("failed to marshal connection:", err)
 	} else {
-		logger.LogInfo(string(jsonBytes))
+		logger.LogInfo(string(connection0JsonBytes))
+	}
+
+	//log second wasmd connection
+
+	connection1JsonBytes, err := json.MarshalIndent(connections[1], "", "  ")
+
+	if err != nil {
+		// handle error
+		logger.LogError("failed to marshal connection:", err)
+	} else {
+		logger.LogInfo(string(connection1JsonBytes))
 	}
 
 	// localhost is always a connection since ibc-go v7.1+
