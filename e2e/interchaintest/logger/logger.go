@@ -1,4 +1,4 @@
-package main
+package logger
 
 import (
 	"log"
@@ -10,7 +10,7 @@ var (
 	errorLogger *log.Logger
 )
 
-func initLogger() {
+func InitLogger() {
 	path := "e2e/interchaintest/"
 
 	// Create directory if it doesn't exist
