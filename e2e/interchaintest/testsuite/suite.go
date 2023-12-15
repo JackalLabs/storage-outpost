@@ -2,6 +2,7 @@ package testsuite
 
 import (
 	"context"
+	"encoding/json"
 
 	dockerclient "github.com/docker/docker/client"
 	"github.com/stretchr/testify/suite"
@@ -112,6 +113,17 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 	// Query for the newly created connection in wasmd
 	connections, err := s.Relayer.GetConnections(ctx, s.ExecRep, s.ChainA.Config().ChainID)
 	s.Require().NoError(err)
+	// log the connections
+
+	jsonBytes, err := json.Marshal(connections[0])
+
+	if err != nil {
+		// handle error
+		logger.LogError("failed to marshal connection:", err)
+	} else {
+		logger.LogInfo(string(jsonBytes))
+	}
+
 	// localhost is always a connection since ibc-go v7.1+
 	s.Require().Equal(2, len(connections))
 	// but canine-chain is running ibc-go v4.4.2, so perhaps there's only 1 connection that isn't localhost?

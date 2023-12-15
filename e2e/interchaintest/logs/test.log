@@ -1,0 +1,1 @@
+INFO: 2023/12/15 18:04:51 {"id":"connection-0","client_id":"07-tendermint-0","versions":[{"identifier":"1","features":["ORDER_ORDERED","ORDER_UNORDERED"]}],"state":"STATE_OPEN","counterparty":{"client_id":"07-tendermint-0","connection_id":"connection-0","prefix":{"key_prefix":"aWJj"}},"delay_period":"0"}
