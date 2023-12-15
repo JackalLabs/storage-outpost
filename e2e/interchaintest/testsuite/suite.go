@@ -115,7 +115,7 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 	s.Require().NoError(err)
 	// log the connections
 
-	jsonBytes, err := json.Marshal(connections[0])
+	jsonBytes, err := json.MarshalIndent(connections[0], "", "  ")
 
 	if err != nil {
 		// handle error
