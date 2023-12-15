@@ -83,10 +83,6 @@ func (s *ContractTestSuite) TestIcaContractChannelHandshake() {
 	// sets up the contract and does the channel handshake for the contract test suite.
 	s.SetupContractTestSuite(ctx, icatypes.EncodingProto3JSON)
 	wasmd, canined := s.ChainA, s.ChainB
-
-	initLogger()
-	infoLogger.Printf("jackal chain is: %v", canined)
-
 	wasmdUser := s.UserA
 	fmt.Println(canined)
 	fmt.Println(wasmdUser)

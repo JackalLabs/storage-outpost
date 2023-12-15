@@ -11,7 +11,17 @@ var (
 )
 
 func initLogger() {
-	file, err := os.Create("e2e/interchaintest/test.log")
+	path := "e2e/interchaintest/"
+
+	// Create directory if it doesn't exist
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		err := os.MkdirAll(path, os.ModePerm)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	file, err := os.Create(path + "test.log")
 	if err != nil {
 		log.Fatal(err)
 	}
