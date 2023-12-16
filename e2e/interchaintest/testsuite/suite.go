@@ -111,45 +111,61 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 
 	logger.InitLogger()
 	// Query for the newly created connections in wasmd
-	connections, err := s.Relayer.GetConnections(ctx, s.ExecRep, s.ChainA.Config().ChainID)
+	wasmdConnections, err := s.Relayer.GetConnections(ctx, s.ExecRep, s.ChainA.Config().ChainID)
 	s.Require().NoError(err)
 
 	// log first wasmd connection
-	connection0JsonBytes, err := json.MarshalIndent(connections[0], "", "  ")
+	wc0JsonBytes, err := json.MarshalIndent(wasmdConnections[0], "", "  ")
 
 	if err != nil {
 		// handle error
 		logger.LogError("failed to marshal connection:", err)
 	} else {
-		logger.LogInfo(string(connection0JsonBytes))
+		logger.LogInfo(string(wc0JsonBytes))
 	}
 
 	//log second wasmd connection
 
-	connection1JsonBytes, err := json.MarshalIndent(connections[1], "", "  ")
+	wc1JsonBytes, err := json.MarshalIndent(wasmdConnections[1], "", "  ")
 
 	if err != nil {
 		// handle error
-		logger.LogError("failed to marshal connection:", err)
+		logger.LogError("failed  to marshal connection:", err)
 	} else {
-		logger.LogInfo(string(connection1JsonBytes))
+		logger.LogInfo(string(wc1JsonBytes))
 	}
 
 	// localhost is always a connection since ibc-go v7.1+
-	s.Require().Equal(2, len(connections))
-	// but canine-chain is running ibc-go v4.4.2, so perhaps there's only 1 connection that isn't localhost?
+	s.Require().Equal(2, len(wasmdConnections))
+
 	// additional note: wasmd has 2 established connections but canined only has 1. Need to log.
-	wasmdConnection := connections[0]
+
+	wasmdConnection := wasmdConnections[0]
 	s.Require().NotEqual("connection-localhost", wasmdConnection.ID)
 	s.ChainAConnID = wasmdConnection.ID
 
-	// Query for the newly created connection in canined
-	connections, err = s.Relayer.GetConnections(ctx, s.ExecRep, s.ChainB.Config().ChainID)
+	// Query for the newly created connections in canined
+	caninedConnections, err := s.Relayer.GetConnections(ctx, s.ExecRep, s.ChainB.Config().ChainID)
 	s.Require().NoError(err)
+
 	// localhost is always a connection since ibc-go v7.1+
 	// but canine-chain is running ibc-go v4.4.2, so perhaps there's only 1 connection that isn't localhost?
-	s.Require().Equal(1, len(connections))
-	caninedConnection := connections[0]
+
+	s.Require().Equal(1, len(caninedConnections))
+
+	logger.LogInfo("The first canined connections are:")
+	// log the first canined connection
+	cc1JsonBytes, err := json.MarshalIndent(caninedConnections[0], "", "  ")
+
+	if err != nil {
+		// handle error
+		logger.LogError("failed  to marshal connection:", err)
+	} else {
+		logger.LogInfo(string(cc1JsonBytes))
+	}
+
+	caninedConnection := caninedConnections[0]
+
 	s.Require().NotEqual("connection-localhost", caninedConnection.ID)
 	s.ChainBConnID = caninedConnection.ID
 
