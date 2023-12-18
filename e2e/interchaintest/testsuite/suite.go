@@ -95,6 +95,10 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 	err = s.Relayer.GeneratePath(ctx, s.ExecRep, s.ChainA.Config().ChainID, s.ChainB.Config().ChainID, s.PathName)
 	s.Require().NoError(err)
 
+	// Wait for blocks
+	err = testutil.WaitForBlocks(ctx, 2, s.ChainA, s.ChainB)
+	s.Require().NoError(err)
+
 	// Create new clients
 	err = s.Relayer.CreateClients(ctx, s.ExecRep, s.PathName, ibc.CreateClientOptions{TrustingPeriod: "330h"})
 	s.Require().NoError(err)
