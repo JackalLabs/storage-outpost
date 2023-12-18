@@ -1,5 +1,5 @@
-INFO: 2023/12/18 13:03:24 First light client is
-INFO: 2023/12/18 13:03:24 [
+INFO: 2023/12/18 13:55:50 Wasmd First light client is
+INFO: 2023/12/18 13:55:50 [
   {
     "client_id": "07-tendermint-0",
     "client_state": {
@@ -13,9 +13,20 @@ INFO: 2023/12/18 13:03:24 [
     }
   }
 ]
-INFO: 2023/12/18 13:03:24 Second light client is
-INFO: 2023/12/18 13:03:24 null
-INFO: 2023/12/18 13:03:51 {
+INFO: 2023/12/18 13:55:50 Wasmd Second light client is
+INFO: 2023/12/18 13:55:50 null
+INFO: 2023/12/18 13:55:50 jackal first light client is
+INFO: 2023/12/18 13:55:50 [
+  {
+    "client_id": "07-tendermint-0",
+    "client_state": {
+      "chain_id": "wasmd-1"
+    }
+  }
+]
+INFO: 2023/12/18 13:55:50 jackal second light client is
+INFO: 2023/12/18 13:55:50 null
+INFO: 2023/12/18 13:56:17 {
   "id": "connection-0",
   "client_id": "07-tendermint-0",
   "versions": [
@@ -37,7 +48,7 @@ INFO: 2023/12/18 13:03:51 {
   },
   "delay_period": "0"
 }
-INFO: 2023/12/18 13:03:51 {
+INFO: 2023/12/18 13:56:17 {
   "id": "connection-localhost",
   "client_id": "09-localhost",
   "versions": [
@@ -59,8 +70,8 @@ INFO: 2023/12/18 13:03:51 {
   },
   "delay_period": "0"
 }
-INFO: 2023/12/18 13:03:51 The first canined connections are:
-INFO: 2023/12/18 13:03:51 {
+INFO: 2023/12/18 13:56:17 The first canined connections are:
+INFO: 2023/12/18 13:56:17 {
   "id": "connection-0",
   "client_id": "07-tendermint-0",
   "versions": [
@@ -82,3 +93,21 @@ INFO: 2023/12/18 13:03:51 {
   },
   "delay_period": "0"
 }
+INFO: 2023/12/18 13:58:50 The channels are
+INFO: 2023/12/18 13:58:50 [
+  {
+    "state": "STATE_INIT",
+    "ordering": "ORDER_ORDERED",
+    "counterparty": {
+      "port_id": "icahost",
+      "channel_id": ""
+    },
+    "connection_hops": [
+      "connection-0"
+    ],
+    "version": "{\"version\":\"ics27-1\",\"controller_connection_id\":\"connection-0\",\"host_connection_id\":\"connection-0\",\"address\":\"\",\"encoding\":\"proto3json\",\"tx_type\":\"sdk_multi_msg\"}",
+    "port_id": "wasm.wasm14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s0phg4d",
+    "channel_id": "channel-0"
+  }
+]
+INFO: 2023/12/18 13:58:50 null

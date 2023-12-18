@@ -14,6 +14,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 
+	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	mysuite "github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
@@ -66,6 +67,29 @@ func (s *ContractTestSuite) SetupContractTestSuite(ctx context.Context, encoding
 	// Wait for the channel to get set up
 	err = testutil.WaitForBlocks(ctx, 5, s.ChainA, s.ChainB)
 	s.Require().NoError(err)
+
+	channels, stub := s.Relayer.GetChannels(ctx, s.ExecRep, s.ChainA.Config().ChainID)
+
+	logger.LogInfo("The channels connected to wasmd are")
+	// log first channel
+	c1, err := json.MarshalIndent(channels, "", "  ")
+
+	if err != nil {
+		// handle error
+		logger.LogError("failed to marshal channel:", err)
+	} else {
+		logger.LogInfo(string(c1))
+	}
+
+	// log stub
+	c2, err := json.MarshalIndent(stub, "", "  ")
+
+	if err != nil {
+		// handle error
+		logger.LogError("failed to marshal stub:", err)
+	} else {
+		logger.LogInfo(string(c2))
+	}
 
 	contractState, err := s.Contract.QueryContractState(ctx)
 	s.Require().NoError(err)

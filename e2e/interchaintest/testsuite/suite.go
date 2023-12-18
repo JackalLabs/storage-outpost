@@ -110,10 +110,10 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 	// Wasmd should have a light client that's tracking the state of jackal-1
 	lightClients0, lightClients1 := s.Relayer.GetClients(ctx, s.ExecRep, s.ChainA.Config().ChainID)
 
-	// log first light client
+	// log first wasmd light client
 	lc0, err := json.MarshalIndent(lightClients0, "", "  ")
 
-	logger.LogInfo("First light client is")
+	logger.LogInfo("Wasmd First light client is")
 
 	if err != nil {
 		// handle error
@@ -122,17 +122,46 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 		logger.LogInfo(string(lc0))
 	}
 
-	// log second light client
+	// log second wasmd light client
 	// note: second object being returned seems to be nil
 	lc1, err := json.MarshalIndent(lightClients1, "", "  ")
 
-	logger.LogInfo("Second light client is")
+	logger.LogInfo("Wasmd Second light client is")
 
 	if err != nil {
 		// handle error
 		logger.LogError("failed to marshal light client:", err)
 	} else {
 		logger.LogInfo(string(lc1))
+	}
+
+	// Let's log jackal-1 light clients
+	// jackal-1 should have a light client that's tracking the state of wasmd
+	jackalLC0, jackalLC1 := s.Relayer.GetClients(ctx, s.ExecRep, s.ChainB.Config().ChainID)
+
+	// log first jackal light client
+	jlc0, err := json.MarshalIndent(jackalLC0, "", "  ")
+
+	logger.LogInfo("jackal first light client is")
+
+	if err != nil {
+		// handle error
+		logger.LogError("failed to marshal light client:", err)
+	} else {
+		logger.LogInfo(string(jlc0))
+	}
+
+	// log second jackal light client
+	// note: second object being returned seems to be nil
+	jlc1, err := json.MarshalIndent(jackalLC1, "", "  ")
+
+	logger.LogInfo("jackal second light client is")
+
+	if err != nil {
+		// handle error
+		logger.LogError("failed to marshal light client:", err)
+	} else {
+		logger.LogInfo(string(jlc1))
 	}
 
 	// Create a new connection
