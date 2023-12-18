@@ -84,6 +84,7 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 		NetworkID:        s.network,
 		SkipPathCreation: true,
 	}))
+	logger.InitLogger()
 
 	// Fund a user account on ChainA and ChainB
 	const userFunds = int64(10_000_000_000)
@@ -106,6 +107,34 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 	err = testutil.WaitForBlocks(ctx, 4, s.ChainA, s.ChainB)
 	s.Require().NoError(err)
 
+	// Wasmd should have a light client that's tracking the state of jackal-1
+	lightClients0, lightClients1 := s.Relayer.GetClients(ctx, s.ExecRep, s.ChainA.Config().ChainID)
+
+	// log first light client
+	lc0, err := json.MarshalIndent(lightClients0, "", "  ")
+
+	logger.LogInfo("First light client is")
+
+	if err != nil {
+		// handle error
+		logger.LogError("failed to marshal light client:", err)
+	} else {
+		logger.LogInfo(string(lc0))
+	}
+
+	// log second light client
+	// note: second object being returned seems to be nil
+	lc1, err := json.MarshalIndent(lightClients1, "", "  ")
+
+	logger.LogInfo("Second light client is")
+
+	if err != nil {
+		// handle error
+		logger.LogError("failed to marshal light client:", err)
+	} else {
+		logger.LogInfo(string(lc1))
+	}
+
 	// Create a new connection
 	err = s.Relayer.CreateConnections(ctx, s.ExecRep, s.PathName)
 	s.Require().NoError(err)
@@ -113,7 +142,6 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 	err = testutil.WaitForBlocks(ctx, 4, s.ChainA, s.ChainB)
 	s.Require().NoError(err)
 
-	logger.InitLogger()
 	// Query for the newly created connections in wasmd
 	wasmdConnections, err := s.Relayer.GetConnections(ctx, s.ExecRep, s.ChainA.Config().ChainID)
 	s.Require().NoError(err)

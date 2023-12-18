@@ -1,4 +1,21 @@
-INFO: 2023/12/15 19:51:37 {
+INFO: 2023/12/18 13:03:24 First light client is
+INFO: 2023/12/18 13:03:24 [
+  {
+    "client_id": "07-tendermint-0",
+    "client_state": {
+      "chain_id": "jackal-1"
+    }
+  },
+  {
+    "client_id": "09-localhost",
+    "client_state": {
+      "chain_id": ""
+    }
+  }
+]
+INFO: 2023/12/18 13:03:24 Second light client is
+INFO: 2023/12/18 13:03:24 null
+INFO: 2023/12/18 13:03:51 {
   "id": "connection-0",
   "client_id": "07-tendermint-0",
   "versions": [
@@ -20,7 +37,7 @@ INFO: 2023/12/15 19:51:37 {
   },
   "delay_period": "0"
 }
-INFO: 2023/12/15 19:51:37 {
+INFO: 2023/12/18 13:03:51 {
   "id": "connection-localhost",
   "client_id": "09-localhost",
   "versions": [
@@ -42,8 +59,8 @@ INFO: 2023/12/15 19:51:37 {
   },
   "delay_period": "0"
 }
-INFO: 2023/12/15 19:51:37 The first canined connections are:
-INFO: 2023/12/15 19:51:37 {
+INFO: 2023/12/18 13:03:51 The first canined connections are:
+INFO: 2023/12/18 13:03:51 {
   "id": "connection-0",
   "client_id": "07-tendermint-0",
   "versions": [
