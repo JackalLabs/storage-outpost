@@ -96,21 +96,21 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 	s.Require().NoError(err)
 
 	// Wait for blocks
-	err = testutil.WaitForBlocks(ctx, 2, s.ChainA, s.ChainB)
+	err = testutil.WaitForBlocks(ctx, 4, s.ChainA, s.ChainB)
 	s.Require().NoError(err)
 
 	// Create new clients
 	err = s.Relayer.CreateClients(ctx, s.ExecRep, s.PathName, ibc.CreateClientOptions{TrustingPeriod: "330h"})
 	s.Require().NoError(err)
 
-	err = testutil.WaitForBlocks(ctx, 2, s.ChainA, s.ChainB)
+	err = testutil.WaitForBlocks(ctx, 4, s.ChainA, s.ChainB)
 	s.Require().NoError(err)
 
 	// Create a new connection
 	err = s.Relayer.CreateConnections(ctx, s.ExecRep, s.PathName)
 	s.Require().NoError(err)
 
-	err = testutil.WaitForBlocks(ctx, 2, s.ChainA, s.ChainB)
+	err = testutil.WaitForBlocks(ctx, 4, s.ChainA, s.ChainB)
 	s.Require().NoError(err)
 
 	logger.InitLogger()

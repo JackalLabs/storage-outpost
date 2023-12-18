@@ -84,8 +84,7 @@ func (s *ContractTestSuite) TestIcaContractChannelHandshake() {
 	s.SetupContractTestSuite(ctx, icatypes.EncodingProto3JSON)
 	wasmd, canined := s.ChainA, s.ChainB
 	wasmdUser := s.UserA
-	fmt.Println(canined)
-	fmt.Println(wasmdUser)
+
 	s.Run("TestChannelHandshakeSuccess", func() {
 		// Test if the handshake was successful
 		wasmdChannels, err := s.Relayer.GetChannels(ctx, s.ExecRep, wasmd.Config().ChainID)
