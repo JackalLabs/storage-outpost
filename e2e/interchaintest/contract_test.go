@@ -91,6 +91,19 @@ func (s *ContractTestSuite) SetupContractTestSuite(ctx context.Context, encoding
 		logger.LogInfo(string(c2))
 	}
 
+	jackalChannels, _ := s.Relayer.GetChannels(ctx, s.ExecRep, s.ChainB.Config().ChainID)
+
+	logger.LogInfo("The channels connected to canined are")
+	// log first channel
+	jc1, err := json.MarshalIndent(jackalChannels, "", "  ")
+
+	if err != nil {
+		// handle error
+		logger.LogError("failed to marshal channel:", err)
+	} else {
+		logger.LogInfo(string(jc1))
+	}
+
 	contractState, err := s.Contract.QueryContractState(ctx)
 	s.Require().NoError(err)
 	s.IcaAddress = contractState.IcaInfo.IcaAddress

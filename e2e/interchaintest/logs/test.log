@@ -1,5 +1,5 @@
-INFO: 2023/12/18 13:55:50 Wasmd First light client is
-INFO: 2023/12/18 13:55:50 [
+INFO: 2023/12/18 14:43:05 Wasmd First light client is
+INFO: 2023/12/18 14:43:05 [
   {
     "client_id": "07-tendermint-0",
     "client_state": {
@@ -13,10 +13,10 @@ INFO: 2023/12/18 13:55:50 [
     }
   }
 ]
-INFO: 2023/12/18 13:55:50 Wasmd Second light client is
-INFO: 2023/12/18 13:55:50 null
-INFO: 2023/12/18 13:55:50 jackal first light client is
-INFO: 2023/12/18 13:55:50 [
+INFO: 2023/12/18 14:43:05 Wasmd Second light client is
+INFO: 2023/12/18 14:43:05 null
+INFO: 2023/12/18 14:43:05 jackal first light client is
+INFO: 2023/12/18 14:43:05 [
   {
     "client_id": "07-tendermint-0",
     "client_state": {
@@ -24,9 +24,9 @@ INFO: 2023/12/18 13:55:50 [
     }
   }
 ]
-INFO: 2023/12/18 13:55:50 jackal second light client is
-INFO: 2023/12/18 13:55:50 null
-INFO: 2023/12/18 13:56:17 {
+INFO: 2023/12/18 14:43:05 jackal second light client is
+INFO: 2023/12/18 14:43:05 null
+INFO: 2023/12/18 14:43:32 {
   "id": "connection-0",
   "client_id": "07-tendermint-0",
   "versions": [
@@ -48,7 +48,7 @@ INFO: 2023/12/18 13:56:17 {
   },
   "delay_period": "0"
 }
-INFO: 2023/12/18 13:56:17 {
+INFO: 2023/12/18 14:43:32 {
   "id": "connection-localhost",
   "client_id": "09-localhost",
   "versions": [
@@ -70,8 +70,8 @@ INFO: 2023/12/18 13:56:17 {
   },
   "delay_period": "0"
 }
-INFO: 2023/12/18 13:56:17 The first canined connections are:
-INFO: 2023/12/18 13:56:17 {
+INFO: 2023/12/18 14:43:32 The first canined connections are:
+INFO: 2023/12/18 14:43:32 {
   "id": "connection-0",
   "client_id": "07-tendermint-0",
   "versions": [
@@ -93,8 +93,8 @@ INFO: 2023/12/18 13:56:17 {
   },
   "delay_period": "0"
 }
-INFO: 2023/12/18 13:58:50 The channels are
-INFO: 2023/12/18 13:58:50 [
+INFO: 2023/12/18 14:46:06 The channels connected to wasmd are
+INFO: 2023/12/18 14:46:06 [
   {
     "state": "STATE_INIT",
     "ordering": "ORDER_ORDERED",
@@ -110,4 +110,6 @@ INFO: 2023/12/18 13:58:50 [
     "channel_id": "channel-0"
   }
 ]
-INFO: 2023/12/18 13:58:50 null
+INFO: 2023/12/18 14:46:06 null
+INFO: 2023/12/18 14:46:07 The channels connected to canined are
+INFO: 2023/12/18 14:46:07 null
