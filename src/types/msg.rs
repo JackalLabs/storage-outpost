@@ -76,6 +76,7 @@ pub enum ExecuteMsg {
 }
 
 /// The messages to query the ICA controller contract.
+/// #[cw_ownable::cw_ownable_query] NOTE: enable this macro if we want the ownership feature for the outpost 
 #[cw_serde]
 #[derive(QueryResponses)]
 pub enum QueryMsg {
@@ -88,6 +89,7 @@ pub enum QueryMsg {
     /// GetCallbackCounter returns the callback counter.
     #[returns(crate::types::state::CallbackCounter)]
     GetCallbackCounter {},
+    
 }
 
 /// The message to migrate this contract.

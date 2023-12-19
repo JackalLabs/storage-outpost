@@ -1,7 +1,7 @@
 //! This module handles the execution logic of the contract.
 
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
+use cosmwasm_std::{to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
 
 use crate::ibc::types::stargate::channel::new_ica_channel_open_init_cosmos_msg;
 use crate::types::keys::{CONTRACT_NAME, CONTRACT_VERSION};
@@ -84,9 +84,10 @@ pub fn execute(
 #[entry_point]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::GetContractState {} => to_binary(&query::state(deps)?),
-        QueryMsg::GetChannel {} => to_binary(&query::channel(deps)?),
-        QueryMsg::GetCallbackCounter {} => to_binary(&query::callback_counter(deps)?),
+        QueryMsg::GetContractState {} => to_json_binary(&query::state(deps)?),
+        QueryMsg::GetChannel {} => to_json_binary(&query::channel(deps)?),
+        QueryMsg::GetCallbackCounter {} => to_json_binary(&query::callback_counter(deps)?),
+        // QueryMsg::Ownership {} => to_json_binary(&cw_ownable::get_ownership(deps.storage)?),
     }
 }
 
@@ -282,7 +283,7 @@ mod tests {
     use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
     use cosmos_sdk_proto::cosmos::base::v1beta1::Coin;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use cosmwasm_std::{Api, SubMsg};
+    use cosmwasm_std::{Api, SubMsg, to_binary};
 
     #[test]
     fn test_instantiate() {
@@ -362,7 +363,7 @@ mod tests {
         );
 
         let msg = ExecuteMsg::SendCustomIcaMessages { 
-            messages: to_binary(&ica_packet.data).unwrap(), 
+            messages: to_json_binary(&ica_packet.data).unwrap(), // NOTE: why was 'to_binary' replaced in favor of 'to_json_binary'? 
             packet_memo: None, 
             timeout_seconds: None,
         };

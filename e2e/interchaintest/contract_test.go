@@ -46,15 +46,16 @@ func (s *ContractTestSuite) SetupContractTestSuite(ctx context.Context, encoding
 	contractState, err := s.Contract.QueryContractState(ctx)
 	s.Require().NoError(err)
 
-	ownershipResponse, err := s.Contract.QueryOwnership(ctx)
-	s.Require().NoError(err)
+	// NOTE: note sure if Jackal Outpost needs the ownership feature
+	// ownershipResponse, err := s.Contract.QueryOwnership(ctx)
+	// s.Require().NoError(err)
 
 	s.IcaAddress = contractState.IcaInfo.IcaAddress
 	s.Contract.SetIcaAddress(s.IcaAddress)
 
-	s.Require().Equal(s.UserA.FormattedAddress(), ownershipResponse.Owner)
-	s.Require().Nil(ownershipResponse.PendingOwner)
-	s.Require().Nil(ownershipResponse.PendingExpiry)
+	// s.Require().Equal(s.UserA.FormattedAddress(), ownershipResponse.Owner)
+	// s.Require().Nil(ownershipResponse.PendingOwner)
+	// s.Require().Nil(ownershipResponse.PendingExpiry)
 }
 
 func TestWithContractTestSuite(t *testing.T) {
