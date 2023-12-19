@@ -16,7 +16,7 @@ var chainSpecs = []*interchaintest.ChainSpec{
 			Images: []ibc.DockerImage{
 				{
 					Repository: "cosmwasm/wasmd", // FOR LOCAL IMAGE USE: Docker Image Name
-					Version:    "v0.41.0",        // FOR LOCAL IMAGE USE: Docker Image Tag
+					Version:    "v0.45.0",        // FOR LOCAL IMAGE USE: Docker Image Tag
 				},
 			},
 			Bin:           "wasmd",
@@ -25,10 +25,9 @@ var chainSpecs = []*interchaintest.ChainSpec{
 			GasPrices:     "0.00stake",
 			GasAdjustment: 1.3,
 			// cannot run wasmd commands without wasm encoding
-			EncodingConfig:         wasm.WasmEncoding(),
-			TrustingPeriod:         "508h",
-			NoHostMount:            false,
-			UsingNewGenesisCommand: true,
+			EncodingConfig: wasm.WasmEncoding(),
+			TrustingPeriod: "508h",
+			NoHostMount:    false,
 		},
 	},
 	// -- CANINED --
@@ -44,14 +43,13 @@ var chainSpecs = []*interchaintest.ChainSpec{
 					Version: "latest", // FOR LOCAL IMAGE USE: Docker Image Tag
 				},
 			},
-			Bin:                    "canined",
-			Bech32Prefix:           "jkl",
-			Denom:                  "jkl", // do we have to use ujkl or is jkl ok?
-			GasPrices:              "0.00ujkl",
-			GasAdjustment:          1.3,
-			TrustingPeriod:         "508h",
-			NoHostMount:            false,
-			UsingNewGenesisCommand: false,
+			Bin:            "canined",
+			Bech32Prefix:   "jkl",
+			Denom:          "jkl", // do we have to use ujkl or is jkl ok?
+			GasPrices:      "0.00ujkl",
+			GasAdjustment:  1.3,
+			TrustingPeriod: "508h",
+			NoHostMount:    false,
 		},
 	},
 }
