@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"testing"
+	"time"
 
 	mysuite "github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
@@ -85,11 +86,12 @@ func (s *ContractTestSuite) TestIcaContractChannelHandshake() {
 		caninedChannels, err := s.Relayer.GetChannels(ctx, s.ExecRep, canined.Config().ChainID)
 		s.Require().NoError(err)
 
+		// It looks like canined takes some time to open the channel, let's check for its state now and then check again at the end
 		caninedChannel := caninedChannels[0]
 		s.T().Logf("canined channel state: %s", toJSONString(caninedChannel.State))
 		s.Require().Equal(icatypes.HostPortID, caninedChannel.PortID)
 		s.Require().Equal(s.Contract.Port(), caninedChannel.Counterparty.PortID)
-		s.Require().Equal(channeltypes.OPEN.String(), caninedChannel.State)
+		s.Require().Equal(channeltypes.TRYOPEN.String(), caninedChannel.State)
 
 		// Check contract's channel state
 		contractChannelState, err := s.Contract.QueryChannelState(ctx)
@@ -112,6 +114,22 @@ func (s *ContractTestSuite) TestIcaContractChannelHandshake() {
 
 		s.Require().Equal(wasmdChannel.ChannelID, contractState.IcaInfo.ChannelID)
 		s.Require().Equal(false, contractState.AllowChannelOpenInit)
+
+		// Give canined some time to finish the handshake
+
+		time.Sleep(time.Duration(30) * time.Second)
+
+		// It should be open by now
+
+		updatedCaninedChannels, err := s.Relayer.GetChannels(ctx, s.ExecRep, canined.Config().ChainID)
+		s.Require().NoError(err)
+
+		updatedCaninedChannel := updatedCaninedChannels[0]
+		s.T().Logf("canined channel state: %s", toJSONString(updatedCaninedChannel.State))
+		s.Require().Equal(icatypes.HostPortID, updatedCaninedChannel.PortID)
+		s.Require().Equal(s.Contract.Port(), updatedCaninedChannel.Counterparty.PortID)
+		s.Require().Equal(channeltypes.OPEN.String(), updatedCaninedChannel.State)
+
 	})
 }
 
