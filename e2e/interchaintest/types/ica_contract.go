@@ -3,6 +3,7 @@ package types
 import (
 	"context"
 
+	"github.com/cosmos/gogoproto/proto"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 )
 
@@ -109,4 +110,15 @@ func (c *IcaContract) QueryOwnership(ctx context.Context) (*OwnershipQueryRespon
 	}
 
 	return &ownershipResp, nil
+}
+
+// ExecCustomMessages invokes the contract's `CustomIcaMessages` message as the caller
+func (c *IcaContract) ExecCustomIcaMessages(
+	ctx context.Context, callerKeyName string,
+	messages []proto.Message, encoding string,
+	memo *string, timeout *uint64,
+) error {
+	customMsg := newSendCustomIcaMessagesMsg(c.chain.Config().EncodingConfig.Codec, messages, encoding, memo, timeout)
+	err := c.Execute(ctx, callerKeyName, customMsg)
+	return err
 }
