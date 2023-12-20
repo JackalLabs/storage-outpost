@@ -68,7 +68,7 @@ func (s *ContractTestSuite) TestIcaContractChannelHandshake() {
 
 	// This starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
 	// sets up the contract and does the channel handshake for the contract test suite.
-	s.SetupContractTestSuite(ctx, icatypes.EncodingProtobuf)
+	s.SetupContractTestSuite(ctx, icatypes.EncodingProtobuf) // NOTE: canined's ibc-go is outdated and does not support proto3json
 	wasmd, canined := s.ChainA, s.ChainB
 
 	s.Run("TestChannelHandshakeSuccess", func() {
