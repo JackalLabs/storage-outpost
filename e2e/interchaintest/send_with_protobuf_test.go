@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 
 	sdkmath "cosmossdk.io/math"
+	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -21,6 +23,8 @@ import (
 
 func (s *ContractTestSuite) TestIcaContractExecutionTestWithProtobuf() {
 	ctx := context.Background()
+
+	logger.InitLogger()
 
 	encoding := icatypes.EncodingProtobuf
 	// This starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
@@ -58,8 +62,10 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithProtobuf() {
 			Amount:     sdk.NewCoins(sdk.NewCoin(canined.Config().Denom, sdkmath.NewInt(10_000_000))),
 		}
 
-		intialBalance, err := canined.GetBalance(ctx, s.IcaAddress, canined.Config().Denom)
+		initialBalance, err := canined.GetBalance(ctx, s.IcaAddress, canined.Config().Denom)
 		s.Require().NoError(err)
+
+		logger.LogInfo("initial balance is:", initialBalance)
 
 		// Execute the contract:
 		err = s.Contract.ExecCustomIcaMessages(ctx, wasmdUser.KeyName(), []proto.Message{proposalMsg, depositMsg}, encoding, nil, nil)
@@ -67,7 +73,28 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithProtobuf() {
 
 		err = testutil.WaitForBlocks(ctx, 5, wasmd, canined)
 		s.Require().NoError(err)
-		fmt.Println(intialBalance)
+
+		// Check if contract callbacks were executed:
+		callbackCounter, err := s.Contract.QueryCallbackCounter(ctx)
+		s.Require().NoError(err)
+
+		s.Require().Equal(uint64(1), callbackCounter.Success)
+		s.Require().Equal(uint64(0), callbackCounter.Error)
+
+		// Check if the proposal was created:
+		proposal, err := canined.QueryProposal(ctx, "1")
+		s.Require().NoError(err)
+
+		prop, err := json.MarshalIndent(proposal, "", "  ")
+
+		logger.LogInfo("proposal is")
+
+		if err != nil {
+			// handle error
+			logger.LogError("failed to marshal proposal:", err)
+		} else {
+			logger.LogInfo(string(prop))
+		}
 
 	},
 	)
