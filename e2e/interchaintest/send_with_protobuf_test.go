@@ -89,7 +89,7 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithProtobuf() {
 		// s.Require().Equal(uint64(0), callbackCounter.Error)
 
 		// Check if the proposal was created:
-		proposal, err := canined.QueryProposal(ctx, "1")
+		proposal, err := canined.QueryProposal(ctx, "0")
 		s.Require().NoError(err)
 
 		prop, err := json.MarshalIndent(proposal, "", "  ")
