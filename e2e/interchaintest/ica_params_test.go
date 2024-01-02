@@ -47,5 +47,23 @@ func (s *ContractTestSuite) TestIcaParams() {
 
 	},
 	)
+	/*
+		   	canined.QueryParam returns this:
 
+		   host params are
+
+		   	INFO: 2023/12/21 13:21:13 {
+		   	  "subspace": "icahost",
+		   	  "key": "allow_messages",
+		   	  "value": ""
+		   	}
+
+		   but interestingly
+
+		   'canined q ica host params' returns this:
+
+		   allow_messages:
+			- '*'
+		host_enabled: true
+	*/
 }

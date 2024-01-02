@@ -9,7 +9,6 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"github.com/cosmos/gogoproto/proto"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
-	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 
 	sdkmath "cosmossdk.io/math"
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
@@ -30,7 +29,7 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithProtobuf() {
 	// This starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
 	// sets up the contract and does the channel handshake for the contract test suite.
 	s.SetupContractTestSuite(ctx, encoding)
-	wasmd, canined := s.ChainA, s.ChainB
+	_, canined := s.ChainA, s.ChainB
 	wasmdUser := s.UserA
 
 	// Fund the ICA address:
@@ -76,22 +75,19 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithProtobuf() {
 		// It looks like we are querying far too early and the relayer doesn't have enough time to listen for events and tranfer packets
 		// Let's wait for block height to increase a lot and some time to pass before querying the call back counter and proposal
 
-		err = testutil.WaitForBlocks(ctx, 50, wasmd, canined)
-		s.Require().NoError(err)
-
-		time.Sleep(time.Duration(120) * time.Second)
-
-		// Check if contract callbacks were executed:
-		// callbackCounter, err := s.Contract.QueryCallbackCounter(ctx)
+		// err = testutil.WaitForBlocks(ctx, 10, wasmd, canined)
 		// s.Require().NoError(err)
 
-		// s.Require().Equal(uint64(1), callbackCounter.Success)
-		// s.Require().Equal(uint64(0), callbackCounter.Error)
-
-		// Check if the proposal was created:
-		proposal, err := canined.QueryProposal(ctx, "0")
+		//Check if contract callbacks were executed:
+		callbackCounter, err := s.Contract.QueryCallbackCounter(ctx)
 		s.Require().NoError(err)
 
+		s.Require().Equal(uint64(1), callbackCounter.Success)
+		s.Require().Equal(uint64(0), callbackCounter.Error)
+
+		// Check if the proposal was created:
+		proposal, err := canined.QueryProposal(ctx, "1")
+		s.Require().NoError(err)
 		prop, err := json.MarshalIndent(proposal, "", "  ")
 
 		logger.LogInfo("proposal is")
@@ -103,7 +99,20 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithProtobuf() {
 			logger.LogInfo(string(prop))
 		}
 
+		// Check if the proposal was created:
+		proposal1, err7 := canined.QueryProposal(ctx, "1")
+		s.Require().NoError(err7)
+		prop1, err := json.MarshalIndent(proposal1, "", "  ")
+
+		logger.LogInfo("proposal is")
+
+		if err != nil {
+			// handle error
+			logger.LogError("failed to marshal proposal:", err)
+		} else {
+			logger.LogInfo(string(prop1))
+		}
+
 	},
 	)
-
 }
