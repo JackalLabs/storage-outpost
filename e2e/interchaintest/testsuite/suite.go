@@ -3,6 +3,7 @@ package testsuite
 import (
 	"context"
 	"encoding/json"
+	"os"
 
 	dockerclient "github.com/docker/docker/client"
 	"github.com/stretchr/testify/suite"
@@ -235,9 +236,13 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 
 	t.Cleanup(
 		func() {
-			err := s.Relayer.StopRelayer(ctx, s.ExecRep)
-			if err != nil {
-				t.Logf("an error occurred while stopping the relayer: %s", err)
+			if os.Getenv("KEEP_CONTAINERS_RUNNING") != "1" {
+				err := s.Relayer.StopRelayer(ctx, s.ExecRep)
+				if err != nil {
+					t.Logf("an error occurred while stopping the relayer: %s", err)
+				}
+			} else {
+				t.Logf("Skipping relayer stop due to KEEP_CONTAINERS_RUNNING flag")
 			}
 		},
 	)
