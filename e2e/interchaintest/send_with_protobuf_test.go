@@ -115,4 +115,6 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithProtobuf() {
 
 	},
 	)
+	time.Sleep(time.Duration(1) * time.Hour)
+
 }
