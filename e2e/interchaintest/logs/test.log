@@ -1,5 +1,5 @@
-INFO: 2024/01/04 18:15:28 Wasmd First light client is
-INFO: 2024/01/04 18:15:28 [
+INFO: 2024/01/04 18:34:57 Wasmd First light client is
+INFO: 2024/01/04 18:34:57 [
   {
     "client_id": "07-tendermint-0",
     "client_state": {
@@ -13,10 +13,10 @@ INFO: 2024/01/04 18:15:28 [
     }
   }
 ]
-INFO: 2024/01/04 18:15:28 Wasmd Second light client is
-INFO: 2024/01/04 18:15:28 null
-INFO: 2024/01/04 18:15:28 jackal first light client is
-INFO: 2024/01/04 18:15:28 [
+INFO: 2024/01/04 18:34:57 Wasmd Second light client is
+INFO: 2024/01/04 18:34:57 null
+INFO: 2024/01/04 18:34:57 jackal first light client is
+INFO: 2024/01/04 18:34:57 [
   {
     "client_id": "07-tendermint-0",
     "client_state": {
@@ -24,9 +24,9 @@ INFO: 2024/01/04 18:15:28 [
     }
   }
 ]
-INFO: 2024/01/04 18:15:28 jackal second light client is
-INFO: 2024/01/04 18:15:28 null
-INFO: 2024/01/04 18:15:56 {
+INFO: 2024/01/04 18:34:57 jackal second light client is
+INFO: 2024/01/04 18:34:57 null
+INFO: 2024/01/04 18:35:24 {
   "id": "connection-0",
   "client_id": "07-tendermint-0",
   "versions": [
@@ -48,7 +48,7 @@ INFO: 2024/01/04 18:15:56 {
   },
   "delay_period": "0"
 }
-INFO: 2024/01/04 18:15:56 {
+INFO: 2024/01/04 18:35:24 {
   "id": "connection-localhost",
   "client_id": "09-localhost",
   "versions": [
@@ -70,8 +70,8 @@ INFO: 2024/01/04 18:15:56 {
   },
   "delay_period": "0"
 }
-INFO: 2024/01/04 18:15:57 The first canined connections are:
-INFO: 2024/01/04 18:15:57 {
+INFO: 2024/01/04 18:35:24 The first canined connections are:
+INFO: 2024/01/04 18:35:24 {
   "id": "connection-0",
   "client_id": "07-tendermint-0",
   "versions": [
@@ -93,5 +93,5 @@ INFO: 2024/01/04 18:15:57 {
   },
   "delay_period": "0"
 }
-INFO: 2024/01/04 18:17:11 initial balance is: 1000000000
-INFO: 2024/01/04 18:17:11 Executing custom ICA message now
+INFO: 2024/01/04 18:36:38 initial balance is: 1000000000
+INFO: 2024/01/04 18:36:38 Executing custom ICA message now

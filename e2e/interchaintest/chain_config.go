@@ -40,7 +40,9 @@ var chainSpecs = []*interchaintest.ChainSpec{
 				{
 					Repository: "biphan4/canine-chain", // FOR LOCAL IMAGE USE: Docker Image Name
 					// issue: we tried both the github link and the module declaration but both cause the image not to be pulled
-					Version: "0.0.4", // FOR LOCAL IMAGE USE: Docker Image Tag
+					Version: "0.0.6", // FOR LOCAL IMAGE USE: Docker Image Tag
+					// NOTE: image v0.0.6 was built without using docker caching
+					// Hopefully, the dev net script will now properly set allow_messages for ica host
 				},
 			},
 			Bin:            "canined",
