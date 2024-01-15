@@ -1,6 +1,9 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+
 	interchaintest "github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos/wasm"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
@@ -65,7 +68,44 @@ var chainSpecs = []*interchaintest.ChainSpec{
 			GasAdjustment:  1.3,
 			TrustingPeriod: "508h",
 			NoHostMount:    false,
-			// ModifyGenesis:  ,
+			ModifyGenesis:  modifyGenesisAtPath(genesisAllowICH, "app_state"),
 		},
 	},
+}
+
+func modifyGenesisAtPath(insertedBlock map[string]interface{}, key string) func(ibc.ChainConfig, []byte) ([]byte, error) {
+	return func(chainConfig ibc.ChainConfig, genbz []byte) ([]byte, error) {
+		g := make(map[string]interface{})
+		if err := json.Unmarshal(genbz, &g); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal genesis file: %w", err)
+		}
+
+		//Get the section of the genesis file under the given key (e.g. "app_state")
+		genesisBlockI, ok := g[key] //genesis block interface???
+		if !ok {
+			return nil, fmt.Errorf("genesis json does not have top level key: %s", key)
+		}
+
+		blockBytes, mErr := json.Marshal(genesisBlockI)
+		if mErr != nil {
+			return nil, fmt.Errorf("genesis json marshal error for block with key: %s", key)
+		}
+
+		genesisBlock := make(map[string]interface{})
+		mErr = json.Unmarshal(blockBytes, &genesisBlock)
+		if mErr != nil {
+			return nil, fmt.Errorf("genesis json unmarshal error for block with key: %s", key)
+		}
+
+		for k, v := range insertedBlock {
+			genesisBlock[k] = v
+		}
+
+		g[key] = genesisBlock
+		out, err := json.Marshal(g)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal genesis bytes to json: %w", err)
+		}
+		return out, nil
+	}
 }
