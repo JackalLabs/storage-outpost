@@ -6,6 +6,18 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
 )
 
+var genesisAllowICH = map[string]interface{}{
+	"host_genesis_state": map[string]interface{}{
+		"active_channels":     []interface{}{},
+		"interchain_accounts": []interface{}{},
+		"port":                "icahost",
+		"params": map[string]interface{}{
+			"host_enabled":   true,
+			"allow_messages": []interface{}{"*"},
+		},
+	},
+}
+
 var chainSpecs = []*interchaintest.ChainSpec{
 	// -- WASMD --
 	{
@@ -30,6 +42,7 @@ var chainSpecs = []*interchaintest.ChainSpec{
 			NoHostMount:    false,
 		},
 	},
+
 	// -- CANINED --
 	{
 		ChainConfig: ibc.ChainConfig{
@@ -52,6 +65,7 @@ var chainSpecs = []*interchaintest.ChainSpec{
 			GasAdjustment:  1.3,
 			TrustingPeriod: "508h",
 			NoHostMount:    false,
+			// ModifyGenesis:  ,
 		},
 	},
 }
