@@ -13,11 +13,11 @@ var genesisAllowICH = map[string]interface{}{
 	"host_genesis_state": map[string]interface{}{
 		"active_channels":     []interface{}{},
 		"interchain_accounts": []interface{}{},
-		"port":                "icahost",
 		"params": map[string]interface{}{
-			"host_enabled":   true,
 			"allow_messages": []interface{}{"*"},
+			"host_enabled":   true,
 		},
+		"port": "icahost",
 	},
 }
 
@@ -81,27 +81,18 @@ func modifyGenesisAtPath(insertedBlock map[string]interface{}, key string) func(
 		}
 
 		//Get the section of the genesis file under the given key (e.g. "app_state")
-		genesisBlockI, ok := g[key] //genesis block interface???
+		app_state, ok := g[key].(map[string]interface{})
 		if !ok {
 			return nil, fmt.Errorf("genesis json does not have top level key: %s", key)
 		}
 
-		blockBytes, mErr := json.Marshal(genesisBlockI)
-		if mErr != nil {
-			return nil, fmt.Errorf("genesis json marshal error for block with key: %s", key)
-		}
-
-		genesisBlock := make(map[string]interface{})
-		mErr = json.Unmarshal(blockBytes, &genesisBlock)
-		if mErr != nil {
-			return nil, fmt.Errorf("genesis json unmarshal error for block with key: %s", key)
-		}
+		// Replace or add each entry from the insertedBlock into the appState
 
 		for k, v := range insertedBlock {
-			genesisBlock[k] = v
+			app_state[k] = v
 		}
 
-		g[key] = genesisBlock
+		g[key] = app_state
 		out, err := json.Marshal(g)
 		if err != nil {
 			return nil, fmt.Errorf("failed to marshal genesis bytes to json: %w", err)
