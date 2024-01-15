@@ -10,14 +10,27 @@ import (
 )
 
 var genesisAllowICH = map[string]interface{}{
-	"host_genesis_state": map[string]interface{}{
-		"active_channels":     []interface{}{},
-		"interchain_accounts": []interface{}{},
-		"params": map[string]interface{}{
-			"allow_messages": []interface{}{"*"},
-			"host_enabled":   true,
+
+	"interchainaccounts": map[string]interface{}{
+
+		"controller_genesis_state": map[string]interface{}{
+			"active_channels":     []interface{}{},
+			"interchain_accounts": []interface{}{},
+			"params": map[string]interface{}{
+				"controller_enabled": true,
+			},
+			"ports": []interface{}{},
 		},
-		"port": "icahost",
+
+		"host_genesis_state": map[string]interface{}{
+			"active_channels":     []interface{}{},
+			"interchain_accounts": []interface{}{},
+			"params": map[string]interface{}{
+				"allow_messages": []interface{}{"*"},
+				"host_enabled":   true,
+			},
+			"port": "icahost",
+		},
 	},
 }
 
