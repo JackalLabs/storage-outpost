@@ -69,8 +69,8 @@ var chainSpecs = []*interchaintest.ChainSpec{
 				{
 					Repository: "biphan4/canine-chain", // FOR LOCAL IMAGE USE: Docker Image Name
 					// issue: we tried both the github link and the module declaration but both cause the image not to be pulled
-					Version: "0.0.9", // FOR LOCAL IMAGE USE: Docker Image Tag
-					// NOTE: 0.0.9 has better logging for the ibc packet
+					Version: "0.0.10", // FOR LOCAL IMAGE USE: Docker Image Tag
+					// NOTE: 0.0.10 has better logging for the ibc packet
 				},
 			},
 			Bin:            "canined",

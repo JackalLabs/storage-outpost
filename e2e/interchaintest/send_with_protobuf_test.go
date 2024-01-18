@@ -43,7 +43,7 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithProtobuf() {
 		// Let's create a governance proposal on simd and deposit some funds to it.
 		testProposal := govtypes.TextProposal{ // WARNING: This is from cosmos-sdk v0.47. If canined rejects it, could be a versioning/protobuf type issue
 			Title:       "IBC Gov Proposal",
-			Description: "tokens coming from the outpost!",
+			Description: "Hey it's Bi sending tokens from the outpost",
 		}
 		protoAny, err := codectypes.NewAnyWithValue(&testProposal)
 		s.Require().NoError(err)
