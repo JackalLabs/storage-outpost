@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	interchaintest "github.com/strangelove-ventures/interchaintest/v7"
+	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos/wasm"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
 
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
@@ -45,7 +46,7 @@ var genesisAllowICH = map[string]interface{}{
 	},
 }
 
-var encCfg = moduletestutil.MakeTestEncodingConfig(
+var jackalEncoding = moduletestutil.MakeTestEncodingConfig(
 	auth.AppModuleBasic{},
 	bank.AppModuleBasic{},
 	capability.AppModuleBasic{},
@@ -76,7 +77,7 @@ var chainSpecs = []*interchaintest.ChainSpec{
 			GasPrices:     "0.00stake",
 			GasAdjustment: 1.3,
 			// cannot run wasmd commands without wasm encoding
-			EncodingConfig: &encCfg,
+			EncodingConfig: wasm.WasmEncoding(),
 			TrustingPeriod: "508h",
 			NoHostMount:    false,
 		},
@@ -100,6 +101,7 @@ var chainSpecs = []*interchaintest.ChainSpec{
 			Denom:          "jkl", // do we have to use ujkl or is jkl ok?
 			GasPrices:      "0.00ujkl",
 			GasAdjustment:  1.3,
+			EncodingConfig: &jackalEncoding,
 			TrustingPeriod: "508h",
 			NoHostMount:    false,
 			ModifyGenesis:  modifyGenesisAtPath(genesisAllowICH, "app_state"),
