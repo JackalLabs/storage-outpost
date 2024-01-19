@@ -5,8 +5,19 @@ import (
 	"fmt"
 
 	interchaintest "github.com/strangelove-ventures/interchaintest/v7"
-	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos/wasm"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
+
+	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
+	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/x/capability"
+	"github.com/cosmos/cosmos-sdk/x/consensus"
+	"github.com/cosmos/cosmos-sdk/x/mint"
+	"github.com/cosmos/cosmos-sdk/x/params"
+	"github.com/cosmos/cosmos-sdk/x/slashing"
+	"github.com/cosmos/cosmos-sdk/x/staking"
+
+	"github.com/jackalLabs/canine-chain/v3/x/filetree"
 )
 
 var genesisAllowICH = map[string]interface{}{
@@ -34,6 +45,18 @@ var genesisAllowICH = map[string]interface{}{
 	},
 }
 
+var encCfg = moduletestutil.MakeTestEncodingConfig(
+	auth.AppModuleBasic{},
+	bank.AppModuleBasic{},
+	capability.AppModuleBasic{},
+	staking.AppModuleBasic{},
+	mint.AppModuleBasic{},
+	params.AppModuleBasic{},
+	slashing.AppModuleBasic{},
+	consensus.AppModuleBasic{},
+	filetree.AppModuleBasic{},
+)
+
 var chainSpecs = []*interchaintest.ChainSpec{
 	// -- WASMD --
 	{
@@ -53,7 +76,7 @@ var chainSpecs = []*interchaintest.ChainSpec{
 			GasPrices:     "0.00stake",
 			GasAdjustment: 1.3,
 			// cannot run wasmd commands without wasm encoding
-			EncodingConfig: wasm.WasmEncoding(),
+			EncodingConfig: &encCfg,
 			TrustingPeriod: "508h",
 			NoHostMount:    false,
 		},

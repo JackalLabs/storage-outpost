@@ -5,18 +5,6 @@ import (
 
 	"github.com/cosmos/gogoproto/proto"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
-
-	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/cosmos/cosmos-sdk/x/capability"
-	"github.com/cosmos/cosmos-sdk/x/consensus"
-	"github.com/cosmos/cosmos-sdk/x/mint"
-	"github.com/cosmos/cosmos-sdk/x/params"
-	"github.com/cosmos/cosmos-sdk/x/slashing"
-	"github.com/cosmos/cosmos-sdk/x/staking"
-
-	"github.com/jackalLabs/canine-chain/v3/x/filetree"
 )
 
 type IcaContract struct {
@@ -130,19 +118,7 @@ func (c *IcaContract) ExecCustomIcaMessages(
 	messages []proto.Message, encoding string,
 	memo *string, timeout *uint64,
 ) error {
-
-	encCfg := moduletestutil.MakeTestEncodingConfig(
-		auth.AppModuleBasic{},
-		bank.AppModuleBasic{},
-		capability.AppModuleBasic{},
-		staking.AppModuleBasic{},
-		mint.AppModuleBasic{},
-		params.AppModuleBasic{},
-		slashing.AppModuleBasic{},
-		consensus.AppModuleBasic{},
-		filetree.AppModuleBasic{},
-	)
-	customMsg := newSendCustomIcaMessagesMsg(encCfg.Codec, messages, encoding, memo, timeout)
+	customMsg := newSendCustomIcaMessagesMsg(c.chain.Config().EncodingConfig.Codec, messages, encoding, memo, timeout)
 	err := c.Execute(ctx, callerKeyName, customMsg)
 	return err
 }
