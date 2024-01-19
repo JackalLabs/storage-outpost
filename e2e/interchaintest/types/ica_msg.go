@@ -10,6 +10,18 @@ import (
 	codec "github.com/cosmos/cosmos-sdk/codec"
 
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
+
+	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
+	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/x/capability"
+	"github.com/cosmos/cosmos-sdk/x/consensus"
+	"github.com/cosmos/cosmos-sdk/x/mint"
+	"github.com/cosmos/cosmos-sdk/x/params"
+	"github.com/cosmos/cosmos-sdk/x/slashing"
+	"github.com/cosmos/cosmos-sdk/x/staking"
+
+	"github.com/jackalLabs/canine-chain/v3/x/filetree"
 )
 
 // newInstantiateMsg creates a new InstantiateMsg.
@@ -115,7 +127,19 @@ func newSendCustomIcaMessagesMsg(cdc codec.BinaryCodec, msgs []proto.Message, en
 		SendCustomIcaMessagesMsg SendCustomIcaMessagesMsg `json:"send_custom_ica_messages"`
 	}
 
-	bz, err := icatypes.SerializeCosmosTxWithEncoding(cdc, msgs, encoding)
+	encCfg := moduletestutil.MakeTestEncodingConfig(
+		auth.AppModuleBasic{},
+		bank.AppModuleBasic{},
+		capability.AppModuleBasic{},
+		staking.AppModuleBasic{},
+		mint.AppModuleBasic{},
+		params.AppModuleBasic{},
+		slashing.AppModuleBasic{},
+		consensus.AppModuleBasic{},
+		filetree.AppModuleBasic{},
+	)
+
+	bz, err := icatypes.SerializeCosmosTxWithEncoding(encCfg.Codec, msgs, encoding)
 	if err != nil {
 		panic(err)
 	}
