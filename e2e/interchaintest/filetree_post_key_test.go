@@ -10,7 +10,7 @@ import (
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 
-	filetreetypes "github.com/jackalLabs/canine-chain/v3/x/filetree/types"
+	filetreetypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 )
 
 // WARNING: strangelove's test package builds chains running ibc-go/v7
@@ -43,6 +43,9 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 			// Not sure why this happens nor where it's happening in the call stack
 			// Perhaps because the wasmdUser address is not a jkl bech32 address so this function was called
 			// to create an interim correct Creator address
+
+			// Update: The above error is likely arising from the fact that canined uses cosmos-sdk 0.45 but
+			// This test suite uses cosmos-sdk 0.47
 			Creator: wasmdUser.KeyName(), // This will soon be the contract address
 			Key:     "Hey it's Bi from the outpost on another chain. We reached filetree!!! <3",
 		}
