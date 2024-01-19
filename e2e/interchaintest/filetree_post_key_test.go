@@ -10,7 +10,7 @@ import (
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 
-	filetreetypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
+	filetreetypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/filetreetypes"
 )
 
 // WARNING: strangelove's test package builds chains running ibc-go/v7
