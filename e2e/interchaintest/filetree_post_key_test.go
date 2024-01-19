@@ -39,7 +39,11 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 
 	s.Run(fmt.Sprintf("TestSendCustomIcaMesssagesSuccess-%s", encoding), func() {
 		filetreeMsg := filetreetypes.MsgPostkey{
-			Creator: wasmdUser.FormattedAddress(), // This will soon be the contract address
+			// NOTE: filetree is calling a testing helpers function, "MakePrivateKey"
+			// Not sure why this happens nor where it's happening in the call stack
+			// Perhaps because the wasmdUser address is not a jkl bech32 address so this function was called
+			// to create an interim correct Creator address
+			Creator: wasmdUser.KeyName(), // This will soon be the contract address
 			Key:     "Hey it's Bi from the outpost on another chain. We reached filetree!!! <3",
 		}
 
