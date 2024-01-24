@@ -17,11 +17,6 @@ require (
 )
 
 require (
-	github.com/gogo/protobuf v1.3.3
-	google.golang.org/grpc v1.59.0
-)
-
-require (
 	cloud.google.com/go v0.110.7 // indirect
 	cloud.google.com/go/compute v1.23.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
@@ -91,6 +86,7 @@ require (
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/dvsekhvalnov/jose2go v1.5.0 // indirect
+	github.com/ecies/go/v2 v2.0.6 // indirect
 	github.com/ethereum/go-ethereum v1.11.5 // indirect
 	github.com/felixge/httpsnoop v1.0.3 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
@@ -99,10 +95,9 @@ require (
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
-	github.com/gobwas/httphead v0.1.0 // indirect
-	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2 // indirect
 	github.com/gogo/googleapis v1.4.1 // indirect
+	github.com/gogo/protobuf v1.3.3 // indirect
 	github.com/golang/glog v1.1.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/mock v1.6.0 // indirect
@@ -222,6 +217,7 @@ require (
 	google.golang.org/genproto v0.0.0-20230822172742-b8732ec3820d // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20230822172742-b8732ec3820d // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230913181813-007df8e322eb // indirect
+	google.golang.org/grpc v1.59.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
@@ -256,7 +252,3 @@ replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alp
 
 // This is using the version of ibc-go that supports json encoding of ica txs
 replace github.com/cosmos/ibc-go/v7 => github.com/cosmos/ibc-go/v7 v7.0.0-20230709121739-15b0fe103b52
-
-replace github.com/cosmos/cosmos-sdk/simapp => cosmossdk.io/simapp v0.0.0-20240118083230-d4614a144103
-
-replace github.com/jackalLabs/canine-chain/v3 => github.com/jackalLabs/canine-chain/v3 v3.0.1-0.20240119195405-a6532ac5f2c2

@@ -7,18 +7,6 @@ import (
 	interchaintest "github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos/wasm"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
-
-	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/cosmos/cosmos-sdk/x/capability"
-	"github.com/cosmos/cosmos-sdk/x/consensus"
-	"github.com/cosmos/cosmos-sdk/x/mint"
-	"github.com/cosmos/cosmos-sdk/x/params"
-	"github.com/cosmos/cosmos-sdk/x/slashing"
-	"github.com/cosmos/cosmos-sdk/x/staking"
-
-	"github.com/jackalLabs/canine-chain/v3/x/filetree"
 )
 
 var genesisAllowICH = map[string]interface{}{
@@ -45,18 +33,6 @@ var genesisAllowICH = map[string]interface{}{
 		},
 	},
 }
-
-var jackalEncoding = moduletestutil.MakeTestEncodingConfig(
-	auth.AppModuleBasic{},
-	bank.AppModuleBasic{},
-	capability.AppModuleBasic{},
-	staking.AppModuleBasic{},
-	mint.AppModuleBasic{},
-	params.AppModuleBasic{},
-	slashing.AppModuleBasic{},
-	consensus.AppModuleBasic{},
-	filetree.AppModuleBasic{},
-)
 
 var chainSpecs = []*interchaintest.ChainSpec{
 	// -- WASMD --
@@ -93,7 +69,7 @@ var chainSpecs = []*interchaintest.ChainSpec{
 				{
 					Repository: "biphan4/canine-chain", // FOR LOCAL IMAGE USE: Docker Image Name
 					// issue: we tried both the github link and the module declaration but both cause the image not to be pulled
-					Version: "0.0.13", // FOR LOCAL IMAGE USE: Docker Image Tag
+					Version: "0.0.12", // FOR LOCAL IMAGE USE: Docker Image Tag
 				},
 			},
 			Bin:            "canined",
@@ -101,7 +77,6 @@ var chainSpecs = []*interchaintest.ChainSpec{
 			Denom:          "jkl", // do we have to use ujkl or is jkl ok?
 			GasPrices:      "0.00ujkl",
 			GasAdjustment:  1.3,
-			EncodingConfig: &jackalEncoding,
 			TrustingPeriod: "508h",
 			NoHostMount:    false,
 			ModifyGenesis:  modifyGenesisAtPath(genesisAllowICH, "app_state"),
