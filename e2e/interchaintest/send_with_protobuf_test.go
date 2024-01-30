@@ -31,6 +31,8 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithProtobuf() {
 	s.SetupContractTestSuite(ctx, encoding)
 	_, canined := s.ChainA, s.ChainB
 	wasmdUser := s.UserA
+	caninedUser := s.UserB
+	fmt.Println(caninedUser)
 
 	// Fund the ICA address:
 	s.FundAddressChainB(ctx, s.IcaAddress)
@@ -38,9 +40,9 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithProtobuf() {
 	// Give canined some time to complete the handshake
 	time.Sleep(time.Duration(30) * time.Second)
 
-	s.Run(fmt.Sprintf("TestSendCustomIcaMesssagesSuccess-%s", encoding), func() {
+	s.Run(fmt.Sprintf("TestStargate-%s", encoding), func() {
 		// Send custom ICA messages through the contract:
-		// Let's create a governance proposal on simd and deposit some funds to it.
+		// Let's create a governance proposal on canined and deposit some funds to it.
 		testProposal := govtypes.TextProposal{ // WARNING: This is from cosmos-sdk v0.47. If canined rejects it, could be a versioning/protobuf type issue
 			Title:       "IBC Gov Proposal",
 			Description: "Hey it's Bi sending tokens from the outpost",
@@ -68,8 +70,9 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithProtobuf() {
 
 		logger.LogInfo("Executing custom ICA message now")
 		fmt.Println("Executing custom ICA message now")
+
 		// Execute the contract:
-		err = s.Contract.ExecCustomIcaMessages(ctx, wasmdUser.KeyName(), []proto.Message{proposalMsg, depositMsg}, encoding, nil, nil)
+		err = s.Contract.ExecSendStargateMsgs(ctx, wasmdUser.KeyName(), []proto.Message{proposalMsg, depositMsg}, nil, nil)
 		s.Require().NoError(err)
 
 		// It looks like we are querying far too early and the relayer doesn't have enough time to listen for events and tranfer packets

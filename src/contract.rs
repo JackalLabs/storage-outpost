@@ -1,5 +1,6 @@
 //! This module handles the execution logic of the contract.
 
+use cosmos_sdk_proto::tendermint::p2p::packet;
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
 
@@ -70,13 +71,17 @@ pub fn execute(
             packet_memo,
             timeout_seconds,
         ),
-        ExecuteMsg::SendPredefinedAction { to_address } => {
-            execute::send_predefined_action(deps, env, info, to_address)
-        }
         // If we send with protobuf encoding specified, perhaps the ica info need not be set beforehand?
         ExecuteMsg::SendCoinsProto { recipient_address } => {
             execute::send_coins_proto(deps, env, info, recipient_address)
-        }
+        },
+        ExecuteMsg::SendCosmosMsgs {
+            messages,
+            packet_memo,
+            timeout_seconds,
+        } => {
+            execute::send_cosmos_msgs(deps, env, info, messages, packet_memo, timeout_seconds)
+        },
     }
 }
 
@@ -104,11 +109,11 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> Result<Response, C
 }
 
 mod execute {
-    use cosmwasm_std::coins;
+    use cosmwasm_std::{coins, CosmosMsg, StdResult};
 
     use crate::{
         ibc::types::{metadata::TxEncoding, packet::IcaPacketData},
-        types::{cosmos_msg::ExampleCosmosMessages, msg::options::ChannelOpenInitOptions},
+        types::msg::options::ChannelOpenInitOptions,
     };
 
     use cosmos_sdk_proto::cosmos::{bank::v1beta1::MsgSend, base::v1beta1::Coin};
@@ -159,47 +164,35 @@ mod execute {
         Ok(Response::default().add_message(send_packet_msg))
     }
 
-    /// Sends a predefined action to the ICA host.
-    pub fn send_predefined_action(
+    /// Sends an array of [`CosmosMsg`] to the ICA host.
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn send_cosmos_msgs(
         deps: DepsMut,
         env: Env,
         info: MessageInfo,
-        to_address: String,
+        messages: Vec<CosmosMsg>,
+        packet_memo: Option<String>,
+        timeout_seconds: Option<u64>,
     ) -> Result<Response, ContractError> {
+        // TODO: We can assert ownership of the contract later, but does this really make a difference if the
+        // ica module ensures the controller 'owns' or 'is paired with' the host?
+        // Ownership of the root Files{} object for filetree is also checked in canine-chain
+
+        // cw_ownable::assert_owner(deps.storage, &info.sender)?;
         let contract_state = STATE.load(deps.storage)?;
-        contract_state.verify_admin(info.sender)?;
         let ica_info = contract_state.get_ica_info()?;
 
-        let ica_packet = match ica_info.encoding {
-            TxEncoding::Protobuf => {
-                let predefined_proto_message = MsgSend {
-                    from_address: ica_info.ica_address,
-                    to_address,
-                    amount: vec![Coin {
-                        denom: "stake".to_string(),
-                        amount: "100".to_string(),
-                    }],
-                };
-                IcaPacketData::from_proto_anys(
-                    vec![Any::from_msg(&predefined_proto_message)?],
-                    None,
-                )
-            }
-            TxEncoding::Proto3Json => {
-                let predefined_json_message = ExampleCosmosMessages::MsgSend {
-                    from_address: ica_info.ica_address,
-                    to_address,
-                    amount: coins(100, "stake"),
-                }
-                .to_string();
-                IcaPacketData::from_json_strings(vec![predefined_json_message], None)?
-            }
-        };
-        let send_packet_msg = ica_packet.to_ibc_msg(&env, &ica_info.channel_id, None)?;
+        let ica_packet = IcaPacketData::from_cosmos_msgs(
+            messages,
+            &ica_info.encoding,
+            packet_memo,
+            &ica_info.ica_address,
+        )?;
+        let send_packet_msg = ica_packet.to_ibc_msg(&env, ica_info.channel_id, timeout_seconds)?;
 
         Ok(Response::default().add_message(send_packet_msg))
-    }
 
+    }
     /// Send coins using protobuf encoding 
     pub fn send_coins_proto(
         deps: DepsMut,

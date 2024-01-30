@@ -3,10 +3,14 @@
 //! This module contains the packet data to be send to the ica host and acknowledgement data types.
 
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{to_binary, Env, IbcMsg, IbcTimeout};
+use cosmwasm_std::{to_json_binary, CosmosMsg, Env, IbcMsg, IbcTimeout, StdError, StdResult};
 
 pub use cosmos_sdk_proto::ibc::applications::interchain_accounts::v1::CosmosTx;
 use cosmos_sdk_proto::traits::Message;
+
+use crate::types::cosmos_msg::{convert_to_proto3json, convert_to_proto_any};
+
+use super::metadata::TxEncoding;
 
 use crate::types::ContractError;
 
@@ -75,14 +79,12 @@ impl IcaPacketData {
     /// ```
     ///
     /// In this example, the proposer must be the ICA controller's address.
-    pub fn from_json_strings(
-        messages: Vec<String>,
-        memo: Option<String>,
-    ) -> Result<Self, ContractError> {
+    #[must_use]
+    pub fn from_json_strings(messages: &[String], memo: Option<String>) -> Self {
         let combined_messages = messages.join(", ");
-        let json_txs = format!(r#"{{"messages": [{}]}}"#, combined_messages);
+        let json_txs = format!(r#"{{"messages": [{combined_messages}]}}"#);
         let data = json_txs.into_bytes();
-        Ok(Self::new(data, memo))
+        Self::new(data, memo)
     }
 
     /// Creates a new IcaPacketData from a list of [`cosmos_sdk_proto::Any`] messages
@@ -92,7 +94,54 @@ impl IcaPacketData {
         Self::new(data, memo)
     }
 
-    /// Creates an IBC SendPacket message from the IcaPacketData
+    /// Creates a new [`IcaPacketData`] from a list of [`CosmosMsg`] messages
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the [`CosmosMsg`] cannot be serialized to [`cosmos_sdk_proto::Any`]
+    /// when using the [`TxEncoding::Protobuf`] encoding.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the [`CosmosMsg`] is not supported for the given encoding.
+    ///
+    /// The supported [`CosmosMsg`]s for [`TxEncoding::Protobuf`] are listed in [`convert_to_proto_any`].
+    /// The supported [`CosmosMsg`]s for [`TxEncoding::Proto3Json`] are listed in [`convert_to_proto3json`].
+    pub fn from_cosmos_msgs(
+        messages: Vec<CosmosMsg>,
+        encoding: &TxEncoding,
+        memo: Option<String>,
+        ica_address: &str,
+    ) -> StdResult<Self> {
+        match encoding {
+            TxEncoding::Protobuf => {
+                let proto_anys = messages.into_iter().try_fold(
+                    vec![],
+                    |mut acc, msg| -> StdResult<Vec<cosmos_sdk_proto::Any>> {
+                        let proto_any = convert_to_proto_any(msg, ica_address.to_string())
+                            .map_err(|e| StdError::generic_err(e.to_string()))?;
+                        acc.push(proto_any);
+                        Ok(acc)
+                    },
+                )?;
+                Ok(Self::from_proto_anys(proto_anys, memo))
+            }
+            TxEncoding::Proto3Json => {
+                let json_strings = messages
+                    .into_iter()
+                    .map(|msg| convert_to_proto3json(msg, ica_address.to_string()))
+                    .collect::<Vec<String>>();
+                Ok(Self::from_json_strings(&json_strings, memo))
+            }
+        }
+    }
+
+    /// Creates an [`IbcMsg::SendPacket`] message from the [`IcaPacketData`]
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the [`IcaPacketData`] cannot be serialized to JSON.
+    
     pub fn to_ibc_msg(
         &self,
         env: &Env,
@@ -105,7 +154,7 @@ impl IcaPacketData {
             .plus_seconds(timeout_seconds.unwrap_or(DEFAULT_TIMEOUT_SECONDS));
         Ok(IbcMsg::SendPacket {
             channel_id: channel_id.into(),
-            data: to_binary(&self)?,
+            data: to_json_binary(&self)?,
             timeout: IbcTimeout::with_timestamp(timeout_timestamp),
         })
     }

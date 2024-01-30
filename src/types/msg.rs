@@ -3,7 +3,7 @@
 //! This module defines the messages the ICA controller contract receives.
 
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::Binary;
+use cosmwasm_std::{Binary, CosmosMsg};
 
 /// The message to instantiate the ICA controller contract.
 #[cw_serde]
@@ -25,6 +25,23 @@ pub enum ExecuteMsg {
     /// This is a wrapper around [`options::ChannelOpenInitOptions`] and thus requires the
     /// same fields.
     CreateChannel(options::ChannelOpenInitOptions),
+
+    /// `SendCosmosMsgs` converts the provided array of [`CosmosMsg`] to an ICA tx and sends them to the ICA host.
+    /// [`CosmosMsg::Stargate`] and [`CosmosMsg::Wasm`] are only supported if the [`TxEncoding`](crate::ibc::types::metadata::TxEncoding) is 
+    /// [`TxEncoding::Protobuf`](crate::ibc::types::metadata::TxEncoding).
+    /// 
+    /// **This is the recommended way to send messages to the ICA host.**
+    SendCosmosMsgs {
+        /// The stargate messages to convert and send to the ICA host.
+        messages: Vec<CosmosMsg>,
+        /// Optional memo to include in the ibc packet.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        packet_memo: Option<String>,
+        /// Optional timeout in seconds to include with the ibc packet. 
+        /// If not specified, the [default timeout](crate::ibc::types::packet::DEFAULT_TIMEOUT_SECONDS) is used.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        timeout_seconds: Option<u64>,
+    },
     /// SendCustomIcaMessages sends custom messages from the ICA controller to the ICA host.
     SendCustomIcaMessages {
         /// Base64-encoded json or proto messages to send to the ICA host.
@@ -59,14 +76,6 @@ pub enum ExecuteMsg {
         /// If not specified, the [default timeout](crate::ibc_module::types::packet::DEFAULT_TIMEOUT_SECONDS) is used.
         #[serde(skip_serializing_if = "Option::is_none")]
         timeout_seconds: Option<u64>,
-    },
-    /// SendPredefinedAction sends a predefined action from the ICA controller to the ICA host.
-    /// This demonstration is useful for contracts that have predefined actions such as DAOs.
-    ///
-    /// In this example, the predefined action is a `MsgSend` message which sends 100 "stake" tokens.
-    SendPredefinedAction {
-        /// The recipient's address, on the counterparty chain, to send the tokens to from ICA host.
-        to_address: String,
     },
     /// sending tokens with the protobuf encoding scheme
     SendCoinsProto {

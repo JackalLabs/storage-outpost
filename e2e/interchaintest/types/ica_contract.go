@@ -122,3 +122,12 @@ func (c *IcaContract) ExecCustomIcaMessages(
 	err := c.Execute(ctx, callerKeyName, customMsg)
 	return err
 }
+
+func (c *IcaContract) ExecSendStargateMsgs(
+	ctx context.Context, callerKeyName string,
+	msgs []proto.Message, memo *string, timeout *uint64,
+) error {
+	cosmosMsg := newSendCosmosMsgsMsgFromProto(msgs, memo, timeout)
+	err := c.Execute(ctx, callerKeyName, cosmosMsg)
+	return err
+}
