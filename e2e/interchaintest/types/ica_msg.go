@@ -10,7 +10,6 @@ import (
 	codec "github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 )
 
@@ -156,7 +155,6 @@ func newSendCosmosMsgsMsgFromProto(msgs []proto.Message, memo *string, timeout *
 
 	for i, msg := range msgs {
 		protoAny, err := codectypes.NewAnyWithValue(msg)
-		protoAny.TypeUrl = sdk.MsgTypeURL(msg)
 		if err != nil {
 			panic(err)
 		}
