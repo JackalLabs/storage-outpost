@@ -29,7 +29,7 @@ func (s *ContractTestSuite) SetupContractTestSuite(ctx context.Context, encoding
 	s.SetupSuite(ctx, chainSpecs)
 
 	// Upload and Instantiate the contract on wasmd:
-	codeId, err := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/cw_ica_controller.wasm")
+	codeId, err := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/storage_outpost.wasm")
 	s.Require().NoError(err)
 
 	// Instantiate the contract with channel:
