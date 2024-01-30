@@ -49,7 +49,7 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 		referencedMsg := &filetreeMsg
 		referencedTypeUrl := sdk.MsgTypeURL(referencedMsg)
 
-		fmt.Println("REFERENCED TYPE URL OF FILETREE MSG IS:", referencedTypeUrl)
+		fmt.Println("filetree msg satisfy sdk Msg interface?:", referencedTypeUrl)
 		logger.LogInfo(referencedTypeUrl)
 
 		// Execute the contract:
