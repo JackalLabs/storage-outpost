@@ -11,6 +11,7 @@ import (
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 
 	filetreetypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/filetreetypes"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // WARNING: strangelove's test package builds chains running ibc-go/v7
@@ -46,7 +47,8 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 		// func NewAnyWithValue(v proto.Message) (*Any, error) {} inside ica_msg.go is not returning the type URL of the filetree msg
 
 		referencedMsg := &filetreeMsg
-		referencedTypeUrl := proto.MessageName(referencedMsg)
+		referencedTypeUrl := sdk.MsgTypeURL(referencedMsg)
+
 		fmt.Println("REFERENCED TYPE URL OF FILETREE MSG IS:", referencedTypeUrl)
 		logger.LogInfo(referencedTypeUrl)
 
