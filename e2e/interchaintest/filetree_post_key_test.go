@@ -5,13 +5,16 @@ import (
 	"fmt"
 	"time"
 
+	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/gogoproto/proto"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 
 	filetreetypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/filetreetypes"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 )
 
 // WARNING: strangelove's test package builds chains running ibc-go/v7
@@ -39,22 +42,44 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 	time.Sleep(time.Duration(30) * time.Second)
 
 	s.Run(fmt.Sprintf("TestSendCustomIcaMesssagesSuccess-%s", encoding), func() {
-		filetreeMsg := filetreetypes.MsgPostKey{
+		filetreeMsg := &filetreetypes.MsgPostKey{
 			Creator: wasmdUser.FormattedAddress(), // This will soon be the contract address
 			Key:     "Hey it's Bi from the outpost on another chain. We reached filetree!!! <3",
 		}
 
 		// func NewAnyWithValue(v proto.Message) (*Any, error) {} inside ica_msg.go is not returning the type URL of the filetree msg
 
-		referencedMsg := &filetreeMsg
+		referencedMsg := filetreeMsg
 		referencedTypeUrl := sdk.MsgTypeURL(referencedMsg)
 
 		fmt.Println("filetree msg satisfy sdk Msg interface?:", referencedTypeUrl)
 		logger.LogInfo(referencedTypeUrl)
 
-		// Execute the contract:
-		err := s.Contract.ExecSendStargateMsgs(ctx, wasmdUser.KeyName(), []proto.Message{&filetreeMsg}, nil, nil)
+		testProposal := govtypes.TextProposal{ // WARNING: This is from cosmos-sdk v0.47. If canined rejects it, could be a versioning/protobuf type issue
+			Title:       "IBC Gov Proposal",
+			Description: "Hey it's Bi sending tokens from the outpost",
+		}
+		protoAny, err := codectypes.NewAnyWithValue(&testProposal)
 		s.Require().NoError(err)
+
+		proposalMsg := &govtypes.MsgSubmitProposal{
+			Content:        protoAny,
+			InitialDeposit: sdk.NewCoins(sdk.NewCoin(canined.Config().Denom, sdkmath.NewInt(5_000))),
+			Proposer:       s.IcaAddress,
+		}
+
+		propMsg := proposalMsg
+		propTypeURL := sdk.MsgTypeURL(propMsg)
+
+		fmt.Println("prop type URL is?:", propTypeURL)
+		logger.LogInfo(propTypeURL)
+
+		// type URL of filetree msg doesn't print whereas type URL of proposal msg does print
+		// is it possible that passing filetree msg by reference is not working?
+
+		// Execute the contract:
+		error := s.Contract.ExecSendStargateMsgs(ctx, wasmdUser.KeyName(), []proto.Message{filetreeMsg}, nil, nil)
+		s.Require().NoError(error)
 
 		// We haven't implemented call backs so at this point we could just start a shell session in the container to
 		// view the filetree entry
