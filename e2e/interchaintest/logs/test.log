@@ -1,5 +1,5 @@
-INFO: 2024/01/30 14:51:45 Wasmd First light client is
-INFO: 2024/01/30 14:51:45 [
+INFO: 2024/01/30 15:12:20 Wasmd First light client is
+INFO: 2024/01/30 15:12:20 [
   {
     "client_id": "07-tendermint-0",
     "client_state": {
@@ -13,10 +13,10 @@ INFO: 2024/01/30 14:51:45 [
     }
   }
 ]
-INFO: 2024/01/30 14:51:45 Wasmd Second light client is
-INFO: 2024/01/30 14:51:45 null
-INFO: 2024/01/30 14:51:45 jackal first light client is
-INFO: 2024/01/30 14:51:45 [
+INFO: 2024/01/30 15:12:20 Wasmd Second light client is
+INFO: 2024/01/30 15:12:20 null
+INFO: 2024/01/30 15:12:21 jackal first light client is
+INFO: 2024/01/30 15:12:21 [
   {
     "client_id": "07-tendermint-0",
     "client_state": {
@@ -24,9 +24,9 @@ INFO: 2024/01/30 14:51:45 [
     }
   }
 ]
-INFO: 2024/01/30 14:51:45 jackal second light client is
-INFO: 2024/01/30 14:51:45 null
-INFO: 2024/01/30 14:52:13 {
+INFO: 2024/01/30 15:12:21 jackal second light client is
+INFO: 2024/01/30 15:12:21 null
+INFO: 2024/01/30 15:12:48 {
   "id": "connection-0",
   "client_id": "07-tendermint-0",
   "versions": [
@@ -48,7 +48,7 @@ INFO: 2024/01/30 14:52:13 {
   },
   "delay_period": "0"
 }
-INFO: 2024/01/30 14:52:13 {
+INFO: 2024/01/30 15:12:48 {
   "id": "connection-localhost",
   "client_id": "09-localhost",
   "versions": [
@@ -70,8 +70,8 @@ INFO: 2024/01/30 14:52:13 {
   },
   "delay_period": "0"
 }
-INFO: 2024/01/30 14:52:13 The first canined connections are:
-INFO: 2024/01/30 14:52:13 {
+INFO: 2024/01/30 15:12:49 The first canined connections are:
+INFO: 2024/01/30 15:12:49 {
   "id": "connection-0",
   "client_id": "07-tendermint-0",
   "versions": [
@@ -93,4 +93,4 @@ INFO: 2024/01/30 14:52:13 {
   },
   "delay_period": "0"
 }
-INFO: 2024/01/30 14:52:50 [0x14001226d00]
+INFO: 2024/01/30 15:13:25 [0x14001191800]

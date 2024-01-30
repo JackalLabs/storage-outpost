@@ -43,6 +43,13 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 			Key:     "Hey it's Bi from the outpost on another chain. We reached filetree!!! <3",
 		}
 
+		// func NewAnyWithValue(v proto.Message) (*Any, error) {} inside ica_msg.go is not returning the type URL of the filetree msg
+
+		referencedMsg := &filetreeMsg
+		referencedTypeUrl := proto.MessageName(referencedMsg)
+		fmt.Println("REFERENCED TYPE URL OF FILETREE MSG IS:", referencedTypeUrl)
+		logger.LogInfo(referencedTypeUrl)
+
 		// Execute the contract:
 		err := s.Contract.ExecSendStargateMsgs(ctx, wasmdUser.KeyName(), []proto.Message{&filetreeMsg}, nil, nil)
 		s.Require().NoError(err)
