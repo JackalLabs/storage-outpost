@@ -1,2 +1,0 @@
-1599c9f1caa8ff0ef192a725f296592b5c0e20db57c844d2615cb31cef237d2b  cw_ica_controller.wasm
-00a751167b2395c2cdcb6dac6a80c5d6a013e96873798c1f4c935c871686edea  storage_outpost.wasm
