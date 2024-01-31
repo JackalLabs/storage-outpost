@@ -159,10 +159,6 @@ func newSendCosmosMsgsMsgFromProto(msgs []proto.Message, memo *string, timeout *
 			panic(err)
 		}
 
-		// Let's hard code the typeURL to see if the msg executes
-		// If it does, we know the problem is solely with the typeURL
-		protoAny.TypeUrl = "/canine_chain.filetree.MsgPostKey"
-
 		cosmosMsgs[i] = ContractCosmosMsg{
 			Stargate: &StargateCosmosMsg{
 				TypeUrl: protoAny.TypeUrl,

@@ -9,7 +9,7 @@ import (
 type Contract struct {
 	Address string
 	CodeID  string
-	chain   *cosmos.CosmosChain
+	Chain   *cosmos.CosmosChain
 }
 
 // NewContract creates a new Contract instance
@@ -17,7 +17,7 @@ func NewContract(address string, codeId string, chain *cosmos.CosmosChain) Contr
 	return Contract{
 		Address: address,
 		CodeID:  codeId,
-		chain:   chain,
+		Chain:   chain,
 	}
 }
 
@@ -25,7 +25,17 @@ func (c *Contract) Port() string {
 	return "wasm." + c.Address
 }
 
-func (c *Contract) Execute(ctx context.Context, callerKeyName string, execMsg string, extraExecTxArgs ...string) error {
-	_, err := c.chain.ExecuteContract(ctx, callerKeyName, c.Address, execMsg, extraExecTxArgs...)
+// ExecAnyMsg executes the contract with the given exec message.
+func (c *Contract) ExecAnyMsg(ctx context.Context, callerKeyName string, execMsg string, extraExecTxArgs ...string) error {
+	_, err := c.Chain.ExecuteContract(ctx, callerKeyName, c.Address, execMsg, extraExecTxArgs...)
 	return err
+}
+
+// func (c *Contract) Execute(ctx context.Context, callerKeyName string, execMsg string, extraExecTxArgs ...string) error {
+// 	_, err := c.chain.ExecuteContract(ctx, callerKeyName, c.Address, execMsg, extraExecTxArgs...)
+// 	return err
+// }
+
+func (c *IcaContract) Execute(ctx context.Context, callerKeyName string, msg ExecuteMsg, extraExecTxArgs ...string) error {
+	return c.Contract.ExecAnyMsg(ctx, callerKeyName, msg.ToString(), extraExecTxArgs...)
 }

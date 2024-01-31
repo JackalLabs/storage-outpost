@@ -12,6 +12,7 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
+	testtypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -71,8 +72,18 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithProtobuf() {
 		logger.LogInfo("Executing custom ICA message now")
 		fmt.Println("Executing custom ICA message now")
 
-		// Execute the contract:
-		err = s.Contract.ExecSendStargateMsgs(ctx, wasmdUser.KeyName(), []proto.Message{proposalMsg, depositMsg}, nil, nil)
+		// NOTE: Stargate API does not seem to be working for proposalMsg and depositMsg
+
+		sendStargateMsg := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
+			[]proto.Message{proposalMsg, depositMsg}, nil, nil,
+		)
+		err = s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg)
+		s.Require().NoError(err)
+
+		// err = s.Contract.ExecSendStargateMsgs(ctx, wasmdUser.KeyName(), []proto.Message{proposalMsg, depositMsg}, nil, nil)
+
+		// err = s.Contract.ExecCustomIcaMessages(ctx, wasmdUser.KeyName(), []proto.Message{proposalMsg, depositMsg}, encoding, nil, nil)
+
 		s.Require().NoError(err)
 
 		// It looks like we are querying far too early and the relayer doesn't have enough time to listen for events and tranfer packets
