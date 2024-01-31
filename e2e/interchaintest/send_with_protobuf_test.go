@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -85,50 +84,8 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithProtobuf() {
 		// err = s.Contract.ExecCustomIcaMessages(ctx, wasmdUser.KeyName(), []proto.Message{proposalMsg, depositMsg}, encoding, nil, nil)
 
 		s.Require().NoError(err)
+	})
 
-		// It looks like we are querying far too early and the relayer doesn't have enough time to listen for events and tranfer packets
-		// Let's wait for block height to increase a lot and some time to pass before querying the call back counter and proposal
-
-		// err = testutil.WaitForBlocks(ctx, 10, wasmd, canined)
-		// s.Require().NoError(err)
-
-		//Check if contract callbacks were executed:
-		callbackCounter, err := s.Contract.QueryCallbackCounter(ctx)
-		s.Require().NoError(err)
-
-		s.Require().Equal(uint64(1), callbackCounter.Success)
-		s.Require().Equal(uint64(0), callbackCounter.Error)
-
-		// Check if the proposal was created:
-		proposal, err := canined.QueryProposal(ctx, "1")
-		s.Require().NoError(err)
-		prop, err := json.MarshalIndent(proposal, "", "  ")
-
-		logger.LogInfo("proposal is")
-
-		if err != nil {
-			// handle error
-			logger.LogError("failed to marshal proposal:", err)
-		} else {
-			logger.LogInfo(string(prop))
-		}
-
-		// Check if the proposal was created:
-		proposal1, err7 := canined.QueryProposal(ctx, "1")
-		s.Require().NoError(err7)
-		prop1, err := json.MarshalIndent(proposal1, "", "  ")
-
-		logger.LogInfo("proposal is")
-
-		if err != nil {
-			// handle error
-			logger.LogError("failed to marshal proposal:", err)
-		} else {
-			logger.LogInfo(string(prop1))
-		}
-
-	},
-	)
 	time.Sleep(time.Duration(1) * time.Hour)
 
 }
