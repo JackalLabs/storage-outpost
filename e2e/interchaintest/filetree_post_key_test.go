@@ -49,11 +49,12 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 
 		// func NewAnyWithValue(v proto.Message) (*Any, error) {} inside ica_msg.go is not returning the type URL of the filetree msg
 
-		referencedMsg := filetreeMsg
-		referencedTypeUrl := sdk.MsgTypeURL(referencedMsg)
+		referencedTypeUrl := sdk.MsgTypeURL(filetreeMsg)
 
 		fmt.Println("filetree msg satisfy sdk Msg interface?:", referencedTypeUrl)
 		logger.LogInfo(referencedTypeUrl)
+
+		fmt.Println("filetree msg as string is", filetreeMsg.String())
 
 		testProposal := govtypes.TextProposal{ // WARNING: This is from cosmos-sdk v0.47. If canined rejects it, could be a versioning/protobuf type issue
 			Title:       "IBC Gov Proposal",
@@ -75,7 +76,7 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 		logger.LogInfo(propTypeURL)
 
 		// type URL of filetree msg doesn't print whereas type URL of proposal msg does print
-		// is it possible that passing filetree msg by reference is not working?
+		// is it possible that passing filetree msg by reference was not working?
 
 		// Execute the contract:
 		error := s.Contract.ExecSendStargateMsgs(ctx, wasmdUser.KeyName(), []proto.Message{filetreeMsg}, nil, nil)
