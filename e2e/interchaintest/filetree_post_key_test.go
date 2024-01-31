@@ -41,9 +41,12 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 
 	s.Run(fmt.Sprintf("TestSendCustomIcaMesssagesSuccess-%s", encoding), func() {
 		filetreeMsg := &filetreetypes.MsgPostKey{
-			Creator: wasmdUser.FormattedAddress(), // This will soon be the contract address
+			Creator: "jkl1yzajxf83p0zlea6ldn67ncqzs6e7ar85q3452g", // we're just hard coding this temporarily for debugging purposes
+
+			// This will soon be the contract address
 			// This has to be the jkl address that's created by the controller (this contract)
-			// When the channel is opened
+			// When the channel is opened. If it's not this address, the transaction should error
+			// Because the controller account should only be allowed to execute msgs for its host pair
 			Key: "Hey it's Bi from the outpost on another chain. We reached filetree!!! <3",
 		}
 

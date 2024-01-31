@@ -39,6 +39,8 @@ func NewExecuteMsg_SendCosmosMsgs_FromProto(msgs []proto.Message, memo *string, 
 			panic(err)
 		}
 
+		protoAny.TypeUrl = "canine_chain.filetree.MsgPostKey"
+
 		cosmosMsgs[i] = ContractCosmosMsg{
 			Stargate: &StargateCosmosMsg{
 				TypeUrl: protoAny.TypeUrl,

@@ -71,8 +71,8 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithProtobuf() {
 		logger.LogInfo("Executing custom ICA message now")
 		fmt.Println("Executing custom ICA message now")
 
-		// NOTE: Stargate API does not seem to be working for proposalMsg and depositMsg
-		// Not even the v0.4.2 version is working
+		// stargate API v0.4.2 works for proposalMsg executing on canined
+		// still does not work for filetree at this time.
 
 		sendStargateMsg := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
 			[]proto.Message{proposalMsg, depositMsg}, nil, nil,
