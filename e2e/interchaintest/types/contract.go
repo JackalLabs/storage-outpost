@@ -30,12 +30,3 @@ func (c *Contract) ExecAnyMsg(ctx context.Context, callerKeyName string, execMsg
 	_, err := c.Chain.ExecuteContract(ctx, callerKeyName, c.Address, execMsg, extraExecTxArgs...)
 	return err
 }
-
-// func (c *Contract) Execute(ctx context.Context, callerKeyName string, execMsg string, extraExecTxArgs ...string) error {
-// 	_, err := c.chain.ExecuteContract(ctx, callerKeyName, c.Address, execMsg, extraExecTxArgs...)
-// 	return err
-// }
-
-func (c *IcaContract) Execute(ctx context.Context, callerKeyName string, msg ExecuteMsg, extraExecTxArgs ...string) error {
-	return c.Contract.ExecAnyMsg(ctx, callerKeyName, msg.ToString(), extraExecTxArgs...)
-}

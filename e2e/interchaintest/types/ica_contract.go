@@ -130,3 +130,7 @@ func (c *IcaContract) QueryOwnership(ctx context.Context) (*OwnershipQueryRespon
 // 	err := c.Execute(ctx, callerKeyName, cosmosMsg)
 // 	return err
 // }
+
+func (c *IcaContract) Execute(ctx context.Context, callerKeyName string, msg ExecuteMsg, extraExecTxArgs ...string) error {
+	return c.Contract.ExecAnyMsg(ctx, callerKeyName, msg.ToString(), extraExecTxArgs...)
+}
