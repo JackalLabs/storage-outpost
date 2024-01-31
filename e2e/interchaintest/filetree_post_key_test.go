@@ -5,15 +5,14 @@ import (
 	"fmt"
 	"time"
 
-	sdkmath "cosmossdk.io/math"
+	"github.com/cosmos/gogoproto/proto"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 
 	filetreetypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/filetreetypes"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	testtypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 )
 
 // WARNING: strangelove's test package builds chains running ibc-go/v7
@@ -57,34 +56,11 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 
 		fmt.Println("filetree msg as string is", filetreeMsg.String())
 
-		testProposal := govtypes.TextProposal{ // WARNING: This is from cosmos-sdk v0.47. If canined rejects it, could be a versioning/protobuf type issue
-			Title:       "IBC Gov Proposal",
-			Description: "Hey it's Bi sending tokens from the outpost",
-		}
-		protoAny, err := codectypes.NewAnyWithValue(&testProposal)
-		s.Require().NoError(err)
-
-		proposalMsg := &govtypes.MsgSubmitProposal{
-			Content:        protoAny,
-			InitialDeposit: sdk.NewCoins(sdk.NewCoin(canined.Config().Denom, sdkmath.NewInt(5_000))),
-			Proposer:       s.IcaAddress,
-		}
-
-		propMsg := proposalMsg
-		propTypeURL := sdk.MsgTypeURL(propMsg)
-
-		fmt.Println("prop type URL is?:", propTypeURL)
-		logger.LogInfo(propTypeURL)
-
-		// type URL of filetree msg doesn't print whereas type URL of proposal msg does print
-		// is it possible that passing filetree msg by reference was not working?
-
-		// Execute the contract:
-		// error := s.Contract.ExecSendStargateMsgs(ctx, wasmdUser.KeyName(), []proto.Message{filetreeMsg}, nil, nil)
-		// s.Require().NoError(error)
-
-		// We haven't implemented call backs so at this point we could just start a shell session in the container to
-		// view the filetree entry
+		sendStargateMsg := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
+			[]proto.Message{filetreeMsg}, nil, nil,
+		)
+		error := s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg)
+		s.Require().NoError(error)
 
 	},
 	)
