@@ -39,7 +39,13 @@ func NewExecuteMsg_SendCosmosMsgs_FromProto(msgs []proto.Message, memo *string, 
 			panic(err)
 		}
 
-		protoAny.TypeUrl = "canine_chain.filetree.MsgPostKey"
+		/// This matches the below from canine-chain/x/filetree/types/codec.go
+		// func RegisterCodec(cdc *codec.LegacyAmino) {
+		// 	cdc.RegisterConcrete(&MsgPostFile{}, "filetree/PostFile", nil)
+		// 	cdc.RegisterConcrete(&MsgAddViewers{}, "filetree/AddViewers", nil)
+		// 	cdc.RegisterConcrete(&MsgPostKey{}, "filetree/PostKey", nil)
+
+		protoAny.TypeUrl = "filetree/PostKey"
 
 		cosmosMsgs[i] = ContractCosmosMsg{
 			Stargate: &StargateCosmosMsg{

@@ -59,6 +59,11 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 
 		fmt.Println("filetree msg as string is", filetreeMsg.String())
 
+		// Currently doesn't work, the error message we get is:
+		// no concrete type registered for type URL canine_chain.filetree.MsgPostKey against interface *types.Msg.
+		// We also got same error when trying to change the typeURL to 'filetree/PostKey'
+		// We need to sandbox the 'Any' type better
+
 		sendStargateMsg := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
 			[]proto.Message{filetreeMsg}, nil, nil,
 		)
