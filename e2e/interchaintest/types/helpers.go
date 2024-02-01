@@ -45,7 +45,7 @@ func NewExecuteMsg_SendCosmosMsgs_FromProto(msgs []proto.Message, memo *string, 
 		// 	cdc.RegisterConcrete(&MsgAddViewers{}, "filetree/AddViewers", nil)
 		// 	cdc.RegisterConcrete(&MsgPostKey{}, "filetree/PostKey", nil)
 
-		protoAny.TypeUrl = "filetree/PostKey"
+		protoAny.TypeUrl = "/canine_chain.filetree.MsgPostKey"
 
 		cosmosMsgs[i] = ContractCosmosMsg{
 			Stargate: &StargateCosmosMsg{
