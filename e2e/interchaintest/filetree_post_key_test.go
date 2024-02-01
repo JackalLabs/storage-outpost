@@ -41,7 +41,9 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 
 	s.Run(fmt.Sprintf("TestSendCustomIcaMesssagesSuccess-%s", encoding), func() {
 		filetreeMsg := &filetreetypes.MsgPostKey{
-			Creator: "jkl1yzajxf83p0zlea6ldn67ncqzs6e7ar85q3452g", // we're just hard coding this temporarily for debugging purposes
+			Creator: "jkl1vg499u9r9uceeprlepkzsls4mgv78wdtmytpcme0nwantscd5pnquj5ep7",
+			// we're just hard coding this temporarily for debugging purposes
+			// It's the correct jkl ICA address
 
 			// This will soon be the contract address
 			// This has to be the jkl address that's created by the controller (this contract)
