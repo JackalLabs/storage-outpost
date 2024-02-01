@@ -10,8 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
-
-	"github.com/jackalLabs/canine-chain/v3/x/filetree"
+	// filetreetypes "github.com/jackalLabs/canine-chain/v3/x/filetree"
 )
 
 func JackaklEncoding() *moduletestutil.TestEncodingConfig {
@@ -25,7 +24,7 @@ func JackaklEncoding() *moduletestutil.TestEncodingConfig {
 		params.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 		consensus.AppModuleBasic{},
-		filetree.AppModuleBasic{},
+		// filetreetypes.AppModuleBasic{},
 	)
 
 	return &encCfg

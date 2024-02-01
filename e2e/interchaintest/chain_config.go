@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	testtypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 	interchaintest "github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos/wasm"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
@@ -77,6 +78,7 @@ var chainSpecs = []*interchaintest.ChainSpec{
 			Denom:          "jkl", // do we have to use ujkl or is jkl ok?
 			GasPrices:      "0.00ujkl",
 			GasAdjustment:  1.3,
+			EncodingConfig: testtypes.JackaklEncoding(),
 			TrustingPeriod: "508h",
 			NoHostMount:    false,
 			ModifyGenesis:  modifyGenesisAtPath(genesisAllowICH, "app_state"),
