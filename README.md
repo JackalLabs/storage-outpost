@@ -4,7 +4,7 @@ The outpost wraps the controller functionality from the interchain accounts stan
 
 A topology diagram of a file's trip starting with our javascript SDK, through the outpost contract, before arriving at canine-chain is below.
 
-[![Storage Outpost Topology Diagram](https://www.figma.com/file/MNBzYNq7e08w7DCp7hQhx4/Storage-Outpost-(Right-to-Left)?type=whiteboard&node-id=0%3A1&t=I7FRjKFc3TnClip0-1)](https://www.figma.com/file/MNBzYNq7e08w7DCp7hQhx4/Storage-Outpost-(Right-to-Left)?type=whiteboard&node-id=0%3A1&t=I7FRjKFc3TnClip0-1)
+[Storage Outpost Topology Diagram](https://www.figma.com/community/file/1335344086198579221/storage-outpost-right-to-left)
 
 Complete road map to mainnet and Dapp integration documentation incoming.
 
