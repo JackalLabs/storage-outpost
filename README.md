@@ -6,7 +6,9 @@ A topology diagram of a file's trip starting with our javascript SDK, through th
 
 [Storage Outpost Topology Diagram](https://www.figma.com/community/file/1335344086198579221/storage-outpost-right-to-left)
 
-Complete road map to mainnet and Dapp integration documentation incoming.
+A filetree msg has been successfully sent from wasmd to canined in the e2e environment.
+
+A Complete road map to mainnet and Dapp integration documentation incoming soon.
 
 ## Contributors
 

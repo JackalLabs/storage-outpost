@@ -49,7 +49,7 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 			// This has to be the jkl address that's created by the controller (this contract)
 			// When the channel is opened. If it's not this address, the transaction should error
 			// Because the controller account should only be allowed to execute msgs for its host pair
-			Key: "Hey it's Bi from the outpost on another chain. We reached filetree!!! <3",
+			Key: "Wow it really works <3",
 		}
 
 		// func NewAnyWithValue(v proto.Message) (*Any, error) {} inside ica_msg.go is not returning the type URL of the filetree msg
@@ -61,10 +61,12 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 
 		fmt.Println("filetree msg as string is", filetreeMsg.String())
 
-		// Currently doesn't work, the error message we get is:
-		// no concrete type registered for type URL canine_chain.filetree.MsgPostKey against interface *types.Msg.
-		// We also got same error when trying to change the typeURL to 'filetree/PostKey'
-		// We need to sandbox the 'Any' type better
+		// Filetree msg sent!
+		// FOR TEAM: start a shell session within canined's container and run:
+		// canined q filetree list-pubkeys
+		// to see the posted public key
+
+		// TO DO: Call backs to confirm success
 
 		sendStargateMsg := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
 			[]proto.Message{filetreeMsg}, nil, nil,
