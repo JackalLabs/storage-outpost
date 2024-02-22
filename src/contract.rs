@@ -2,7 +2,7 @@
 
 use cosmos_sdk_proto::tendermint::p2p::packet;
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
+use cosmwasm_std::{to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Event};
 
 use crate::ibc::types::stargate::channel::new_ica_channel_open_init_cosmos_msg;
 use crate::types::keys::{CONTRACT_NAME, CONTRACT_VERSION};
@@ -190,7 +190,13 @@ mod execute {
         )?;
         let send_packet_msg = ica_packet.to_ibc_msg(&env, ica_info.channel_id, timeout_seconds)?;
 
-        Ok(Response::default().add_message(send_packet_msg))
+        // Make a logging event 
+        let mut event = Event::new("logging");
+
+        // Add some placeholder logs
+        event = event.add_attribute("log", "placeholder logs");
+
+        Ok(Response::default().add_message(send_packet_msg).add_event(event))
 
     }
     /// Send coins using protobuf encoding 
