@@ -1,0 +1,13 @@
+[package]
+name = "proto-experiments"
+version = "0.0.1"
+authors = ["Bi Phan <bi@jackallabs.io>"]
+description = "Testing out building Rust files from Jackal .proto definitions"
+edition = "2021"
+
+[dependencies]
+bytes = "0.4"
+prost = "0.5"
+
+[build-dependencies]
+prost-build = "0.5"

@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package protobuf.items;
+
+// A pair of Hugo Boss shoes
+message Shoe {
+    enum Size {
+        SMALL = 0;
+        MEDIUM = 1;
+        LARGE = 2;
+    }
+
+    string brand = 1;
+}
