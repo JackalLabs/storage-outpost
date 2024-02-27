@@ -5,15 +5,16 @@ authors = ["Bi Phan <bi@jackallabs.io>"]
 description = "Testing out building Rust files from Jackal .proto definitions"
 edition = "2021"
 
-[lib]
-crate-type = ["rlib"]
-path = "src/lib.rs"
+# [lib]
+# crate-type = ["rlib"]
+# path = "src/lib.rs"
 
 doctest = false
 
 [dependencies]
 bytes = "0.4"
 prost = "0.5"
+prost-build = "0.12.3"
 cosmwasm-schema = "1.5.0"
 cosmwasm-std = { version = "1.5.0", features = [
     "cosmwasm_1_3",
