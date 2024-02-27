@@ -1,0 +1,119 @@
+syntax = "proto3";
+package canine_chain.filetree;
+
+option go_package = "github.com/jackalLabs/canine-chain/x/filetree/types";
+
+service Msg {
+  rpc PostFile(MsgPostFile) returns (MsgPostFileResponse);
+  rpc AddViewers(MsgAddViewers) returns (MsgAddViewersResponse);
+  rpc PostKey(MsgPostKey) returns (MsgPostKeyResponse);
+  rpc DeleteFile(MsgDeleteFile) returns (MsgDeleteFileResponse);
+  rpc RemoveViewers(MsgRemoveViewers) returns (MsgRemoveViewersResponse);
+  rpc ProvisionFileTree(MsgProvisionFileTree) returns (MsgProvisionFileTreeResponse);
+
+  rpc AddEditors(MsgAddEditors) returns (MsgAddEditorsResponse);
+  rpc RemoveEditors(MsgRemoveEditors) returns (MsgRemoveEditorsResponse);
+  rpc ResetEditors(MsgResetEditors) returns (MsgResetEditorsResponse);
+  rpc ResetViewers(MsgResetViewers) returns (MsgResetViewersResponse);
+  rpc ChangeOwner(MsgChangeOwner) returns (MsgChangeOwnerResponse);
+}
+
+message MsgPostFile {
+  string creator = 1;
+  string account = 2;
+  string hash_parent = 3;
+  string hash_child = 4;
+  string contents = 5;
+  string viewers = 6;
+  string editors = 7;
+  string tracking_number = 8;
+}
+
+message MsgPostFileResponse { string path = 1; }
+
+message MsgAddViewers {
+  string creator = 1;
+  string viewer_ids = 2;
+  string viewer_keys = 3;
+  string address = 4;
+  string file_owner = 5;
+}
+
+message MsgAddViewersResponse {}
+
+message MsgPostKey {
+  string creator = 1;
+  string key = 2;
+}
+
+message MsgPostKeyResponse {}
+
+message MsgDeleteFile {
+  string creator = 1;
+  string hash_path = 2;
+  string account = 3;
+}
+
+message MsgDeleteFileResponse {}
+
+message MsgRemoveViewers {
+  string creator = 1;
+  string viewer_ids = 2;
+  string address = 3;
+  string file_owner = 4;
+}
+
+message MsgRemoveViewersResponse {}
+
+message MsgProvisionFileTree {
+  string creator = 1;
+  string editors = 2;
+  string viewers = 3;
+  string tracking_number = 4;
+}
+
+message MsgProvisionFileTreeResponse {}
+
+message MsgAddEditors {
+  string creator = 1;
+  string editor_ids = 2;
+  string editor_keys = 3;
+  string address = 4;
+  string file_owner = 5;
+}
+
+message MsgAddEditorsResponse {}
+
+message MsgRemoveEditors {
+  string creator = 1;
+  string editor_ids = 2;
+  string address = 3;
+  string file_owner = 4;
+}
+
+message MsgRemoveEditorsResponse {}
+
+message MsgResetEditors {
+  string creator = 1;
+  string address = 2;
+  string file_owner = 3;
+}
+
+message MsgResetEditorsResponse {}
+
+message MsgResetViewers {
+  string creator = 1;
+  string address = 2;
+  string file_owner = 3;
+}
+
+message MsgResetViewersResponse {}
+
+message MsgChangeOwner {
+  string creator = 1;
+  string address = 2;
+  string file_owner = 3;
+  string new_owner = 4;
+}
+
+message MsgChangeOwnerResponse {}
