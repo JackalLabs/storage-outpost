@@ -1,0 +1,10 @@
+{
+    "rust-analyzer.linkedProjects": [
+        "./protobuf/Cargo.toml",
+        "./protobuf/Cargo.toml",
+        "./protobuf/Cargo.toml",
+        "./protobuf/Cargo.toml",
+        "./protobuf/Cargo.toml"
+    ],
+    "rust-analyzer.showUnlinkedFileNotification": false
+}
