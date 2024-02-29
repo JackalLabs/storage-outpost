@@ -33,10 +33,14 @@ fn main() {
     // Let's marshal post key to bytes and pack it into stargate API 
     let encoded = msg_post_key.encode_length_delimited_to_vec();
 
+    // WARNING: This is first attempt, there's a good chance we did something wrong when converting post key to bytes
     let cosmos_msg: CosmosMsg<Empty> = CosmosMsg::Stargate { 
         type_url: String::from("/canine_chain.filetree.MsgPostKey"), 
         value: cosmwasm_std::Binary(encoded.to_vec()) };
-
+    
+    // Call handle_cosmos_msg and log its output
+    let logged_stargate_msg = handle_cosmos_msg(cosmos_msg);
+    info!("{}", logged_stargate_msg);
 
     // This will be helpful for debugging why msgs aren't consumed by the ica host keeper
     info!("Encoded MsgPostKey length: {} bytes, starts with: {:?}",
@@ -44,6 +48,19 @@ fn main() {
       &encoded[..std::cmp::min(10, encoded.len())]); // Show up to the first 10 bytes
 
 }
+
+fn handle_cosmos_msg<T>(cosmos_msg: CosmosMsg<T>) -> String {
+    match cosmos_msg {
+        CosmosMsg::Stargate { type_url, value } => {
+            // Create a log message string
+            let log_message = format!("Stargate type_url: {}, value: {:?}", type_url, value);
+            log_message // Return the log message
+        },
+        _ => String::from("Encountered a non-Stargate CosmosMsg variant."),
+    }
+}
+
+
 
 
 /*
