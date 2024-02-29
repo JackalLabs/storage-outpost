@@ -33,6 +33,8 @@ cosmos-sdk-proto = { version = "0.20.0", default-features = false, features = ["
 semver = "1.0"
 cw-ownable = "0.5.1"
 cw-ica-controller-derive = "0.4.2"
+log = "0.4.21"
+simplelog = "0.12.1"
 
 [build-dependencies]
 prost-build = "0.5"

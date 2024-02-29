@@ -1,5 +1,7 @@
-use std::{env, string::String};
+use std::{env,fs::File,string::String};
 use cosmos_sdk_proto::traits::Message;
+use log::{info, LevelFilter};
+use simplelog::*;
 
 fn main() {
     print!("Building all proto files");
@@ -13,6 +15,12 @@ fn main() {
     prost_build::compile_protos(&["src/proto_definitions/tx.proto"],
                                 &["src/"]).unwrap();
 
+    // Init logger
+    let log_file = File::create("app.log").unwrap();
+    WriteLogger::init(LevelFilter::Info, Config::default(), log_file).unwrap();
+
+    info!("preparing post key for tx");
+
     // Declare an instance of MsgPostKey
     let msg_post_key = MsgPostKey {
         creator: String::from("Alice"), // TODO: replace with placeholder jkl address 
@@ -21,6 +29,12 @@ fn main() {
 
     // Let's marshal post key to bytes and pack it into stargate API 
     let encoded = msg_post_key.encode_length_delimited_to_vec();
+
+    // This will be helpful for debugging why msgs aren't consumed by the ica host keeper
+    info!("Encoded MsgPostKey length: {} bytes, starts with: {:?}",
+      encoded.len(),
+      &encoded[..std::cmp::min(10, encoded.len())]); // Show up to the first 10 bytes
+        
 
 }
 
