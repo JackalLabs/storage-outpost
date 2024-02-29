@@ -13,7 +13,7 @@ doctest = false
 
 [dependencies]
 bytes = "0.4"
-prost = "0.5"
+prost = "0.12.3"
 prost-build = "0.12.3"
 cosmwasm-schema = "1.5.0"
 cosmwasm-std = { version = "1.5.0", features = [
