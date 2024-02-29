@@ -12,6 +12,7 @@ edition = "2021"
 doctest = false
 
 [dependencies]
+storage-outpost = { path = "../"}
 bytes = "0.4"
 prost = "0.12.3"
 prost-build = "0.12.3"

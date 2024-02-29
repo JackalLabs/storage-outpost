@@ -1,7 +1,10 @@
-use std::{env,fs::File,string::String};
+use std::{any::Any, env, fs::File, string::String};
 use cosmos_sdk_proto::traits::Message;
 use log::{info, LevelFilter};
 use simplelog::*;
+use storage_outpost::types::cosmos_msg;
+use cosmwasm_std::{CosmosMsg, Empty};
+
 
 fn main() {
     print!("Building all proto files");
@@ -30,13 +33,18 @@ fn main() {
     // Let's marshal post key to bytes and pack it into stargate API 
     let encoded = msg_post_key.encode_length_delimited_to_vec();
 
+    let cosmos_msg: CosmosMsg<Empty> = CosmosMsg::Stargate { 
+        type_url: String::from("/canine_chain.filetree.MsgPostKey"), 
+        value: cosmwasm_std::Binary(encoded.to_vec()) };
+
+
     // This will be helpful for debugging why msgs aren't consumed by the ica host keeper
     info!("Encoded MsgPostKey length: {} bytes, starts with: {:?}",
       encoded.len(),
       &encoded[..std::cmp::min(10, encoded.len())]); // Show up to the first 10 bytes
-        
 
 }
+
 
 /*
 from: 

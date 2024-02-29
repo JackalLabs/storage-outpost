@@ -1142,6 +1142,7 @@ dependencies = [
  "serde",
  "serde-json-wasm 1.0.1",
  "simplelog",
+ "storage-outpost",
  "thiserror",
 ]
 
