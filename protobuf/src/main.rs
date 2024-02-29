@@ -12,3 +12,25 @@ fn main() {
     prost_build::compile_protos(&["src/proto_definitions/tx.proto"],
                                 &["src/"]).unwrap();
 }
+
+/*
+from: 
+cosmos_sdk_proto::traits::Message,
+
+use this:
+
+    fn encode_length_delimited_to_vec(&self) -> Vec<u8>
+
+*/
+
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct MsgPostKey {
+    #[prost(string, tag = "1")]
+    pub creator: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub key: ::prost::alloc::string::String,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct MsgPostKeyResponse {}
