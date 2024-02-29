@@ -11,6 +11,12 @@ fn main() {
     // Lets build the filetree transaction Rust files from its definition
     prost_build::compile_protos(&["src/proto_definitions/tx.proto"],
                                 &["src/"]).unwrap();
+
+    // Declare an instance of MsgPostKey
+    let msg_post_key = MsgPostKey {
+        creator: String::from("Alice"),
+        key: String::from("Alice's Public Key"),
+    };
 }
 
 /*
