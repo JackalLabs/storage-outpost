@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, string::String};
 
 fn main() {
     print!("Building all proto files");
@@ -27,9 +27,9 @@ use this:
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgPostKey {
     #[prost(string, tag = "1")]
-    pub creator: ::prost::alloc::string::String,
+    pub creator: String,
     #[prost(string, tag = "2")]
-    pub key: ::prost::alloc::string::String,
+    pub key: String,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
