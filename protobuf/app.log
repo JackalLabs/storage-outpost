@@ -1,0 +1,3 @@
+21:42:20 [INFO] preparing post key for tx
+21:42:20 [INFO] Stargate type_url: /canine_chain.filetree.MsgPostKey, value: Binary(1b0a05416c6963651212416c6963652773205075626c6963204b6579)
+21:42:20 [INFO] Encoded MsgPostKey length: 28 bytes, starts with: [27, 10, 5, 65, 108, 105, 99, 101, 18, 18]
