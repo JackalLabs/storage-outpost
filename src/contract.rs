@@ -2,7 +2,7 @@
 
 use cosmos_sdk_proto::tendermint::p2p::packet;
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Event};
+use cosmwasm_std::{to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Event, Empty};
 
 use crate::ibc::types::stargate::channel::new_ica_channel_open_init_cosmos_msg;
 use crate::types::keys::{CONTRACT_NAME, CONTRACT_VERSION};
@@ -11,6 +11,7 @@ use crate::types::state::{
     CallbackCounter, ChannelState, ContractState, CALLBACK_COUNTER, CHANNEL_STATE, STATE,
 };
 use crate::types::ContractError;
+use crate::types::filetree::MsgPostKey;
 
 /// Instantiates the contract.
 #[entry_point]
@@ -83,11 +84,11 @@ pub fn execute(
             execute::send_cosmos_msgs(deps, env, info, messages, packet_memo, timeout_seconds)
         },
         ExecuteMsg::SendCosmosMsgsCli {
-            messages,
+            messages: _, // NOTE: not using it for now, might need it later.
             packet_memo,
             timeout_seconds,
         } => {
-            execute::send_cosmos_msgs_cli(deps, env, info, messages, packet_memo, timeout_seconds)
+            execute::send_cosmos_msgs_cli(deps, env, info, packet_memo, timeout_seconds)
         },
     }
 }
@@ -117,6 +118,7 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> Result<Response, C
 
 mod execute {
     use cosmwasm_std::{coins, CosmosMsg, StdResult};
+    use prost::Message;
 
     use crate::{
         ibc::types::{metadata::TxEncoding, packet::IcaPacketData},
@@ -244,7 +246,6 @@ mod execute {
         deps: DepsMut,
         env: Env,
         info: MessageInfo,
-        messages: Vec<CosmosMsg>,
         packet_memo: Option<String>,
         timeout_seconds: Option<u64>,
     ) -> Result<Response, ContractError> {
@@ -259,10 +260,23 @@ mod execute {
         // and pack it into a CosmosMsg
 
         // Declare an instance of MsgPostKey
-        // let msg_post_key = MsgPostKey {
-        //     creator: String::from("Alice"), // TODO: replace with placeholder jkl address 
-        //     key: String::from("Alice's Public Key"),
-        // };
+        let msg_post_key = MsgPostKey {
+            creator: ica_info.ica_address.clone(), 
+            // TODO: implement proper borrowing and don't use clone. Poor memory manamgement leads to high transaction gas cost
+            key: String::from("Hey it's Bi here coming at you from the CLI!"),
+        };
+
+        // Let's marshal post key to bytes and pack it into stargate API 
+        let encoded = msg_post_key.encode_length_delimited_to_vec();
+
+        // WARNING: This is first attempt, there's a good chance we did something wrong when converting post key to bytes
+        let cosmos_msg: CosmosMsg<Empty> = CosmosMsg::Stargate { 
+            type_url: String::from("/canine_chain.filetree.MsgPostKey"), 
+            value: cosmwasm_std::Binary(encoded.to_vec()) 
+        };
+
+        let mut messages = Vec::<CosmosMsg>::new();
+        messages.insert(0, cosmos_msg);
 
 
         let ica_packet = IcaPacketData::from_cosmos_msgs(
