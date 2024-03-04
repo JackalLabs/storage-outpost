@@ -84,7 +84,6 @@ pub fn execute(
             execute::send_cosmos_msgs(deps, env, info, messages, packet_memo, timeout_seconds)
         },
         ExecuteMsg::SendCosmosMsgsCli {
-            messages: _, // NOTE: not using it for now, might need it later.
             packet_memo,
             timeout_seconds,
         } => {

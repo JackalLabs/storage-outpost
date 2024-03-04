@@ -46,8 +46,9 @@ pub enum ExecuteMsg {
     /// `SendCosmosMsgsCli` works the same as above, with the addition that canine-chain's filetree msgs can be 
     /// packed into CosmosMsgs completely from the cli
     SendCosmosMsgsCli {
-        /// The stargate messages to convert and send to the ICA host.
-        messages: Vec<CosmosMsg>,
+        // NOTE: we can include Vec<CosmosMsg> here if needed, but if it's unused in contract.rs,
+        // the chain tx to execute the contract will not parse into this enum variant 
+
         /// Optional memo to include in the ibc packet.
         #[serde(skip_serializing_if = "Option::is_none")]
         packet_memo: Option<String>,
