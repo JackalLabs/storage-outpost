@@ -82,6 +82,13 @@ pub fn execute(
         } => {
             execute::send_cosmos_msgs(deps, env, info, messages, packet_memo, timeout_seconds)
         },
+        ExecuteMsg::SendCosmosMsgsCli {
+            messages,
+            packet_memo,
+            timeout_seconds,
+        } => {
+            execute::send_cosmos_msgs_cli(deps, env, info, messages, packet_memo, timeout_seconds)
+        },
     }
 }
 
@@ -225,6 +232,46 @@ mod execute {
         );
 
         let send_packet_msg = ica_packet.to_ibc_msg(&env, &ica_info.channel_id, None)?;
+
+        Ok(Response::default().add_message(send_packet_msg))
+    }
+
+    // TODO: add explanation for why this function is useful to us
+
+    /// Sends an array of [`CosmosMsg`] to the ICA host.
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn send_cosmos_msgs_cli(
+        deps: DepsMut,
+        env: Env,
+        info: MessageInfo,
+        messages: Vec<CosmosMsg>,
+        packet_memo: Option<String>,
+        timeout_seconds: Option<u64>,
+    ) -> Result<Response, ContractError> {
+
+        let contract_state = STATE.load(deps.storage)?;
+        let ica_info = contract_state.get_ica_info()?;
+
+        // TODO: Create Vec<CosmosMsg>
+        // This isn't the final implementation of the function, we're just prototyping to see what works 
+
+        // TODO: port this type  into src/types 
+        // and pack it into a CosmosMsg
+
+        // Declare an instance of MsgPostKey
+        // let msg_post_key = MsgPostKey {
+        //     creator: String::from("Alice"), // TODO: replace with placeholder jkl address 
+        //     key: String::from("Alice's Public Key"),
+        // };
+
+
+        let ica_packet = IcaPacketData::from_cosmos_msgs(
+            messages,
+            &ica_info.encoding,
+            packet_memo,
+            &ica_info.ica_address,
+        )?;
+        let send_packet_msg = ica_packet.to_ibc_msg(&env, ica_info.channel_id, timeout_seconds)?;
 
         Ok(Response::default().add_message(send_packet_msg))
     }

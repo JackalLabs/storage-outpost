@@ -42,6 +42,20 @@ pub enum ExecuteMsg {
         #[serde(skip_serializing_if = "Option::is_none")]
         timeout_seconds: Option<u64>,
     },
+    /// WARNING: This ExecuteMsg is completely experimental and not ready for production.
+    /// `SendCosmosMsgsCli` works the same as above, with the addition that canine-chain's filetree msgs can be 
+    /// packed into CosmosMsgs completely from the cli
+    SendCosmosMsgsCli {
+        /// The stargate messages to convert and send to the ICA host.
+        messages: Vec<CosmosMsg>,
+        /// Optional memo to include in the ibc packet.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        packet_memo: Option<String>,
+        /// Optional timeout in seconds to include with the ibc packet. 
+        /// If not specified, the [default timeout](crate::ibc::types::packet::DEFAULT_TIMEOUT_SECONDS) is used.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        timeout_seconds: Option<u64>,
+    },
     /// SendCustomIcaMessages sends custom messages from the ICA controller to the ICA host.
     SendCustomIcaMessages {
         /// Base64-encoded json or proto messages to send to the ICA host.
