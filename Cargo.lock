@@ -1481,6 +1481,7 @@ dependencies = [
  "cw-multi-test",
  "cw-storage-plus",
  "cw2",
+ "prost 0.12.3",
  "schemars",
  "semver",
  "serde",
