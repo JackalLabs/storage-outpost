@@ -1,2 +1,6 @@
-INFO: 2024/03/06 12:35:33 creator:"alice" key:"placeholder" 
-INFO: 2024/03/06 12:35:33 &{/canine_chain.filetree.MsgPostKey CgVhbGljZRILcGxhY2Vob2xkZXI=}
+INFO: 2024/03/06 12:48:12 creator:"alice" key:"placeholder" 
+INFO: 2024/03/06 12:48:12 =============
+INFO: 2024/03/06 12:48:12 [creator:"alice" key:"placeholder" ]
+INFO: 2024/03/06 12:48:12 =============
+INFO: 2024/03/06 12:48:12 [10 5 97 108 105 99 101 18 11 112 108 97 99 101 104 111 108 100 101 114]
+INFO: 2024/03/06 12:48:12 &{/canine_chain.filetree.MsgPostKey CgVhbGljZRILcGxhY2Vob2xkZXI=}

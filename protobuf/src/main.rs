@@ -26,12 +26,17 @@ fn main() {
 
     // Declare an instance of MsgPostKey
     let msg_post_key = MsgPostKey {
-        creator: String::from("Alice"), // TODO: replace with placeholder jkl address 
-        key: String::from("Alice's Public Key"),
+        creator: String::from("alice"), // TODO: replace with placeholder jkl address 
+        key: String::from("placeholder"),
     };
+
+    info!("{:?}", msg_post_key);
 
     // Let's marshal post key to bytes and pack it into stargate API 
     let encoded = msg_post_key.encode_length_delimited_to_vec();
+
+    info!("{:?}", encoded);
+
 
     // WARNING: This is first attempt, there's a good chance we did something wrong when converting post key to bytes
     let cosmos_msg: CosmosMsg<Empty> = CosmosMsg::Stargate { 

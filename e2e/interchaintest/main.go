@@ -27,10 +27,16 @@ func main() {
 	// filetree msg is valid proto msg
 	protoMsg := []proto.Message{filetreeMsg}
 
+	logger.LogInfo("=============")
+	logger.LogInfo(protoMsg)
+
 	bz, err := proto.Marshal(protoMsg[0])
 	if err != nil {
 		panic(err)
 	}
+
+	logger.LogInfo("=============")
+	logger.LogInfo(bz)
 
 	protoAny := &sdkcodectypes.Any{
 		TypeUrl: "/" + proto.MessageName(protoMsg[0]),
