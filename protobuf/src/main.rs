@@ -33,7 +33,7 @@ fn main() {
     info!("{:?}", msg_post_key);
 
     // Let's marshal post key to bytes and pack it into stargate API 
-    let encoded = msg_post_key.encode_length_delimited_to_vec();
+    let encoded = msg_post_key.encode_to_vec();
 
     info!("{:?}", encoded);
 
