@@ -266,7 +266,7 @@ mod execute {
         };
 
         // Let's marshal post key to bytes and pack it into stargate API 
-        let encoded = msg_post_key.encode_length_delimited_to_vec();
+        let encoded = msg_post_key.encode_to_vec();
 
         // WARNING: This is first attempt, there's a good chance we did something wrong when converting post key to bytes
         let cosmos_msg: CosmosMsg<Empty> = CosmosMsg::Stargate { 
