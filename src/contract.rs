@@ -60,22 +60,6 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::CreateChannel(options) => execute::create_channel(deps, env, info, options),
-        ExecuteMsg::SendCustomIcaMessages {
-            messages,
-            packet_memo,
-            timeout_seconds,
-        } => execute::send_custom_ica_messages(
-            deps,
-            env,
-            info,
-            messages,
-            packet_memo,
-            timeout_seconds,
-        ),
-        // If we send with protobuf encoding specified, perhaps the ica info need not be set beforehand?
-        ExecuteMsg::SendCoinsProto { recipient_address } => {
-            execute::send_coins_proto(deps, env, info, recipient_address)
-        },
         ExecuteMsg::SendCosmosMsgs {
             messages,
             packet_memo,
@@ -207,35 +191,6 @@ mod execute {
         Ok(Response::default().add_message(send_packet_msg).add_event(event))
 
     }
-    /// Send coins using protobuf encoding 
-    pub fn send_coins_proto(
-        deps: DepsMut,
-        env: Env,
-        info: MessageInfo,
-        recipient_address: String,
-    ) -> Result<Response, ContractError> {
-        let contract_state = STATE.load(deps.storage)?;
-        contract_state.verify_admin(info.sender)?;
-        let ica_info = contract_state.get_ica_info()?;
-
-        let proto_message = MsgSend {
-            from_address: ica_info.ica_address,
-            to_address: recipient_address,
-            amount: vec![Coin {
-                denom: "stake".to_string(),
-                amount: "490".to_string(),
-            }],
-        };
-
-        let ica_packet = IcaPacketData::from_proto_anys(
-            vec![Any::from_msg(&proto_message).unwrap()],
-            None,
-        );
-
-        let send_packet_msg = ica_packet.to_ibc_msg(&env, &ica_info.channel_id, None)?;
-
-        Ok(Response::default().add_message(send_packet_msg))
-    }
 
     // TODO: add explanation for why this function is useful to us
 
@@ -262,7 +217,7 @@ mod execute {
         let msg_post_key = MsgPostKey {
             creator: ica_info.ica_address.clone(), 
             // TODO: implement proper borrowing and don't use clone. Poor memory manamgement leads to high transaction gas cost
-            key: String::from("Hey it's Bi here coming at you from the CLI!"),
+            key: String::from("Hey it's Bi here coming at you from the CLI! Again!"),
         };
 
         // Let's marshal post key to bytes and pack it into stargate API 
@@ -420,15 +375,6 @@ mod tests {
             vec![Any::from_msg(&proto_message).unwrap()],
             None,
         );
-
-        let msg = ExecuteMsg::SendCustomIcaMessages { 
-            messages: to_json_binary(&ica_packet.data).unwrap(), // NOTE: why was 'to_binary' replaced in favor of 'to_json_binary'? 
-            packet_memo: None, 
-            timeout_seconds: None,
-        };
-        let res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
-
-
     }
 
 }

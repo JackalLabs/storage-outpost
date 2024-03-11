@@ -57,46 +57,6 @@ pub enum ExecuteMsg {
         #[serde(skip_serializing_if = "Option::is_none")]
         timeout_seconds: Option<u64>,
     },
-    /// SendCustomIcaMessages sends custom messages from the ICA controller to the ICA host.
-    SendCustomIcaMessages {
-        /// Base64-encoded json or proto messages to send to the ICA host.
-        ///
-        /// # Example JSON Message:
-        ///
-        /// This is a legacy text governance proposal message serialized using proto3json.
-        ///
-        /// ```json
-        ///  {
-        ///    "messages": [
-        ///      {
-        ///        "@type": "/cosmos.gov.v1beta1.MsgSubmitProposal",
-        ///        "content": {
-        ///          "@type": "/cosmos.gov.v1beta1.TextProposal",
-        ///          "title": "IBC Gov Proposal",
-        ///          "description": "tokens for all!"
-        ///        },
-        ///        "initial_deposit": [{ "denom": "stake", "amount": "5000" }],
-        ///        "proposer": "cosmos1k4epd6js8aa7fk4e5l7u6dwttxfarwu6yald9hlyckngv59syuyqnlqvk8"
-        ///      }
-        ///    ]
-        ///  }
-        /// ```
-        ///
-        /// where proposer is the ICA controller's address.
-        messages: Binary,
-        /// Optional memo to include in the ibc packet.
-        #[serde(skip_serializing_if = "Option::is_none")]
-        packet_memo: Option<String>,
-        /// Optional timeout in seconds to include with the ibc packet.
-        /// If not specified, the [default timeout](crate::ibc_module::types::packet::DEFAULT_TIMEOUT_SECONDS) is used.
-        #[serde(skip_serializing_if = "Option::is_none")]
-        timeout_seconds: Option<u64>,
-    },
-    /// sending tokens with the protobuf encoding scheme
-    SendCoinsProto {
-        /// The recipient's address, on the counterparty chain, to send the tokens to from ICA host.
-        recipient_address: String,
-    },
 }
 
 /// The messages to query the ICA controller contract.

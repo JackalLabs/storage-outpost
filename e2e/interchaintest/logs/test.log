@@ -1,6 +1,97 @@
-INFO: 2024/03/06 12:48:12 creator:"alice" key:"placeholder" 
-INFO: 2024/03/06 12:48:12 =============
-INFO: 2024/03/06 12:48:12 [creator:"alice" key:"placeholder" ]
-INFO: 2024/03/06 12:48:12 =============
-INFO: 2024/03/06 12:48:12 [10 5 97 108 105 99 101 18 11 112 108 97 99 101 104 111 108 100 101 114]
-INFO: 2024/03/06 12:48:12 &{/canine_chain.filetree.MsgPostKey CgVhbGljZRILcGxhY2Vob2xkZXI=}
+INFO: 2024/03/11 13:21:14 Wasmd First light client is
+INFO: 2024/03/11 13:21:14 [
+  {
+    "client_id": "07-tendermint-0",
+    "client_state": {
+      "chain_id": "jackal-1"
+    }
+  },
+  {
+    "client_id": "09-localhost",
+    "client_state": {
+      "chain_id": ""
+    }
+  }
+]
+INFO: 2024/03/11 13:21:14 Wasmd Second light client is
+INFO: 2024/03/11 13:21:14 null
+INFO: 2024/03/11 13:21:15 jackal first light client is
+INFO: 2024/03/11 13:21:15 [
+  {
+    "client_id": "07-tendermint-0",
+    "client_state": {
+      "chain_id": "wasmd-1"
+    }
+  }
+]
+INFO: 2024/03/11 13:21:15 jackal second light client is
+INFO: 2024/03/11 13:21:15 null
+INFO: 2024/03/11 13:21:42 {
+  "id": "connection-0",
+  "client_id": "07-tendermint-0",
+  "versions": [
+    {
+      "identifier": "1",
+      "features": [
+        "ORDER_ORDERED",
+        "ORDER_UNORDERED"
+      ]
+    }
+  ],
+  "state": "STATE_OPEN",
+  "counterparty": {
+    "client_id": "07-tendermint-0",
+    "connection_id": "connection-0",
+    "prefix": {
+      "key_prefix": "aWJj"
+    }
+  },
+  "delay_period": "0"
+}
+INFO: 2024/03/11 13:21:42 {
+  "id": "connection-localhost",
+  "client_id": "09-localhost",
+  "versions": [
+    {
+      "identifier": "1",
+      "features": [
+        "ORDER_ORDERED",
+        "ORDER_UNORDERED"
+      ]
+    }
+  ],
+  "state": "STATE_OPEN",
+  "counterparty": {
+    "client_id": "09-localhost",
+    "connection_id": "connection-localhost",
+    "prefix": {
+      "key_prefix": "aWJj"
+    }
+  },
+  "delay_period": "0"
+}
+INFO: 2024/03/11 13:21:43 The first canined connections are:
+INFO: 2024/03/11 13:21:43 {
+  "id": "connection-0",
+  "client_id": "07-tendermint-0",
+  "versions": [
+    {
+      "identifier": "1",
+      "features": [
+        "ORDER_ORDERED",
+        "ORDER_UNORDERED"
+      ]
+    }
+  ],
+  "state": "STATE_OPEN",
+  "counterparty": {
+    "client_id": "07-tendermint-0",
+    "connection_id": "connection-0",
+    "prefix": {
+      "key_prefix": "aWJj"
+    }
+  },
+  "delay_period": "0"
+}
+INFO: 2024/03/11 13:22:20 [0x140014f8d00]
+INFO: 2024/03/11 13:22:58 /
