@@ -26,7 +26,7 @@ pub mod channel {
 
     use cosmwasm_std::CosmosMsg;
 
-    use super::super::{keys, metadata};
+    use super::super::{keys, metadata, transfer_metadata};
 
     /// Creates a new MsgChannelOpenInit for an ica channel with the given contract address.
     /// Also generates the handshake version.
@@ -92,6 +92,33 @@ pub mod channel {
             signer: signer.into(),
         }
     }
+
+    /// Creates a new MsgChannelOpenInit for a transfer channel 
+    pub fn new_transfer_channel_open_init_cosmos_msg(
+        contract_address: impl Into<String> + Clone,
+        connection_id: impl Into<String> + Clone,
+        counterparty_port_id: Option<impl Into<String>>,
+        counterparty_connection_id: impl Into<String>,
+    ) -> CosmosMsg {
+        let version_metadata = transfer_metadata::TransferMetadata::new(
+            keys::TRANSFER_VERSION.into(), 
+            connection_id.clone().into(),
+            counterparty_connection_id.into());
+
+        let msg_channel_open_init = new_ica_channel_open_init_msg(
+            contract_address.clone(), 
+            "transfer", // just hard coding it for now.  
+            connection_id, 
+            counterparty_port_id, 
+            version_metadata.to_string(),
+        );
+
+        CosmosMsg::Stargate { 
+            type_url: "/ibc.core.channel.v1.MsgChannelOpenInit".into(),
+            value: Binary(msg_channel_open_init.encode_to_vec()),
+        }
+    }
+    
 }
 /// Contains the stargate query methods.
 pub mod query {

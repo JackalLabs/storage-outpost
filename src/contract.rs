@@ -60,6 +60,7 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::CreateChannel(options) => execute::create_channel(deps, env, info, options),
+        ExecuteMsg::CreateTransferChannel(options) => execute::create_transfer_channel(deps, env, info, options),
         ExecuteMsg::SendCosmosMsgs {
             messages,
             packet_memo,
@@ -104,7 +105,7 @@ mod execute {
     use prost::Message;
 
     use crate::{
-        ibc::types::{metadata::TxEncoding, packet::IcaPacketData},
+        ibc::types::{metadata::TxEncoding, packet::IcaPacketData, stargate::channel},
         types::msg::options::ChannelOpenInitOptions,
     };
 
@@ -137,23 +138,27 @@ mod execute {
         Ok(Response::new().add_message(ica_channel_open_init_msg))
     }
 
-    // Sends custom messages to the ICA host.
-    pub fn send_custom_ica_messages(
+    /// Submits a stargate MsgChannelOpenInit to the chain for the transfer module
+    pub fn create_transfer_channel(
         deps: DepsMut,
         env: Env,
         info: MessageInfo,
-        messages: Binary,
-        packet_memo: Option<String>,
-        timeout_seconds: Option<u64>,
+        options: ChannelOpenInitOptions,
     ) -> Result<Response, ContractError> {
-        let contract_state = STATE.load(deps.storage)?;
+        let mut contract_state = STATE.load(deps.storage)?;
         contract_state.verify_admin(info.sender)?;
-        let ica_info = contract_state.get_ica_info()?;
 
-        let ica_packet = IcaPacketData::new(messages.to_vec(), packet_memo);
-        let send_packet_msg = ica_packet.to_ibc_msg(&env, ica_info.channel_id, timeout_seconds)?;
+        contract_state.enable_channel_open_init();
+        STATE.save(deps.storage, &contract_state)?;
 
-        Ok(Response::default().add_message(send_packet_msg))
+        let transfer_channel_open_init_msg = channel::new_transfer_channel_open_init_cosmos_msg(
+            env.contract.address.to_string(),
+            options.connection_id,
+            options.counterparty_port_id,
+            options.counterparty_connection_id,
+        );
+
+        Ok(Response::new().add_message(transfer_channel_open_init_msg))
     }
 
     /// Sends an array of [`CosmosMsg`] to the ICA host.

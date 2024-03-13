@@ -26,6 +26,10 @@ pub enum ExecuteMsg {
     /// same fields.
     CreateChannel(options::ChannelOpenInitOptions),
 
+    /// CreateTransferChannel makes the contract submit a stargate MsgChannelOpenInit to the chain.
+    /// This works the same as above but opens a channel for the transfer module specifically.
+    CreateTransferChannel(options::ChannelOpenInitOptions),
+
     /// `SendCosmosMsgs` converts the provided array of [`CosmosMsg`] to an ICA tx and sends them to the ICA host.
     /// [`CosmosMsg::Stargate`] and [`CosmosMsg::Wasm`] are only supported if the [`TxEncoding`](crate::ibc::types::metadata::TxEncoding) is 
     /// [`TxEncoding::Protobuf`](crate::ibc::types::metadata::TxEncoding).
