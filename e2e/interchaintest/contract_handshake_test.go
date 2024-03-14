@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
+	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	mysuite "github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
@@ -37,6 +39,10 @@ func (s *ContractTestSuite) SetupContractTestSuite(ctx context.Context, encoding
 
 	contractAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), codeId, instantiateMsg, true, "--gas", "500000")
 	s.Require().NoError(err)
+
+	logger.InitLogger()
+	fmt.Println("The sender of instantiate is", s.UserA.KeyName())
+	logger.LogInfo("The sender of instantiate is", s.UserA.KeyName())
 
 	s.Contract = types.NewIcaContract(types.NewContract(contractAddr, codeId, s.ChainA))
 

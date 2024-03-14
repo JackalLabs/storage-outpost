@@ -105,7 +105,7 @@ pub mod channel {
             connection_id.clone().into(),
             counterparty_connection_id.into());
 
-        let msg_channel_open_init = new_ica_channel_open_init_msg(
+        let msg_channel_open_init = new_transfer_channel_open_init_msg(
             contract_address.clone(), 
             "transfer", // just hard coding it for now.  
             connection_id, 
@@ -116,6 +116,37 @@ pub mod channel {
         CosmosMsg::Stargate { 
             type_url: "/ibc.core.channel.v1.MsgChannelOpenInit".into(),
             value: Binary(msg_channel_open_init.encode_to_vec()),
+        }
+    }
+
+    /// Creates a new MsgChannelOpenInit for a transfer channel.
+    /// If the counterparty port id is not provided, [`keys::TRANSFER_PORT_ID`] is used.
+    fn new_transfer_channel_open_init_msg(
+        signer: impl Into<String>,
+        port_id: impl Into<String>,
+        connection_id: impl Into<String>,
+        counterparty_port_id: Option<impl Into<String>>,
+        version: impl Into<String>,
+    ) -> MsgChannelOpenInit {
+        let counterparty_port_id = if let Some(port_id) = counterparty_port_id {
+            port_id.into()
+        } else {
+            keys::TRANSFER_PORT_ID.into()
+        };
+
+        MsgChannelOpenInit {
+            port_id: port_id.into(),
+            channel: Some(Channel {
+                state: State::Init.into(),
+                ordering: Order::Unordered.into(),
+                counterparty: Some(Counterparty {
+                    port_id: counterparty_port_id,
+                    channel_id: String::new(),
+                }),
+                connection_hops: vec![connection_id.into()],
+                version: version.into(),
+            }),
+            signer: signer.into(),
         }
     }
     

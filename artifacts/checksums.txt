@@ -1,1 +1,1 @@
-d95572e4072c8263645c011f132ab8e4a9ccf40c1fb29f96706f2dec486b78a6  storage_outpost.wasm
+e3664b2f9bf6221033cacfeecef5c1aa33112fe9f4dd5e6b807df9221fcbf67f  storage_outpost.wasm
