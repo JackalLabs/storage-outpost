@@ -26,8 +26,13 @@ pub fn instantiate(
     let admin = if let Some(admin) = msg.admin {
         deps.api.addr_validate(&admin)?
     } else {
-        info.sender
+        info.sender.clone()
     };
+
+    // Make an event to log the admin
+    let mut event = Event::new("logging admin");
+    event = event.add_attribute("admin", admin.clone());
+    event = event.add_attribute("sender", info.sender.clone());
 
     // Save the admin. Ica address is determined during handshake.
     STATE.save(deps.storage, &ContractState::new(admin))?;
@@ -44,7 +49,7 @@ pub fn instantiate(
             channel_open_init_options.tx_encoding,
         );
 
-        Ok(Response::new().add_message(ica_channel_open_init_msg))
+        Ok(Response::new().add_message(ica_channel_open_init_msg).add_event(event))
     } else {
         Ok(Response::default())
     }
