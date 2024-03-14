@@ -26,7 +26,7 @@ pub mod channel {
 
     use cosmwasm_std::CosmosMsg;
 
-    use super::super::{keys, metadata, transfer_metadata};
+    use super::super::{keys, metadata};
 
     /// Creates a new MsgChannelOpenInit for an ica channel with the given contract address.
     /// Also generates the handshake version.
@@ -98,19 +98,15 @@ pub mod channel {
         contract_address: impl Into<String> + Clone,
         connection_id: impl Into<String> + Clone,
         counterparty_port_id: Option<impl Into<String>>,
-        counterparty_connection_id: impl Into<String>,
+        counterparty_connection_id: impl Into<String>, // Don't need this, not 100% sure why
     ) -> CosmosMsg {
-        let version_metadata = transfer_metadata::TransferMetadata::new(
-            keys::TRANSFER_VERSION.into(), 
-            connection_id.clone().into(),
-            counterparty_connection_id.into());
 
         let msg_channel_open_init = new_transfer_channel_open_init_msg(
             contract_address.clone(), 
-            "transfer", // just hard coding it for now.  
+            keys::TRANSFER_PORT_ID, 
             connection_id, 
             counterparty_port_id, 
-            version_metadata.to_string(),
+            keys::TRANSFER_VERSION
         );
 
         CosmosMsg::Stargate { 

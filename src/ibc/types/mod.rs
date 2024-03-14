@@ -5,4 +5,3 @@ pub mod keys;
 pub mod metadata;
 pub mod packet;
 pub mod stargate;
-pub mod transfer_metadata;
