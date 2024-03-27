@@ -2,7 +2,7 @@
 
 use cosmos_sdk_proto::tendermint::p2p::packet;
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Event};
+use cosmwasm_std::{to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Event, Empty};
 
 use crate::ibc::types::stargate::channel::new_ica_channel_open_init_cosmos_msg;
 use crate::types::keys::{CONTRACT_NAME, CONTRACT_VERSION};
@@ -11,6 +11,7 @@ use crate::types::state::{
     CallbackCounter, ChannelState, ContractState, CALLBACK_COUNTER, CHANNEL_STATE, STATE,
 };
 use crate::types::ContractError;
+use crate::types::filetree::MsgPostKey;
 
 /// Instantiates the contract.
 #[entry_point]
@@ -25,8 +26,13 @@ pub fn instantiate(
     let admin = if let Some(admin) = msg.admin {
         deps.api.addr_validate(&admin)?
     } else {
-        info.sender
+        info.sender.clone()
     };
+
+    // Make an event to log the admin
+    let mut event = Event::new("logging admin");
+    event = event.add_attribute("admin", admin.clone());
+    event = event.add_attribute("sender", info.sender.clone());
 
     // Save the admin. Ica address is determined during handshake.
     STATE.save(deps.storage, &ContractState::new(admin))?;
@@ -43,7 +49,7 @@ pub fn instantiate(
             channel_open_init_options.tx_encoding,
         );
 
-        Ok(Response::new().add_message(ica_channel_open_init_msg))
+        Ok(Response::new().add_message(ica_channel_open_init_msg).add_event(event))
     } else {
         Ok(Response::default())
     }
@@ -59,28 +65,19 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::CreateChannel(options) => execute::create_channel(deps, env, info, options),
-        ExecuteMsg::SendCustomIcaMessages {
-            messages,
-            packet_memo,
-            timeout_seconds,
-        } => execute::send_custom_ica_messages(
-            deps,
-            env,
-            info,
-            messages,
-            packet_memo,
-            timeout_seconds,
-        ),
-        // If we send with protobuf encoding specified, perhaps the ica info need not be set beforehand?
-        ExecuteMsg::SendCoinsProto { recipient_address } => {
-            execute::send_coins_proto(deps, env, info, recipient_address)
-        },
+        ExecuteMsg::CreateTransferChannel(options) => execute::create_transfer_channel(deps, env, info, options),
         ExecuteMsg::SendCosmosMsgs {
             messages,
             packet_memo,
             timeout_seconds,
         } => {
             execute::send_cosmos_msgs(deps, env, info, messages, packet_memo, timeout_seconds)
+        },
+        ExecuteMsg::SendCosmosMsgsCli {
+            packet_memo,
+            timeout_seconds,
+        } => {
+            execute::send_cosmos_msgs_cli(deps, env, info, packet_memo, timeout_seconds)
         },
     }
 }
@@ -110,9 +107,10 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> Result<Response, C
 
 mod execute {
     use cosmwasm_std::{coins, CosmosMsg, StdResult};
+    use prost::Message;
 
     use crate::{
-        ibc::types::{metadata::TxEncoding, packet::IcaPacketData},
+        ibc::types::{metadata::TxEncoding, packet::IcaPacketData, stargate::channel},
         types::msg::options::ChannelOpenInitOptions,
     };
 
@@ -145,23 +143,27 @@ mod execute {
         Ok(Response::new().add_message(ica_channel_open_init_msg))
     }
 
-    // Sends custom messages to the ICA host.
-    pub fn send_custom_ica_messages(
+    /// Submits a stargate MsgChannelOpenInit to the chain for the transfer module
+    pub fn create_transfer_channel(
         deps: DepsMut,
         env: Env,
         info: MessageInfo,
-        messages: Binary,
-        packet_memo: Option<String>,
-        timeout_seconds: Option<u64>,
+        options: ChannelOpenInitOptions,
     ) -> Result<Response, ContractError> {
-        let contract_state = STATE.load(deps.storage)?;
+        let mut contract_state = STATE.load(deps.storage)?;
         contract_state.verify_admin(info.sender)?;
-        let ica_info = contract_state.get_ica_info()?;
 
-        let ica_packet = IcaPacketData::new(messages.to_vec(), packet_memo);
-        let send_packet_msg = ica_packet.to_ibc_msg(&env, ica_info.channel_id, timeout_seconds)?;
+        contract_state.enable_channel_open_init();
+        STATE.save(deps.storage, &contract_state)?;
 
-        Ok(Response::default().add_message(send_packet_msg))
+        let transfer_channel_open_init_msg = channel::new_transfer_channel_open_init_cosmos_msg(
+            env.contract.address.to_string(),
+            options.connection_id,
+            options.counterparty_port_id,
+            options.counterparty_connection_id,
+        );
+
+        Ok(Response::new().add_message(transfer_channel_open_init_msg))
     }
 
     /// Sends an array of [`CosmosMsg`] to the ICA host.
@@ -199,32 +201,55 @@ mod execute {
         Ok(Response::default().add_message(send_packet_msg).add_event(event))
 
     }
-    /// Send coins using protobuf encoding 
-    pub fn send_coins_proto(
+
+    // TODO: add explanation for why this function is useful to us
+
+    /// Sends an array of [`CosmosMsg`] to the ICA host.
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn send_cosmos_msgs_cli(
         deps: DepsMut,
         env: Env,
         info: MessageInfo,
-        recipient_address: String,
+        packet_memo: Option<String>,
+        timeout_seconds: Option<u64>,
     ) -> Result<Response, ContractError> {
+
         let contract_state = STATE.load(deps.storage)?;
-        contract_state.verify_admin(info.sender)?;
         let ica_info = contract_state.get_ica_info()?;
 
-        let proto_message = MsgSend {
-            from_address: ica_info.ica_address,
-            to_address: recipient_address,
-            amount: vec![Coin {
-                denom: "stake".to_string(),
-                amount: "490".to_string(),
-            }],
+        // TODO: Create Vec<CosmosMsg>
+        // This isn't the final implementation of the function, we're just prototyping to see what works 
+
+        // TODO: port this type  into src/types 
+        // and pack it into a CosmosMsg
+
+        // Declare an instance of MsgPostKey
+        let msg_post_key = MsgPostKey {
+            creator: ica_info.ica_address.clone(), 
+            // TODO: implement proper borrowing and don't use clone. Poor memory manamgement leads to high transaction gas cost
+            key: String::from("Hey it's Bi here coming at you from the CLI! Again!"),
         };
 
-        let ica_packet = IcaPacketData::from_proto_anys(
-            vec![Any::from_msg(&proto_message).unwrap()],
-            None,
-        );
+        // Let's marshal post key to bytes and pack it into stargate API 
+        let encoded = msg_post_key.encode_to_vec();
 
-        let send_packet_msg = ica_packet.to_ibc_msg(&env, &ica_info.channel_id, None)?;
+        // WARNING: This is first attempt, there's a good chance we did something wrong when converting post key to bytes
+        let cosmos_msg: CosmosMsg<Empty> = CosmosMsg::Stargate { 
+            type_url: String::from("/canine_chain.filetree.MsgPostKey"), 
+            value: cosmwasm_std::Binary(encoded.to_vec()) 
+        };
+
+        let mut messages = Vec::<CosmosMsg>::new();
+        messages.insert(0, cosmos_msg);
+
+
+        let ica_packet = IcaPacketData::from_cosmos_msgs(
+            messages,
+            &ica_info.encoding,
+            packet_memo,
+            &ica_info.ica_address,
+        )?;
+        let send_packet_msg = ica_packet.to_ibc_msg(&env, ica_info.channel_id, timeout_seconds)?;
 
         Ok(Response::default().add_message(send_packet_msg))
     }
@@ -360,15 +385,6 @@ mod tests {
             vec![Any::from_msg(&proto_message).unwrap()],
             None,
         );
-
-        let msg = ExecuteMsg::SendCustomIcaMessages { 
-            messages: to_json_binary(&ica_packet.data).unwrap(), // NOTE: why was 'to_binary' replaced in favor of 'to_json_binary'? 
-            packet_memo: None, 
-            timeout_seconds: None,
-        };
-        let res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
-
-
     }
 
 }

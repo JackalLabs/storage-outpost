@@ -5,5 +5,6 @@ mod error;
 pub mod keys;
 pub mod msg;
 pub mod state;
+pub mod filetree;
 
 pub use error::ContractError;
