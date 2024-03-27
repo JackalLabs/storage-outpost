@@ -88,9 +88,19 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 
 	// Fund a user account on ChainA and ChainB
 	const userFunds = int64(10_000_000_000)
-	users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), userFunds, s.ChainA, s.ChainB)
-	s.UserA = users[0]
-	s.UserB = users[1]
+	// users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), userFunds, s.ChainA, s.ChainB)
+	userASeed := "fork draw talk diagram fragile online style lecture ecology lawn " +
+		"dress hat modify member leg pluck leaf depend subway grit trumpet tongue crucial stumble"
+	userA, err := interchaintest.GetAndFundTestUserWithMnemonic(ctx, "wasmd", userASeed, userFunds, s.ChainA)
+	s.Require().NoError(err)
+
+	userBSeed := "ladder seminar target wife powder monster clip escape genuine brown twist left element " +
+		"slow earn explain swap miracle split ability market prize false ankle"
+	userB, err := interchaintest.GetAndFundTestUserWithMnemonic(ctx, "jkl", userBSeed, userFunds, s.ChainB)
+	s.Require().NoError(err)
+
+	s.UserA = userA //the wasmd user
+	s.UserB = userB //the jackal user
 
 	// Generate a new IBC path
 	err = s.Relayer.GeneratePath(ctx, s.ExecRep, s.ChainA.Config().ChainID, s.ChainB.Config().ChainID, s.PathName)
