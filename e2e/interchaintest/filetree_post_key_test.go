@@ -77,6 +77,6 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 	},
 	)
 
-	time.Sleep(time.Duration(1) * time.Hour)
+	time.Sleep(time.Duration(10) * time.Hour)
 
 }
