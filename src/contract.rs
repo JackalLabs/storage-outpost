@@ -3,7 +3,6 @@
 use cosmos_sdk_proto::tendermint::p2p::packet;
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Event, Empty};
-
 use crate::ibc::types::stargate::channel::new_ica_channel_open_init_cosmos_msg;
 use crate::types::keys::{CONTRACT_NAME, CONTRACT_VERSION};
 use crate::types::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
@@ -12,6 +11,7 @@ use crate::types::state::{
 };
 use crate::types::ContractError;
 use crate::types::filetree::MsgPostKey;
+
 
 /// Instantiates the contract.
 #[entry_point]
@@ -79,6 +79,13 @@ pub fn execute(
         } => {
             execute::send_cosmos_msgs_cli(deps, env, info, packet_memo, timeout_seconds)
         },
+        ExecuteMsg::SendTransferMsg { 
+            packet_memo, 
+            timeout_seconds,
+            recipient,
+        } => {
+            execute::send_transfer_msg(deps, env, info, packet_memo, timeout_seconds, recipient)
+        }
     }
 }
 
@@ -106,7 +113,7 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> Result<Response, C
 }
 
 mod execute {
-    use cosmwasm_std::{coins, CosmosMsg, StdResult};
+    use cosmwasm_std::{coin, coins, CosmosMsg, IbcMsg, IbcTimeout, IbcTimeoutBlock, StdResult};
     use prost::Message;
 
     use crate::{
@@ -253,7 +260,44 @@ mod execute {
 
         Ok(Response::default().add_message(send_packet_msg))
     }
+
+    /// Sends an array of [`CosmosMsg`] to the ICA host.
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn send_transfer_msg(
+        deps: DepsMut,
+        env: Env,
+        info: MessageInfo,
+        packet_memo: Option<String>,
+        timeout_seconds: Option<u64>,
+        recipient: String
+    ) -> Result<Response, ContractError> {
+
+        let contract_state = STATE.load(deps.storage)?;
+        let ica_info = contract_state.get_ica_info()?;
+
+        // let jackakl_host_address = "jkl1jvnz5jcymt3357k63vemme6vfmagvc07clvmwu0csapvvelvsm8q40cwxz".to_string();
+
+        let timeout_block = IbcTimeoutBlock {
+            revision: 10,
+            height: 1000000,
+        };
+
+        // WARNING: This moves tokens that the CONTRACT owns over to the jkl address on canine-chain, NOT tokens
+        // that the admin owns
+
+        // TODO: Need to fund the contract address with tokens before calling this.
+
+        let cosmos_msg: CosmosMsg<Empty> = CosmosMsg::Ibc(IbcMsg::Transfer { 
+            channel_id: "channel-1".to_string(),
+            to_address: recipient,
+            amount: coin(6000, "stake"),
+            timeout: IbcTimeout::with_block(timeout_block) });
+
+        Ok(Response::default().add_message(cosmos_msg))
+    }
 }
+
+
 
 mod query {
     use super::*;
