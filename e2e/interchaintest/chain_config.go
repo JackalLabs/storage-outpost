@@ -75,7 +75,7 @@ var chainSpecs = []*interchaintest.ChainSpec{
 			},
 			Bin:            "canined",
 			Bech32Prefix:   "jkl",
-			Denom:          "jkl", // do we have to use ujkl or is jkl ok?
+			Denom:          "ujkl", // do we have to use ujkl or is jkl ok?
 			GasPrices:      "0.00ujkl",
 			GasAdjustment:  1.3,
 			EncodingConfig: testtypes.JackaklEncoding(),
