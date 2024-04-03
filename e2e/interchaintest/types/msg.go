@@ -17,6 +17,7 @@ type InstantiateMsg struct {
 // ExecuteMsg is the message to execute cw-ica-controller
 type ExecuteMsg struct {
 	CreateChannel         *ExecuteMsg_CreateChannel         `json:"create_channel,omitempty"`
+	CreateTransferChannel *ExecuteMsg_CreateTransferChannel `json:"create_transfer_channel,omitempty"`
 	SendCosmosMsgs        *ExecuteMsg_SendCosmosMsgs        `json:"send_cosmos_msgs,omitempty"`
 	SendCustomIcaMessages *ExecuteMsg_SendCustomIcaMessages `json:"send_custom_ica_messages,omitempty"`
 	UpdateCallbackAddress *ExecuteMsg_UpdateCallbackAddress `json:"update_callback_address,omitempty"`
@@ -40,6 +41,19 @@ type ExecuteMsg_CreateChannel struct {
 	// The options to initialize the IBC channel.
 	// If not specified, the options specified in the contract instantiation are used.
 	ChannelOpenInitOptions *ChannelOpenInitOptions `json:"channel_open_init_options,omitempty"`
+}
+
+// `CreateTransferChannel` is opening a transfer channel
+// for development purposees only. Not using ChannelOpenInitOptions
+type ExecuteMsg_CreateTransferChannel struct {
+	// The connection id on this chain.
+	ConnectionId string `json:"connection_id"`
+	// The counterparty connection id on the counterparty chain.
+	CounterpartyConnectionId string `json:"counterparty_connection_id"`
+	// The optional counterparty port id.
+	CounterpartyPortId *string `json:"counterparty_port_id,omitempty"`
+	// The optional tx encoding.
+	TxEncoding *string `json:"tx_encoding,omitempty"`
 }
 
 // `SendCosmosMsgs` converts the provided array of [`CosmosMsg`] to an ICA tx and sends them to the ICA host.

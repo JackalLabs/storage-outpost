@@ -113,7 +113,7 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> Result<Response, C
 }
 
 mod execute {
-    use cosmwasm_std::{coin, coins, CosmosMsg, IbcMsg, IbcTimeout, IbcTimeoutBlock, StdResult};
+    use cosmwasm_std::{coin, coins, BankMsg, CosmosMsg, IbcMsg, IbcTimeout, IbcTimeoutBlock, StdResult};
     use prost::Message;
 
     use crate::{
@@ -286,7 +286,10 @@ mod execute {
         // that the admin owns
 
         // TODO: Need to fund the contract address with tokens before calling this.
+        // UX is: One Click to fund contract address, and another click to send the transfer msg?
+        // Or can you bundle both messages in the web client's 'signAndBroadcast'? 
 
+        // let cosmos_bank_msg: CosmosMsg<Empty> = CosmosMsg::Bank(BankMsg::Send { to_address: (), amount: () })
         let cosmos_msg: CosmosMsg<Empty> = CosmosMsg::Ibc(IbcMsg::Transfer { 
             channel_id: "channel-1".to_string(),
             to_address: recipient,
