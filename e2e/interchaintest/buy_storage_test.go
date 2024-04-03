@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"cosmossdk.io/math"
+	"github.com/strangelove-ventures/interchaintest/v7/ibc"
+
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
@@ -27,11 +30,15 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithBuyStorage() {
 	s.SetupContractTestSuite(ctx, encoding)
 	_, canined := s.ChainA, s.ChainB
 	wasmdUser := s.UserA
+	// caninedUser := s.UserB
 
 	logger.LogInfo(canined.FullNodes)
+	logger.LogInfo("The wasmd user is:", wasmdUser.FormattedAddress())
 
+	// NOTE: we're commenting out this code so that the IcaAddress won't have any funds until the user
+	// story of buying storage is complete
 	// Fund the ICA address:
-	s.FundAddressChainB(ctx, s.IcaAddress)
+	// s.FundAddressChainB(ctx, s.IcaAddress)
 
 	// Give canined some time to complete the handshake
 	time.Sleep(time.Duration(30) * time.Second)
@@ -50,9 +57,23 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithBuyStorage() {
 				CounterpartyPortId:       &CounterpartyPortId,
 			},
 		}
-
 		err := s.Contract.Execute(ctx, wasmdUser.KeyName(), createTransferChannelMsg)
 		s.Require().NoError(err)
+
+		var walletAmount = ibc.WalletAmount{
+			Address: wasmdUser.FormattedAddress(),
+			Denom:   "ujkl",
+			Amount:  math.NewInt(65000),
+		}
+
+		var transferOptions = ibc.TransferOptions{
+			Timeout: &ibc.IBCTimeout{
+				// does it use a default if these values not set?
+			},
+			Memo: "none",
+		}
+		// We know the transfer channel will consistently have a channel id of 'channel-1'
+		canined.SendIBCTransfer(ctx, "channel-1", s.UserB.KeyName(), walletAmount, transferOptions)
 
 	},
 	)
