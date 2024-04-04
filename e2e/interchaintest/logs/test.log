@@ -1,3 +1,28 @@
-INFO: 2024/04/04 11:31:46 The sender of instantiate is wasmd-wasmd-1-dwy
-INFO: 2024/04/04 11:31:58 [0x14000adaa00]
-INFO: 2024/04/04 11:31:58 The wasmd user is: wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag
+INFO: 2024/04/04 12:58:53 Wasmd First light client is
+INFO: 2024/04/04 12:58:53 [
+  {
+    "client_id": "07-tendermint-0",
+    "client_state": {
+      "chain_id": "jackal-1"
+    }
+  },
+  {
+    "client_id": "09-localhost",
+    "client_state": {
+      "chain_id": ""
+    }
+  }
+]
+INFO: 2024/04/04 12:58:53 Wasmd Second light client is
+INFO: 2024/04/04 12:58:53 null
+INFO: 2024/04/04 12:58:53 jackal first light client is
+INFO: 2024/04/04 12:58:53 [
+  {
+    "client_id": "07-tendermint-0",
+    "client_state": {
+      "chain_id": "wasmd-1"
+    }
+  }
+]
+INFO: 2024/04/04 12:58:53 jackal second light client is
+INFO: 2024/04/04 12:58:53 null

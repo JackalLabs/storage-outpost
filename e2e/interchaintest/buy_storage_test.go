@@ -9,6 +9,7 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
 
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
+	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 
@@ -16,7 +17,7 @@ import (
 )
 
 // WARNING: strangelove's test package builds chains running ibc-go/v7
-// Hopefully this won't cause issues because the canined image we use is running ibc-go/v4
+// Hopefully this won't cause issues even though the canined image we use is running ibc-go/v4
 // and packets should be consumed by the ica host no matter what version of ibc-go the controller chain is running
 
 func (s *ContractTestSuite) TestIcaContractExecutionTestWithBuyStorage() {
@@ -68,6 +69,11 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithBuyStorage() {
 			Denom:   "ujkl",
 			Amount:  math.NewInt(689000),
 		}
+
+		denomTrace := types.ParseDenomTrace("ujkl")
+		logger.LogInfo("ujkl denomTrace is:", denomTrace)
+		ibcDenom := denomTrace.IBCDenom()
+		logger.LogInfo("ujkl converted to ibc denom is:", ibcDenom)
 
 		var transferOptions = ibc.TransferOptions{
 			Timeout: &ibc.IBCTimeout{

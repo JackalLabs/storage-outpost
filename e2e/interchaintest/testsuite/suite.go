@@ -94,8 +94,8 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 	userA, err := interchaintest.GetAndFundTestUserWithMnemonic(ctx, "wasmd", userASeed, userFunds, s.ChainA)
 	s.Require().NoError(err)
 
-	userBSeed := "ladder seminar target wife powder monster clip escape genuine brown twist left element " +
-		"slow earn explain swap miracle split ability market prize false ankle"
+	userBSeed := "brief enhance flee chest rabbit matter chaos clever lady enable luggage arrange hint " +
+		"quarter change float embark canoe chalk husband legal dignity music web"
 	userB, err := interchaintest.GetAndFundTestUserWithMnemonic(ctx, "jkl", userBSeed, userFunds, s.ChainB)
 	s.Require().NoError(err)
 
