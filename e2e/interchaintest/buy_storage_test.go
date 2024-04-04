@@ -60,10 +60,13 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithBuyStorage() {
 		err := s.Contract.Execute(ctx, wasmdUser.KeyName(), createTransferChannelMsg)
 		s.Require().NoError(err)
 
+		// Give the transfer channel some time to be in the OPEN state
+		time.Sleep(time.Duration(60) * time.Second)
+
 		var walletAmount = ibc.WalletAmount{
 			Address: wasmdUser.FormattedAddress(),
 			Denom:   "ujkl",
-			Amount:  math.NewInt(65000),
+			Amount:  math.NewInt(689000),
 		}
 
 		var transferOptions = ibc.TransferOptions{
@@ -73,7 +76,37 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithBuyStorage() {
 			Memo: "none",
 		}
 		// We know the transfer channel will consistently have a channel id of 'channel-1'
-		canined.SendIBCTransfer(ctx, "channel-1", s.UserB.KeyName(), walletAmount, transferOptions)
+		tx, err := canined.SendIBCTransfer(ctx, "channel-1", s.UserB.KeyName(), walletAmount, transferOptions)
+		s.Require().NoError(err)
+
+		logger.LogInfo("The IBC tx hash is:", tx.TxHash)
+
+		/* NOTE: The transfer was successful but we're having trouble printing out the tx hash and getting this error
+
+						=== NAME  TestWithContractTestSuite/TestIcaContractExecutionTestWithBuyStorage/TestSendCustomIcaMesssagesSuccess-proto3
+				    buy_storage_test.go:80:
+				                Error Trace:    /Users/biphan/jackal/storage-outpost/e2e/interchaintest/buy_storage_test.go:80
+				                                                        /Users/biphan/go/pkg/mod/github.com/stretchr/testify@v1.8.4/suite/suite.go:112
+				                Error:          Received unexpected error:
+				                                failed to get transaction 3F19EB167CB07AA598ED00306770055AB19FB6926F5FC0873A5EDA9F4268C5DA: unable to resolve type URL /ibc.applications.transfer.v1.MsgTransfer: tx parse error [cosmos/cosmos-sdk@v0.47.5/x/auth/tx/decoder.go:42]
+				                Test:           TestWithContractTestSuite/TestIcaContractExecutionTestWithBuyStorage/TestSendCustomIcaMesssagesSuccess-proto3
+
+				But the amount came through though:
+
+		/opt # wasmd q bank balances wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag
+		balances:
+		- amount: "689000"
+		  denom: ibc/08D1E6BD9CB813AE1E5FF4C0EBC9F4B96B1F3D23DE75077EE6BE79127C497145
+		- amount: "10000000000"
+		  denom: stake
+		pagination:
+		  next_key: null
+		  total: "0"
+		/opt #
+
+		Likely caused by canine-chain being on v0.45 and not v0.47
+
+		*/
 
 	},
 	)
