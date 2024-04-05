@@ -8,10 +8,12 @@ import (
 	"cosmossdk.io/math"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
 
+	"github.com/cosmos/gogoproto/proto"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
+	storagetypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/storagetypes"
 
 	testtypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 )
@@ -32,6 +34,7 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithBuyStorage() {
 	wasmd, canined := s.ChainA, s.ChainB
 	wasmdUser := s.UserA
 	caninedUser := s.UserB
+	icaHostAddress := s.Contract.IcaAddress
 
 	// Give canined some time to complete the handshake
 	time.Sleep(time.Duration(30) * time.Second)
@@ -91,6 +94,24 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithBuyStorage() {
 
 		tx1, _ := wasmd.SendIBCTransfer(ctx, "channel-1", wasmdUser.KeyName(), jklIBCWalletAmount, transferOptions)
 		logger.LogInfo("The IBC tx hash is:", tx1.TxHash)
+
+		// Now that the ica host has ujkl, we can buy storage
+
+		buyStorageMsg := &storagetypes.MsgBuyStorage{
+			Creator:      icaHostAddress, // The ica host address
+			ForAddress:   icaHostAddress,
+			DurationDays: 30,
+			Bytes:        1_000_000_000_000,
+			PaymentDenom: "ujkl",
+			Referral:     "",
+		}
+		typeURL := "/canine_chain.storage.MsgBuyStorage"
+
+		sendStargateMsg := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
+			[]proto.Message{buyStorageMsg}, nil, nil, typeURL,
+		)
+		error := s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg)
+		s.Require().NoError(error)
 
 	},
 	)

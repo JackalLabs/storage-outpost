@@ -69,7 +69,7 @@ var chainSpecs = []*interchaintest.ChainSpec{
 			Images: []ibc.DockerImage{
 				{
 					Repository: "biphan4/canine-chain", // FOR LOCAL IMAGE USE: Docker Image Name
-					Version:    "0.0.20",               // FOR LOCAL IMAGE USE: Docker Image Tag
+					Version:    "0.0.19",               // FOR LOCAL IMAGE USE: Docker Image Tag
 					// NOTE: 0.0.20 is built from canine-chain ica branch with latest master merged in
 				},
 			},
