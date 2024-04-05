@@ -29,17 +29,9 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithBuyStorage() {
 	// This starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
 	// sets up the contract and does the channel handshake for the contract test suite.
 	s.SetupContractTestSuite(ctx, encoding)
-	_, canined := s.ChainA, s.ChainB
+	wasmd, canined := s.ChainA, s.ChainB
 	wasmdUser := s.UserA
-	// caninedUser := s.UserB
-
-	logger.LogInfo(canined.FullNodes)
-	logger.LogInfo("The wasmd user is:", wasmdUser.FormattedAddress())
-
-	// NOTE: we're commenting out this code so that the IcaAddress won't have any funds until the user
-	// story of buying storage is complete
-	// Fund the ICA address:
-	// s.FundAddressChainB(ctx, s.IcaAddress)
+	caninedUser := s.UserB
 
 	// Give canined some time to complete the handshake
 	time.Sleep(time.Duration(30) * time.Second)
@@ -64,55 +56,41 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithBuyStorage() {
 		// Give the transfer channel some time to be in the OPEN state
 		time.Sleep(time.Duration(60) * time.Second)
 
-		var walletAmount = ibc.WalletAmount{
+		var jklWalletAmount = ibc.WalletAmount{
 			Address: wasmdUser.FormattedAddress(),
 			Denom:   "ujkl",
-			Amount:  math.NewInt(689000),
+			Amount:  math.NewInt(500_000_000),
 		}
-
-		denomTrace := types.ParseDenomTrace("ujkl")
-		logger.LogInfo("ujkl denomTrace is:", denomTrace)
-		ibcDenom := denomTrace.IBCDenom()
-		logger.LogInfo("ujkl converted to ibc denom is:", ibcDenom)
 
 		var transferOptions = ibc.TransferOptions{
 			Timeout: &ibc.IBCTimeout{
 				// does it use a default if these values not set?
 			},
-			Memo: "none",
+			// Memo: "optional",
 		}
+		// Let's have the caninedUser ibc transfer the wasmdUser some jkl. Right now, this is best efforts
+		// in simulating jkl being on wasmd with an ibc denom. Astrovault on Archway already
+		// contains jkl in its ibc form so users can just buy that
+
 		// We know the transfer channel will consistently have a channel id of 'channel-1'
-		tx, err := canined.SendIBCTransfer(ctx, "channel-1", s.UserB.KeyName(), walletAmount, transferOptions)
-		s.Require().NoError(err)
+		tx0, _ := canined.SendIBCTransfer(ctx, "channel-1", caninedUser.KeyName(), jklWalletAmount, transferOptions)
+		// s.Require().NoError(err)
+		// *NOTE: ibc transfer completes but errors in parsing the tx hash due to sdk version mismatch between canine-chain and SL interchaintest package
 
-		logger.LogInfo("The IBC tx hash is:", tx.TxHash)
+		logger.LogInfo("The IBC tx hash is:", tx0.TxHash) // Need to use the returned tx else 'SendIBCTransfer' just stalls
 
-		/* NOTE: The transfer was successful but we're having trouble printing out the tx hash and getting this error
+		transferCoin := types.GetTransferCoin("transfer", "channel-1", "ujkl", math.NewInt(250_000_000))
+		logger.LogInfo("ibc transfer coin Denom is:", transferCoin.Denom)
 
-						=== NAME  TestWithContractTestSuite/TestIcaContractExecutionTestWithBuyStorage/TestSendCustomIcaMesssagesSuccess-proto3
-				    buy_storage_test.go:80:
-				                Error Trace:    /Users/biphan/jackal/storage-outpost/e2e/interchaintest/buy_storage_test.go:80
-				                                                        /Users/biphan/go/pkg/mod/github.com/stretchr/testify@v1.8.4/suite/suite.go:112
-				                Error:          Received unexpected error:
-				                                failed to get transaction 3F19EB167CB07AA598ED00306770055AB19FB6926F5FC0873A5EDA9F4268C5DA: unable to resolve type URL /ibc.applications.transfer.v1.MsgTransfer: tx parse error [cosmos/cosmos-sdk@v0.47.5/x/auth/tx/decoder.go:42]
-				                Test:           TestWithContractTestSuite/TestIcaContractExecutionTestWithBuyStorage/TestSendCustomIcaMesssagesSuccess-proto3
+		// With jkl now on wasmd, we can do an ibc transfer straight to the ica host
+		var jklIBCWalletAmount = ibc.WalletAmount{
+			Address: s.IcaAddress,       // The ica host address
+			Denom:   transferCoin.Denom, //jkl's ibc denom on wasmd, which will convert back to jkl
+			Amount:  transferCoin.Amount,
+		}
 
-				But the amount came through though:
-
-		/opt # wasmd q bank balances wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag
-		balances:
-		- amount: "689000"
-		  denom: ibc/08D1E6BD9CB813AE1E5FF4C0EBC9F4B96B1F3D23DE75077EE6BE79127C497145
-		- amount: "10000000000"
-		  denom: stake
-		pagination:
-		  next_key: null
-		  total: "0"
-		/opt #
-
-		Likely caused by canine-chain being on v0.45 and not v0.47
-
-		*/
+		tx1, _ := wasmd.SendIBCTransfer(ctx, "channel-1", wasmdUser.KeyName(), jklIBCWalletAmount, transferOptions)
+		logger.LogInfo("The IBC tx hash is:", tx1.TxHash)
 
 	},
 	)

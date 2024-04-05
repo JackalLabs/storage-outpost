@@ -94,6 +94,7 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 	userA, err := interchaintest.GetAndFundTestUserWithMnemonic(ctx, "wasmd", userASeed, userFunds, s.ChainA)
 	s.Require().NoError(err)
 
+	// this is the seed phrase for the danny user that appears in all of canine-chain's testing scripts
 	userBSeed := "brief enhance flee chest rabbit matter chaos clever lady enable luggage arrange hint " +
 		"quarter change float embark canoe chalk husband legal dignity music web"
 	userB, err := interchaintest.GetAndFundTestUserWithMnemonic(ctx, "jkl", userBSeed, userFunds, s.ChainB)

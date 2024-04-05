@@ -1,28 +1,4 @@
-INFO: 2024/04/04 12:58:53 Wasmd First light client is
-INFO: 2024/04/04 12:58:53 [
-  {
-    "client_id": "07-tendermint-0",
-    "client_state": {
-      "chain_id": "jackal-1"
-    }
-  },
-  {
-    "client_id": "09-localhost",
-    "client_state": {
-      "chain_id": ""
-    }
-  }
-]
-INFO: 2024/04/04 12:58:53 Wasmd Second light client is
-INFO: 2024/04/04 12:58:53 null
-INFO: 2024/04/04 12:58:53 jackal first light client is
-INFO: 2024/04/04 12:58:53 [
-  {
-    "client_id": "07-tendermint-0",
-    "client_state": {
-      "chain_id": "wasmd-1"
-    }
-  }
-]
-INFO: 2024/04/04 12:58:53 jackal second light client is
-INFO: 2024/04/04 12:58:53 null
+INFO: 2024/04/05 17:26:38 The sender of instantiate is wasmd-wasmd-1-tdm
+INFO: 2024/04/05 17:28:32 The IBC tx hash is: 
+INFO: 2024/04/05 17:28:32 ibc transfer coin Denom is: ibc/08D1E6BD9CB813AE1E5FF4C0EBC9F4B96B1F3D23DE75077EE6BE79127C497145
+INFO: 2024/04/05 17:28:36 The IBC tx hash is: D718B363A3D51F7C8EED2C9AEC49A94F35B80E67EAA6DA52BEFF03A78FA89260
