@@ -20,6 +20,7 @@ import (
 // Hopefully this won't cause issues because the canined image we use is running ibc-go/v4
 // and packets should be consumed by the ica host no matter what version of ibc-go the controller chain is running
 
+// DOUBLY WARNING: We haven't used this test in some time, so carefully review its purpose and delete if needed
 func (s *ContractTestSuite) TestIcaContractExecutionTestWithProtobuf() {
 	ctx := context.Background()
 
@@ -75,7 +76,8 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithProtobuf() {
 		// still does not work for filetree at this time.
 
 		sendStargateMsg := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
-			[]proto.Message{proposalMsg, depositMsg}, nil, nil,
+			// not using this test atm so just leaving a placeholder instead of a proper typeURL to prevent the error
+			[]proto.Message{proposalMsg, depositMsg}, nil, nil, "placeholder",
 		)
 		err = s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg)
 		s.Require().NoError(err)

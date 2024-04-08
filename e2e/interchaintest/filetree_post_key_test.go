@@ -68,8 +68,10 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 
 		// TO DO: Call backs to confirm success
 
+		typeURL := "/canine_chain.filetree.MsgPostKey"
+
 		sendStargateMsg := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
-			[]proto.Message{filetreeMsg}, nil, nil,
+			[]proto.Message{filetreeMsg}, nil, nil, typeURL,
 		)
 		error := s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg)
 		s.Require().NoError(error)

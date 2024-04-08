@@ -61,6 +61,20 @@ pub enum ExecuteMsg {
         #[serde(skip_serializing_if = "Option::is_none")]
         timeout_seconds: Option<u64>,
     },
+    /// `SendTransferMsg` sends a local token to Jackal using ICS-20 
+    SendTransferMsg {
+        /// Let's hard code one specific transfer msg for now just to see if it works 
+        // messages: Vec<CosmosMsg>,
+        /// Optional memo to include in the ibc packet.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        packet_memo: Option<String>,
+        /// Optional timeout in seconds to include with the ibc packet. 
+        /// If not specified, the [default timeout](crate::ibc::types::packet::DEFAULT_TIMEOUT_SECONDS) is used.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        timeout_seconds: Option<u64>,
+        /// The receiver of the tokens on the Jackal chain
+        recipient: String,
+    },
 }
 
 /// The messages to query the ICA controller contract.

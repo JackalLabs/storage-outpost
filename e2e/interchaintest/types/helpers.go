@@ -30,7 +30,7 @@ func NewExecuteMsg_SendCustomIcaMessages_FromProto(cdc codec.BinaryCodec, msgs [
 }
 
 // NewExecuteMsg_SendCosmosMsgs_FromProto creates a new ExecuteMsg_SendCosmosMsgs.
-func NewExecuteMsg_SendCosmosMsgs_FromProto(msgs []proto.Message, memo *string, timeout *uint64) ExecuteMsg {
+func NewExecuteMsg_SendCosmosMsgs_FromProto(msgs []proto.Message, memo *string, timeout *uint64, typeURL string) ExecuteMsg {
 	cosmosMsgs := make([]ContractCosmosMsg, len(msgs))
 
 	for i, msg := range msgs {
@@ -39,17 +39,10 @@ func NewExecuteMsg_SendCosmosMsgs_FromProto(msgs []proto.Message, memo *string, 
 			panic(err)
 		}
 
-		/// This matches the below from canine-chain/x/filetree/types/codec.go
-		// func RegisterCodec(cdc *codec.LegacyAmino) {
-		// 	cdc.RegisterConcrete(&MsgPostFile{}, "filetree/PostFile", nil)
-		// 	cdc.RegisterConcrete(&MsgAddViewers{}, "filetree/AddViewers", nil)
-		// 	cdc.RegisterConcrete(&MsgPostKey{}, "filetree/PostKey", nil)
-
-		protoAny.TypeUrl = "/canine_chain.filetree.MsgPostKey"
-
 		cosmosMsgs[i] = ContractCosmosMsg{
 			Stargate: &StargateCosmosMsg{
-				TypeUrl: protoAny.TypeUrl,
+				// 'protoAny.TypeUrl' is not returning the TypeURL atm so we just take it in as a variable
+				TypeUrl: typeURL,
 				Value:   base64.StdEncoding.EncodeToString(protoAny.Value),
 			},
 		}
