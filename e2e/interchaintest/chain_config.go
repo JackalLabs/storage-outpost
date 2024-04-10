@@ -90,7 +90,7 @@ var chainSpecs = []*interchaintest.ChainSpec{
 		ChainConfig: ibc.ChainConfig{
 			Type:    "cosmos",
 			Name:    "canined",
-			ChainID: "jackal-1",
+			ChainID: "puppy-1",
 			Images: []ibc.DockerImage{
 				{
 					Repository: "biphan4/canine-chain", // FOR LOCAL IMAGE USE: Docker Image Name
