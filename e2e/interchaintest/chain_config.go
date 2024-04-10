@@ -75,8 +75,8 @@ var chainSpecs = []*interchaintest.ChainSpec{
 			},
 			Bin:           "wasmd",
 			Bech32Prefix:  "wasm",
-			Denom:         "wsm",
-			GasPrices:     "0.00wsm",
+			Denom:         "uwsm",
+			GasPrices:     "0.00uwsm",
 			GasAdjustment: 1.3,
 			// cannot run wasmd commands without wasm encoding
 			EncodingConfig: wasm.WasmEncoding(),
