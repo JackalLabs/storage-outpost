@@ -57,6 +57,8 @@ serde-json-wasm = "0.5.1"
 thiserror = { version = "1.0.31" }
 cosmos-sdk-proto = { version = "0.20.0", default-features = false, features = ["cosmwasm"] }
 semver = "1.0"
+sha2 = "0.10.2"
+hex = "0.4.3"
 
 [dev-dependencies]
 cw-multi-test = "0.16.5"

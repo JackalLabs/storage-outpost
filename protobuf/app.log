@@ -1,5 +1,5 @@
-18:25:35 [INFO] preparing post key for tx
-18:25:35 [INFO] MsgPostKey { creator: "alice", key: "placeholder" }
-18:25:35 [INFO] [10, 5, 97, 108, 105, 99, 101, 18, 11, 112, 108, 97, 99, 101, 104, 111, 108, 100, 101, 114]
-18:25:35 [INFO] Stargate type_url: /canine_chain.filetree.MsgPostKey, value: Binary(0a05616c696365120b706c616365686f6c646572)
-18:25:35 [INFO] Encoded MsgPostKey length: 20 bytes, starts with: [10, 5, 97, 108, 105, 99, 101, 18, 11, 112]
+20:07:49 [INFO] preparing post key for tx
+20:07:49 [INFO] MsgPostKey { creator: "alice", key: "placeholder" }
+20:07:49 [INFO] [10, 5, 97, 108, 105, 99, 101, 18, 11, 112, 108, 97, 99, 101, 104, 111, 108, 100, 101, 114]
+20:07:49 [INFO] Stargate type_url: /canine_chain.filetree.MsgPostKey, value: Binary(0a05616c696365120b706c616365686f6c646572)
+20:07:49 [INFO] Encoded MsgPostKey length: 20 bytes, starts with: [10, 5, 97, 108, 105, 99, 101, 18, 11, 112]
