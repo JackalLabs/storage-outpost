@@ -77,8 +77,9 @@ pub fn execute(
         ExecuteMsg::SendCosmosMsgsCli {
             packet_memo,
             timeout_seconds,
+            path,
         } => {
-            execute::send_cosmos_msgs_cli(deps, env, info, packet_memo, timeout_seconds)
+            execute::send_cosmos_msgs_cli(deps, env, info, packet_memo, timeout_seconds, &path)
         },
         ExecuteMsg::SendTransferMsg { 
             packet_memo, 
@@ -220,6 +221,7 @@ mod execute {
         info: MessageInfo,
         packet_memo: Option<String>,
         timeout_seconds: Option<u64>,
+        path: &str,
     ) -> Result<Response, ContractError> {
 
         let contract_state = STATE.load(deps.storage)?;
@@ -231,7 +233,7 @@ mod execute {
         // TODO: port this type  into src/types 
         // and pack it into a CosmosMsg
 
-        let (parent_hash, child_hash) = merkle_helper("s/home/");
+        let (parent_hash, child_hash) = merkle_helper(path);
 
         // Declare an instance of msg_post_file
         let msg_post_file = MsgPostFile {
@@ -240,10 +242,10 @@ mod execute {
             account: hash_and_hex(&ica_info.ica_address),
             hash_parent: parent_hash,
             hash_child: child_hash,
-            contents: "placeholder".to_owned(),
-            viewers: "placeholder".to_owned(),
-            editors: "placeholder".to_owned(),
-            tracking_number: "placeholder".to_owned(),
+            contents: format!("placeholder - {}", path),
+            viewers: format!("placeholder - {}", path),
+            editors: format!("placeholder - {}", path),
+            tracking_number: format!("placeholder - {}", path),
         };
 
         // Let's marshal post key to bytes and pack it into stargate API 

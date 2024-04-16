@@ -60,6 +60,9 @@ pub enum ExecuteMsg {
         /// If not specified, the [default timeout](crate::ibc::types::packet::DEFAULT_TIMEOUT_SECONDS) is used.
         #[serde(skip_serializing_if = "Option::is_none")]
         timeout_seconds: Option<u64>,
+
+        /// readable path
+        path: String,
     },
     /// `SendTransferMsg` sends a local token to Jackal using ICS-20 
     SendTransferMsg {
