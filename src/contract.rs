@@ -10,7 +10,8 @@ use crate::types::state::{
     CallbackCounter, ChannelState, ContractState, CALLBACK_COUNTER, CHANNEL_STATE, STATE,
 };
 use crate::types::ContractError;
-use crate::types::filetree::MsgPostKey;
+use crate::types::filetree::{MsgPostKey, MsgPostFile};
+use crate::helpers::filetree_helpers::{hash_and_hex, merkle_helper};
 
 
 /// Instantiates the contract.
@@ -76,8 +77,9 @@ pub fn execute(
         ExecuteMsg::SendCosmosMsgsCli {
             packet_memo,
             timeout_seconds,
+            path,
         } => {
-            execute::send_cosmos_msgs_cli(deps, env, info, packet_memo, timeout_seconds)
+            execute::send_cosmos_msgs_cli(deps, env, info, packet_memo, timeout_seconds, &path)
         },
         ExecuteMsg::SendTransferMsg { 
             packet_memo, 
@@ -219,6 +221,7 @@ mod execute {
         info: MessageInfo,
         packet_memo: Option<String>,
         timeout_seconds: Option<u64>,
+        path: &str,
     ) -> Result<Response, ContractError> {
 
         let contract_state = STATE.load(deps.storage)?;
@@ -230,25 +233,32 @@ mod execute {
         // TODO: port this type  into src/types 
         // and pack it into a CosmosMsg
 
-        // Declare an instance of MsgPostKey
-        let msg_post_key = MsgPostKey {
-            creator: ica_info.ica_address.clone(), 
+        let (parent_hash, child_hash) = merkle_helper(path);
+
+        // Declare an instance of msg_post_file
+        let msg_post_file = MsgPostFile {
             // TODO: implement proper borrowing and don't use clone. Poor memory manamgement leads to high transaction gas cost
-            key: String::from("Hey it's Bi here coming at you from the CLI! Again!"),
+            creator: ica_info.ica_address.clone(), 
+            account: hash_and_hex(&ica_info.ica_address),
+            hash_parent: parent_hash,
+            hash_child: child_hash,
+            contents: format!("placeholder - {}", path),
+            viewers: format!("placeholder - {}", path),
+            editors: format!("placeholder - {}", path),
+            tracking_number: format!("placeholder - {}", path),
         };
 
         // Let's marshal post key to bytes and pack it into stargate API 
-        let encoded = msg_post_key.encode_to_vec();
+        let encoded = msg_post_file.encode_to_vec();
 
         // WARNING: This is first attempt, there's a good chance we did something wrong when converting post key to bytes
         let cosmos_msg: CosmosMsg<Empty> = CosmosMsg::Stargate { 
-            type_url: String::from("/canine_chain.filetree.MsgPostKey"), 
+            type_url: String::from("/canine_chain.filetree.MsgPostFile"), 
             value: cosmwasm_std::Binary(encoded.to_vec()) 
         };
 
         let mut messages = Vec::<CosmosMsg>::new();
         messages.insert(0, cosmos_msg);
-
 
         let ica_packet = IcaPacketData::from_cosmos_msgs(
             messages,
@@ -258,7 +268,13 @@ mod execute {
         )?;
         let send_packet_msg = ica_packet.to_ibc_msg(&env, ica_info.channel_id, timeout_seconds)?;
 
-        Ok(Response::default().add_message(send_packet_msg))
+        // Make a logging event 
+        let mut event = Event::new("logging");
+
+        // Add some placeholder logs
+        event = event.add_attribute("file account", msg_post_file.account);
+
+        Ok(Response::default().add_message(send_packet_msg).add_event(event))
     }
 
     /// Sends an array of [`CosmosMsg`] to the ICA host.
@@ -435,3 +451,12 @@ mod tests {
     }
 
 }
+
+
+
+
+
+
+
+
+

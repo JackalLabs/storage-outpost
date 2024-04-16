@@ -2,11 +2,20 @@ use std::{any::Any, env, fs::File, string::String};
 use cosmos_sdk_proto::traits::Message;
 use log::{info, LevelFilter};
 use simplelog::*;
-use storage_outpost::types::cosmos_msg;
+use storage_outpost::{helpers::filetree_helpers::merkle_helper, types::cosmos_msg};
 use cosmwasm_std::{CosmosMsg, Empty};
 
 
 fn main() {
+
+    // Example usage of merkle_helper
+    let arg_hashpath = "s/home";
+    let (parent_hash, child_hash) = merkle_helper(arg_hashpath);
+
+    println!("Merkle Path: {}", arg_hashpath);
+    println!("Parent Hash: {}", parent_hash);
+    println!("Child Hash: {}", child_hash);
+
     print!("Building all proto files");
 
     // This is just a sandbox/playground so we don't need to use a build script for now

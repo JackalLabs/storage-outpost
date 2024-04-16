@@ -66,7 +66,7 @@ var chainSpecs = []*interchaintest.ChainSpec{
 		ChainConfig: ibc.ChainConfig{
 			Type:    "cosmos",
 			Name:    "wasmd",
-			ChainID: "wasmd-1",
+			ChainID: "localwasm-1",
 			Images: []ibc.DockerImage{
 				{
 					Repository: "cosmwasm/wasmd", // FOR LOCAL IMAGE USE: Docker Image Name
@@ -75,8 +75,8 @@ var chainSpecs = []*interchaintest.ChainSpec{
 			},
 			Bin:           "wasmd",
 			Bech32Prefix:  "wasm",
-			Denom:         "stake",
-			GasPrices:     "0.00stake",
+			Denom:         "uwsm",
+			GasPrices:     "0.00uwsm",
 			GasAdjustment: 1.3,
 			// cannot run wasmd commands without wasm encoding
 			EncodingConfig: wasm.WasmEncoding(),
@@ -90,7 +90,7 @@ var chainSpecs = []*interchaintest.ChainSpec{
 		ChainConfig: ibc.ChainConfig{
 			Type:    "cosmos",
 			Name:    "canined",
-			ChainID: "jackal-1",
+			ChainID: "puppy-1",
 			Images: []ibc.DockerImage{
 				{
 					Repository: "biphan4/canine-chain", // FOR LOCAL IMAGE USE: Docker Image Name
