@@ -272,7 +272,13 @@ mod execute {
         let mut event = Event::new("logging");
 
         // Add some placeholder logs
-        event = event.add_attribute("file account", msg_post_file.account);
+        event = event.add_attribute("creator", msg_post_file.creator);
+        event = event.add_attribute("account", msg_post_file.account);
+        event = event.add_attribute("hash_parent", msg_post_file.hash_parent);
+        event = event.add_attribute("hash_child", msg_post_file.hash_child);
+        event = event.add_attribute("editors", msg_post_file.editors);
+        event = event.add_attribute("tracking_number", msg_post_file.tracking_number);
+        event = event.add_attribute("contract executor", info.sender.to_string());
 
         Ok(Response::default().add_message(send_packet_msg).add_event(event))
     }
