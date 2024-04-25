@@ -1,0 +1,9 @@
+# log files
+/logs
+
+# macOS
+.DS_Store
+
+# IDEs
+*.iml
+.idea
