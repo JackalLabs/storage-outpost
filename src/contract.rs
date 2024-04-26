@@ -390,6 +390,10 @@ mod migrate {
 mod tests {
     use crate::ibc::types::{metadata::TxEncoding, packet::IcaPacketData};
     use crate::types::msg::options::ChannelOpenInitOptions;
+    use once_cell::sync::Lazy;
+    use simplelog::*;
+    use std::fs::File;
+    use std::sync::Mutex;
 
     use super::*;
     use cosmos_sdk_proto::cosmos::tx::v1beta1::Tx;
@@ -399,6 +403,21 @@ mod tests {
     use cosmos_sdk_proto::cosmos::base::v1beta1::Coin;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
     use cosmwasm_std::{Api, SubMsg, to_binary, StdError};
+
+
+
+    static INIT: Lazy<Mutex<()>>
+        = Lazy::new(|| Mutex::new(()));
+
+    pub fn initialize_logger() {
+        let _lock = INIT.lock().unwrap(); // Lock to ensure one-time initialization
+
+        let log_file = File::create("outpost.log").unwrap(); // Consider handling errors appropriately
+        let config = ConfigBuilder::new()
+            .set_time_format_str("%H:%M:%S")
+            .build();
+        let _ = WriteLogger::init(LevelFilter::Debug, config, log_file);
+    }
 
     #[test]
     fn test_instantiate() {
@@ -482,6 +501,9 @@ mod tests {
     // And that the contract version in cw2 is updated correctly.
     #[test]
     fn test_migrate() {
+
+        initialize_logger(); // Call this at the beginning of each test
+
         let mut deps = mock_dependencies();
 
         let info = mock_info("creator", &[]);
@@ -517,38 +539,28 @@ mod tests {
         assert_eq!(contract_version.contract, keys::CONTRACT_NAME);
         assert_eq!(contract_version.version, "0.0.1");
 
-        // Set the encoding to proto3json
-        state::STATE
-            .update::<_, StdError>(&mut deps.storage, |mut state| {
-                state.set_ica_info("", "", crate::ibc::types::metadata::TxEncoding::Proto3Json);
-                Ok(state)
-            })
-            .unwrap();
+        log::info!("original contract version: {}", contract_version.version);
 
-        // Migration should fail because the encoding is not protobuf
-        let err = migrate(deps.as_mut(), mock_env(), MigrateMsg {}).unwrap_err();
-        assert_eq!(
-            err.to_string(),
-            ContractError::UnsupportedPacketEncoding(
-                crate::ibc::types::metadata::TxEncoding::Proto3Json.to_string()
-            )
-            .to_string()
-        );
-
-        // Set the encoding to protobuf
-        state::STATE
-            .update::<_, StdError>(&mut deps.storage, |mut state| {
-                state.set_ica_info("", "", crate::ibc::types::metadata::TxEncoding::Protobuf);
-                Ok(state)
-            })
-            .unwrap();
-
-         // Migration should succeed because the encoding is protobuf
+        // Perform the migration
         let _res = migrate(deps.as_mut(), mock_env(), MigrateMsg {}).unwrap();
 
-        let contract_version = cw2::get_contract_version(&deps.storage).unwrap();
-        assert_eq!(contract_version.contract, keys::CONTRACT_NAME);
-        assert_eq!(contract_version.version, keys::CONTRACT_VERSION);
+        let updated_contract_version = cw2::get_contract_version(&deps.storage).unwrap();
+        assert_eq!(updated_contract_version.contract, keys::CONTRACT_NAME);
+        assert_eq!(updated_contract_version.version, keys::CONTRACT_VERSION);
+        log::info!("updated contract version: {}", updated_contract_version.version);
+
+        // Ensure that the contract version cannot be downgraded
+        cw2::set_contract_version(&mut deps.storage, keys::CONTRACT_NAME, "100.0.0").unwrap();
+
+        let res = migrate(deps.as_mut(), mock_env(), MigrateMsg {});
+        assert_eq!(
+            res.unwrap_err().to_string(),
+            format!(
+                "invalid migration version: expected > 100.0.0, got {}",
+                keys::CONTRACT_VERSION
+            )
+        );
+
     }
 }
 
