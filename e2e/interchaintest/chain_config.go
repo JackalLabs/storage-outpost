@@ -65,18 +65,18 @@ var chainSpecs = []*interchaintest.ChainSpec{
 	{
 		ChainConfig: ibc.ChainConfig{
 			Type:    "cosmos",
-			Name:    "wasmd",
-			ChainID: "localwasm-1",
+			Name:    "archwayd",
+			ChainID: "constantine-1",
 			Images: []ibc.DockerImage{
 				{
-					Repository: "cosmwasm/wasmd", // FOR LOCAL IMAGE USE: Docker Image Name
-					Version:    "v0.45.0",        // FOR LOCAL IMAGE USE: Docker Image Tag
+					Repository: "ghcr.io/archway-network/archwayd", // FOR LOCAL IMAGE USE: Docker Image Name
+					Version:    "v7.0.0-rc.3",                      // FOR LOCAL IMAGE USE: Docker Image Tag
 				},
 			},
-			Bin:           "wasmd",
-			Bech32Prefix:  "wasm",
-			Denom:         "uwsm",
-			GasPrices:     "0.00uwsm",
+			Bin:           "archwayd",
+			Bech32Prefix:  "archway",
+			Denom:         "stake",
+			GasPrices:     "0.00stake",
 			GasAdjustment: 1.3,
 			// cannot run wasmd commands without wasm encoding
 			EncodingConfig: wasm.WasmEncoding(),
@@ -94,7 +94,7 @@ var chainSpecs = []*interchaintest.ChainSpec{
 			Images: []ibc.DockerImage{
 				{
 					Repository: "biphan4/canine-chain", // FOR LOCAL IMAGE USE: Docker Image Name
-					Version:    "0.0.19",               // FOR LOCAL IMAGE USE: Docker Image Tag
+					Version:    "0.0.20",               // FOR LOCAL IMAGE USE: Docker Image Tag
 					// NOTE: 0.0.20 is built from canine-chain ica branch with latest master merged in
 				},
 			},
