@@ -65,18 +65,18 @@ var chainSpecs = []*interchaintest.ChainSpec{
 	{
 		ChainConfig: ibc.ChainConfig{
 			Type:    "cosmos",
-			Name:    "archwayd",
-			ChainID: "constantine-1",
+			Name:    "wasmd",
+			ChainID: "localwasm-1",
 			Images: []ibc.DockerImage{
 				{
-					Repository: "ghcr.io/archway-network/archwayd", // FOR LOCAL IMAGE USE: Docker Image Name
-					Version:    "v7.0.0-rc.3",                      // FOR LOCAL IMAGE USE: Docker Image Tag
+					Repository: "cosmwasm/wasmd", // FOR LOCAL IMAGE USE: Docker Image Name
+					Version:    "v0.45.0",        // FOR LOCAL IMAGE USE: Docker Image Tag
 				},
 			},
-			Bin:           "archwayd",
-			Bech32Prefix:  "archway",
-			Denom:         "stake",
-			GasPrices:     "0.00stake",
+			Bin:           "wasmd",
+			Bech32Prefix:  "wasm",
+			Denom:         "uwsm",
+			GasPrices:     "0.00uwsm",
 			GasAdjustment: 1.3,
 			// cannot run wasmd commands without wasm encoding
 			EncodingConfig: wasm.WasmEncoding(),

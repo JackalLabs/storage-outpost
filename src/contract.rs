@@ -4,10 +4,10 @@ use cosmos_sdk_proto::tendermint::p2p::packet;
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Event, Empty};
 use crate::ibc::types::stargate::channel::new_ica_channel_open_init_cosmos_msg;
-use crate::types::keys::{CONTRACT_NAME, CONTRACT_VERSION};
+use crate::types::keys::{self, CONTRACT_NAME, CONTRACT_VERSION};
 use crate::types::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::types::state::{
-    CallbackCounter, ChannelState, ContractState, CALLBACK_COUNTER, CHANNEL_STATE, STATE,
+    self, CallbackCounter, ChannelState, ContractState, CALLBACK_COUNTER, CHANNEL_STATE, STATE,
 };
 use crate::types::ContractError;
 use crate::types::filetree::{MsgPostKey, MsgPostFile};
@@ -344,25 +344,44 @@ mod query {
 }
 
 mod migrate {
-    use super::*;
+    use super::{keys, state, ContractError, Deps};
 
+    /// Validate that the contract version is semver compliant
+    /// and greater than the previous version.
     pub fn validate_semver(deps: Deps) -> Result<(), ContractError> {
         let prev_cw2_version = cw2::get_contract_version(deps.storage)?;
-        if prev_cw2_version.contract != CONTRACT_NAME {
+        if prev_cw2_version.contract != keys::CONTRACT_NAME {
             return Err(ContractError::InvalidMigrationVersion {
-                expected: CONTRACT_NAME.to_string(),
+                expected: keys::CONTRACT_NAME.to_string(),
                 actual: prev_cw2_version.contract,
             });
         }
 
-        let version: semver::Version = CONTRACT_VERSION.parse()?;
+        let version: semver::Version = keys::CONTRACT_VERSION.parse()?;
         let prev_version: semver::Version = prev_cw2_version.version.parse()?;
         if prev_version >= version {
             return Err(ContractError::InvalidMigrationVersion {
-                expected: format!("> {}", prev_version),
-                actual: CONTRACT_VERSION.to_string(),
+                expected: format!("> {prev_version}"),
+                actual: keys::CONTRACT_VERSION.to_string(),
             });
         }
+        Ok(())
+    }
+
+    /// Validate that the channel encoding is protobuf if set.
+    pub fn validate_channel_encoding(deps: Deps) -> Result<(), ContractError> {
+        // Reject the migration if the channel encoding is not protobuf
+        if let Some(ica_info) = state::STATE.load(deps.storage)?.ica_info {
+            if !matches!(
+                ica_info.encoding,
+                crate::ibc::types::metadata::TxEncoding::Protobuf
+            ) {
+                return Err(ContractError::UnsupportedPacketEncoding(
+                    ica_info.encoding.to_string(),
+                ));
+            }
+        }
+
         Ok(())
     }
 }
@@ -370,13 +389,16 @@ mod migrate {
 #[cfg(test)]
 mod tests {
     use crate::ibc::types::{metadata::TxEncoding, packet::IcaPacketData};
+    use crate::types::msg::options::ChannelOpenInitOptions;
 
     use super::*;
+    use cosmos_sdk_proto::cosmos::tx::v1beta1::Tx;
+    use cosmos_sdk_proto::tendermint::Protobuf;
     use cosmos_sdk_proto::Any;
     use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
     use cosmos_sdk_proto::cosmos::base::v1beta1::Coin;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use cosmwasm_std::{Api, SubMsg, to_binary};
+    use cosmwasm_std::{Api, SubMsg, to_binary, StdError};
 
     #[test]
     fn test_instantiate() {
@@ -456,8 +478,79 @@ mod tests {
         );
     }
 
-}
+    // In this test, we aim to verify that the semver validation is performed correctly.
+    // And that the contract version in cw2 is updated correctly.
+    #[test]
+    fn test_migrate() {
+        let mut deps = mock_dependencies();
 
+        let info = mock_info("creator", &[]);
+
+        let encoding = TxEncoding::Protobuf; 
+        
+        let channel_open_init_options = ChannelOpenInitOptions {
+            connection_id: "connection-0".to_string(),
+            counterparty_connection_id: "connection-0".to_string(),
+            counterparty_port_id: None,
+            tx_encoding: Some(encoding),
+            // channel_ordering: None, 
+            // *NOTE: leaving this out for now because canine-chain's ibc-go does not support unordered ica channels
+        };
+
+        // Instantiate the contract
+        let _res = instantiate(
+            deps.as_mut(),
+            mock_env(),
+            info,
+            InstantiateMsg {
+                admin: None,
+                channel_open_init_options: Some(channel_open_init_options),
+            },
+        )
+        .unwrap();
+
+        // We need to set the contract version manually to a lower version than the current version
+        cw2::set_contract_version(&mut deps.storage, keys::CONTRACT_NAME, "0.0.1").unwrap();
+
+        // Ensure that the contract version is updated correctly
+        let contract_version = cw2::get_contract_version(&deps.storage).unwrap();
+        assert_eq!(contract_version.contract, keys::CONTRACT_NAME);
+        assert_eq!(contract_version.version, "0.0.1");
+
+        // Set the encoding to proto3json
+        state::STATE
+            .update::<_, StdError>(&mut deps.storage, |mut state| {
+                state.set_ica_info("", "", crate::ibc::types::metadata::TxEncoding::Proto3Json);
+                Ok(state)
+            })
+            .unwrap();
+
+        // Migration should fail because the encoding is not protobuf
+        let err = migrate(deps.as_mut(), mock_env(), MigrateMsg {}).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            ContractError::UnsupportedPacketEncoding(
+                crate::ibc::types::metadata::TxEncoding::Proto3Json.to_string()
+            )
+            .to_string()
+        );
+
+        // Set the encoding to protobuf
+        state::STATE
+            .update::<_, StdError>(&mut deps.storage, |mut state| {
+                state.set_ica_info("", "", crate::ibc::types::metadata::TxEncoding::Protobuf);
+                Ok(state)
+            })
+            .unwrap();
+
+         // Migration should succeed because the encoding is protobuf
+        let _res = migrate(deps.as_mut(), mock_env(), MigrateMsg {}).unwrap();
+
+        let contract_version = cw2::get_contract_version(&deps.storage).unwrap();
+        assert_eq!(contract_version.contract, keys::CONTRACT_NAME);
+        assert_eq!(contract_version.version, keys::CONTRACT_VERSION);
+    }
+}
 
 
 

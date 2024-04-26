@@ -71,4 +71,7 @@ pub enum ContractError {
 
     #[error("ica information is not set")]
     IcaInfoNotSet {},
+
+    #[error("unsupported packet encoding: {0}")]
+    UnsupportedPacketEncoding(String),
 }
