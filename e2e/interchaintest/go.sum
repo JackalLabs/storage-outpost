@@ -208,6 +208,10 @@ github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 h1:/vQbFIOMb
 github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4/go.mod h1:hN7oaIRCjzsZ2dE+yG5k+rsdt3qcwykqK6HVGcKwsw4=
 github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 h1:UQHMgLO+TxOElx5B5HZ4hJQsoJ/PvUvKRhJHDQXO8P8=
 github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
+github.com/BiPhan4/interchaintest-fork/v7 v7.0.1-0.20240430171826-798101f2cacd h1:ZlPxgyECo+2KYqxhCjrlF4PW+xLxwvSxOub0Vih55A8=
+github.com/BiPhan4/interchaintest-fork/v7 v7.0.1-0.20240430171826-798101f2cacd/go.mod h1:mkkCds7NaVUK8Bu1rmMHdkZYHmTAlICnjg/s+qQBO4A=
+github.com/BiPhan4/wasmd-fork v0.41.1-0.20240430205937-5dd307b10130 h1:TO+LkNQa8lpz9myqysM7KxnmBClXRQn6SsYQoSf2jpM=
+github.com/BiPhan4/wasmd-fork v0.41.1-0.20240430205937-5dd307b10130/go.mod h1:0Sds1q2IsPaTN1gHa3BNOYcUFgtGvxH7CXEXPgoihns=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/toml v1.3.2 h1:o7IhLm0Msx3BaB+n3Ag7L8EVlByGnpq14C4YWiu/gL8=
 github.com/BurntSushi/toml v1.3.2/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=

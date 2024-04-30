@@ -31,7 +31,12 @@ type QueryMsg struct {
 }
 
 // MigrateMsg is the message to migrate cw-ica-controller
-type MigrateMsg = struct{}
+type MigrateMsg struct {
+	ContractAddr string `json:"contract_addr"`
+	NewCodeID    string `json:"new_code_id"`
+	// base64 encoded bytes
+	Msg string `json:"msg"`
+}
 
 // `CreateChannel` makes the contract submit a stargate MsgChannelOpenInit to the chain.
 // This is a wrapper around [`options::ChannelOpenInitOptions`] and thus requires the
@@ -101,6 +106,11 @@ func (m *QueryMsg) ToString() string {
 	return toString(m)
 }
 
+// ToString returns a string representation of the message
+func (m *MigrateMsg) ToString() string {
+	return toString(m)
+}
+
 func toString(v any) string {
 	jsonBz, err := json.Marshal(v)
 	if err != nil {
@@ -109,3 +119,10 @@ func toString(v any) string {
 
 	return string(jsonBz)
 }
+
+/*
+Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.
+
+This is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>. See also <https://github.com/CosmWasm/cosmwasm/blob/main/docs/MESSAGE_TYPES.md>.
+*/
+type Binary string

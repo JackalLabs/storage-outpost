@@ -259,3 +259,7 @@ replace github.com/cosmos/ibc-go/v7 => github.com/cosmos/ibc-go/v7 v7.0.0-202307
 replace github.com/jackalLabs/canine-chain/v3 => github.com/jackalLabs/canine-chain/v3 v3.0.1-0.20240119195405-a6532ac5f2c2
 
 replace github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
+
+replace github.com/CosmWasm/wasmd => github.com/BiPhan4/wasmd-fork v0.41.1-0.20240430205937-5dd307b10130
+
+replace github.com/strangelove-ventures/interchaintest/v7 => github.com/BiPhan4/interchaintest-fork/v7 v7.0.1-0.20240430171826-798101f2cacd

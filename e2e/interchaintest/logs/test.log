@@ -1,3 +1,5 @@
-INFO: 2024/04/26 10:05:18 The sender of instantiate is wasmd-localwasm-1-rck
-INFO: 2024/04/26 10:05:30 [0x1400141e600]
-INFO: 2024/04/26 10:06:08 /
+INFO: 2024/04/30 17:05:34 The sender of instantiate is wasmd-localwasm-1-fnu
+INFO: 2024/04/30 17:05:46 [0x140012c7500]
+INFO: 2024/04/30 17:06:24 error is <nil>
+INFO: 2024/04/30 17:06:24 migration caller 8B9E9867562AD8306853D1E1B6FF5F9D61EB6EE5
+INFO: 2024/04/30 17:06:24 migration caller as string 8B9E9867562AD8306853D1E1B6FF5F9D61EB6EE5
