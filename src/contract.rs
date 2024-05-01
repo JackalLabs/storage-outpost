@@ -35,6 +35,8 @@ pub fn instantiate(
     event = event.add_attribute("admin", admin.clone());
     event = event.add_attribute("sender", info.sender.clone());
 
+    // I don't think this is saving the admin properly to ContractInfo struct defined in wasmd types 
+
     // Save the admin. Ica address is determined during handshake.
     STATE.save(deps.storage, &ContractState::new(admin))?;
     // Initialize the callback counter.
