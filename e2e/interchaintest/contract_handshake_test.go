@@ -34,8 +34,10 @@ func (s *ContractTestSuite) SetupContractTestSuite(ctx context.Context, encoding
 	codeId, err := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/storage_outpost.wasm")
 	s.Require().NoError(err)
 
+	admin := s.UserA.FormattedAddress()
+
 	// Instantiate the contract with channel:
-	instantiateMsg := types.NewInstantiateMsgWithChannelInitOptions(nil, s.ChainAConnID, s.ChainBConnID, nil, &encoding)
+	instantiateMsg := types.NewInstantiateMsgWithChannelInitOptions(&admin, s.ChainAConnID, s.ChainBConnID, nil, &encoding)
 
 	contractAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), codeId, instantiateMsg, true, "--gas", "500000")
 	s.Require().NoError(err)
