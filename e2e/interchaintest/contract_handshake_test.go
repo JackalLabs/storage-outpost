@@ -39,7 +39,7 @@ func (s *ContractTestSuite) SetupContractTestSuite(ctx context.Context, encoding
 	// Instantiate the contract with channel:
 	instantiateMsg := types.NewInstantiateMsgWithChannelInitOptions(&admin, s.ChainAConnID, s.ChainBConnID, nil, &encoding)
 
-	contractAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), codeId, instantiateMsg, true, "--gas", "500000")
+	contractAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), codeId, instantiateMsg, false, "--gas", "500000", "--admin", s.UserA.KeyName())
 	s.Require().NoError(err)
 
 	logger.InitLogger()
