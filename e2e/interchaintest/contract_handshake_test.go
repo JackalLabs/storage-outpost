@@ -42,6 +42,10 @@ func (s *ContractTestSuite) SetupContractTestSuite(ctx context.Context, encoding
 	contractAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), codeId, instantiateMsg, false, "--gas", "500000", "--admin", s.UserA.KeyName())
 	s.Require().NoError(err)
 
+	// Store storage_outpost_v2.wasm
+	_, error := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/storage_outpost.wasm")
+	s.Require().NoError(error)
+
 	logger.InitLogger()
 	fmt.Println("The sender of instantiate is", s.UserA.KeyName())
 	logger.LogInfo("The sender of instantiate is", s.UserA.KeyName())

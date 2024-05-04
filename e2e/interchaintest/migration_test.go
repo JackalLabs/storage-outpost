@@ -39,9 +39,9 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithMigration() {
 	s.Run("TestMigrateAndUpdateAdmin", func() {
 
 		migrateMsg1 := testtypes.MigrateMsg{
-			ContractAddr: "wasm14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s0phg4d", //same contract address but different code id
-			NewCodeID:    "2",                                                               //it should error and say something like "NewCodeID does not exist"
-			Msg:          "placeholder",
+			// ContractAddr: "wasm14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s0phg4d", //same contract address but different code id
+			// NewCodeID:    "2",                                                               //it should error and say something like "NewCodeID does not exist"
+			// Msg:          "placeholder",
 		}
 
 		// contractByCodeRequest := wasmtypes.QueryContractsByCodeRequest{
