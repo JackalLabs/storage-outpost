@@ -28,7 +28,8 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithOwnership() {
 	// sets up the contract and does the channel handshake for the contract test suite.
 	s.SetupContractTestSuite(ctx, encoding)
 	_, canined := s.ChainA, s.ChainB
-	wasmdUser := s.UserA
+	wasmdUserA := s.UserA
+	wasmdUserA2 := s.UserA2
 
 	logger.LogInfo(canined.FullNodes)
 
@@ -49,8 +50,11 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithOwnership() {
 		sendStargateMsg := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
 			[]proto.Message{postKeyMsg0}, nil, nil, typeURL,
 		)
-		error := s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg)
+		error := s.Contract.Execute(ctx, wasmdUserA.KeyName(), sendStargateMsg)
 		s.Require().NoError(error)
+
+		logger.LogInfo("wasmd primary user:", wasmdUserA.FormattedAddress())
+		logger.LogInfo("wasmd secondary user:", wasmdUserA2.FormattedAddress())
 
 		// Let's have another user try to overwrite wasmUser's address
 
