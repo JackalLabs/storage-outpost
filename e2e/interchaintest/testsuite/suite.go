@@ -25,6 +25,7 @@ type TestSuite struct {
 	ChainA       *cosmos.CosmosChain
 	ChainB       *cosmos.CosmosChain
 	UserA        ibc.Wallet
+	UserA2       ibc.Wallet
 	UserB        ibc.Wallet
 	ChainAConnID string
 	ChainBConnID string
@@ -86,12 +87,17 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 	}))
 	logger.InitLogger()
 
-	// Fund a user account on ChainA and ChainB
+	// Fund user accounts on ChainA and ChainB
 	const userFunds = int64(10_000_000_000)
 	// users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), userFunds, s.ChainA, s.ChainB)
 	userASeed := "fork draw talk diagram fragile online style lecture ecology lawn " +
 		"dress hat modify member leg pluck leaf depend subway grit trumpet tongue crucial stumble"
 	userA, err := interchaintest.GetAndFundTestUserWithMnemonic(ctx, "wasmd", userASeed, userFunds, s.ChainA)
+	s.Require().NoError(err)
+
+	userA2Seed := "cage father indicate hockey rapid wrist symbol apple impulse cradle sock pony foam " +
+		"survey squirrel dial drum flavor mansion bicycle master dumb album soccer"
+	userA2, err := interchaintest.GetAndFundTestUserWithMnemonic(ctx, "wasmd", userA2Seed, userFunds, s.ChainA)
 	s.Require().NoError(err)
 
 	// this is the seed phrase for the danny user that appears in all of canine-chain's testing scripts
@@ -100,8 +106,9 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 	userB, err := interchaintest.GetAndFundTestUserWithMnemonic(ctx, "jkl", userBSeed, userFunds, s.ChainB)
 	s.Require().NoError(err)
 
-	s.UserA = userA //the wasmd user
-	s.UserB = userB //the jackal user
+	s.UserA = userA   // the primary wasmd user
+	s.UserA2 = userA2 // the secondary wasmd user
+	s.UserB = userB   //the jackal user
 
 	// Generate a new IBC path
 	err = s.Relayer.GeneratePath(ctx, s.ExecRep, s.ChainA.Config().ChainID, s.ChainB.Config().ChainID, s.PathName)

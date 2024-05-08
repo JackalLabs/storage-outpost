@@ -32,10 +32,10 @@ type QueryMsg struct {
 
 // MigrateMsg is the message to migrate cw-ica-controller
 type MigrateMsg struct {
-	ContractAddr string `json:"contract_addr"`
-	NewCodeID    string `json:"new_code_id"`
-	// base64 encoded bytes
-	Msg string `json:"msg"`
+	// ContractAddr string `json:"contract_addr"`
+	// NewCodeID    string `json:"new_code_id"`
+	// // base64 encoded bytes
+	// Msg string `json:"msg"`
 }
 
 // `CreateChannel` makes the contract submit a stargate MsgChannelOpenInit to the chain.
