@@ -8,6 +8,10 @@ use cosmwasm_std::{Binary, CosmosMsg};
 /// The message to instantiate the ICA controller contract.
 #[cw_serde]
 pub struct InstantiateMsg {
+    /// The address of the owner of the ICA application.
+    /// If not specified, the sender is the owner.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub owner: Option<String>,
     /// The address of the admin of the ICA application.
     /// If not specified, the sender is the admin.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -19,6 +23,7 @@ pub struct InstantiateMsg {
 }
 
 /// The messages to execute the ICA controller contract.
+/// #[cw_ownable::cw_ownable_execute] - might need this?
 #[cw_serde]
 pub enum ExecuteMsg {
     /// CreateChannel makes the contract submit a stargate MsgChannelOpenInit to the chain.
@@ -81,7 +86,7 @@ pub enum ExecuteMsg {
 }
 
 /// The messages to query the ICA controller contract.
-/// #[cw_ownable::cw_ownable_query] NOTE: enable this macro if we want the ownership feature for the outpost 
+#[cw_ownable::cw_ownable_query]
 #[cw_serde]
 #[derive(QueryResponses)]
 pub enum QueryMsg {
