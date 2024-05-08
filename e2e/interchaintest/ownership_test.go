@@ -45,10 +45,8 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithOwnership() {
 			Key:     "Wow it really works <3",
 		}
 
-		typeURL := "/canine_chain.filetree.MsgPostKey"
-
 		sendStargateMsg := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
-			[]proto.Message{postKeyMsg0}, nil, nil, typeURL,
+			[]proto.Message{postKeyMsg0}, nil, nil, "/canine_chain.filetree.MsgPostKey",
 		)
 		error := s.Contract.Execute(ctx, wasmdUserA.KeyName(), sendStargateMsg)
 		s.Require().NoError(error)
@@ -56,11 +54,22 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithOwnership() {
 		logger.LogInfo("wasmd primary user:", wasmdUserA.FormattedAddress())
 		logger.LogInfo("wasmd secondary user:", wasmdUserA2.FormattedAddress())
 
-		// Let's have another user try to overwrite wasmUser's address
+		// Let's have wasmdUserA2 attempt to overwrite wasmduserA's public key
+		postKeyMsg1 := &filetreetypes.MsgPostKey{
+			Creator: s.Contract.IcaAddress, // The ica host address which UserA created by instantiating the outpost
+			Key:     "This is the take over >:)",
+		}
+
+		sendStargateMsg2 := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
+			[]proto.Message{postKeyMsg1}, nil, nil, "/canine_chain.filetree.MsgPostKey",
+		)
+		err := s.Contract.Execute(ctx, wasmdUserA2.KeyName(), sendStargateMsg2)
+		expectedErrorMsg := "error in transaction (code: 5): failed to execute message; message index: 0: Caller is not the contract's current owner: execute wasm contract failed"
+		s.Require().EqualError(err, expectedErrorMsg)
 
 	},
 	)
 
-	time.Sleep(time.Duration(10) * time.Hour)
+	// time.Sleep(time.Duration(10) * time.Hour)
 
 }
