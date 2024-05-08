@@ -73,6 +73,9 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithMigration() {
 		error := s.Contract.Migrate(ctx, wasmdUser.FormattedAddress(), "2", migrateMsg1)
 		// gonna have to change back to wasmdUser
 		s.Require().NoError(error)
+		// This works but, how would we even confirm this?
+		// Attempt to query for code id 1 - fail
+		// Query for code id 2 - succeed
 
 	})
 

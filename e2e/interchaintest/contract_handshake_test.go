@@ -43,7 +43,7 @@ func (s *ContractTestSuite) SetupContractTestSuite(ctx context.Context, encoding
 	s.Require().NoError(err)
 
 	// Store storage_outpost_v2.wasm
-	_, error := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/storage_outpost.wasm")
+	_, error := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/v2/storage_outpost_v2.wasm")
 	s.Require().NoError(error)
 
 	logger.InitLogger()
