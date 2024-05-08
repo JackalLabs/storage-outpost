@@ -24,6 +24,9 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     cw2::set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
+    let owner = msg.owner.unwrap_or_else(|| info.sender.to_string());
+    cw_ownable::initialize_owner(deps.storage, deps.api, Some(&owner))?;
+
     let admin = if let Some(admin) = msg.admin {
         deps.api.addr_validate(&admin)?
     } else {
@@ -100,7 +103,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::GetContractState {} => to_json_binary(&query::state(deps)?),
         QueryMsg::GetChannel {} => to_json_binary(&query::channel(deps)?),
         QueryMsg::GetCallbackCounter {} => to_json_binary(&query::callback_counter(deps)?),
-        // QueryMsg::Ownership {} => to_json_binary(&cw_ownable::get_ownership(deps.storage)?),
+        QueryMsg::Ownership {} => to_json_binary(&cw_ownable::get_ownership(deps.storage)?),
     }
 }
 
@@ -137,6 +140,7 @@ mod execute {
         info: MessageInfo,
         options: ChannelOpenInitOptions,
     ) -> Result<Response, ContractError> {
+        cw_ownable::assert_owner(deps.storage, &info.sender)?;
         let mut contract_state = STATE.load(deps.storage)?;
         contract_state.verify_admin(info.sender)?;
 
@@ -190,6 +194,7 @@ mod execute {
         // TODO: We can assert ownership of the contract later, but does this really make a difference if the
         // ica module ensures the controller 'owns' or 'is paired with' the host?
         // Ownership of the root Files{} object for filetree is also checked in canine-chain
+        cw_ownable::assert_owner(deps.storage, &info.sender)?;
 
         // cw_ownable::assert_owner(deps.storage, &info.sender)?;
         let contract_state = STATE.load(deps.storage)?;
@@ -226,6 +231,7 @@ mod execute {
         path: &str,
     ) -> Result<Response, ContractError> {
 
+        cw_ownable::assert_owner(deps.storage, &info.sender)?;
         let contract_state = STATE.load(deps.storage)?;
         let ica_info = contract_state.get_ica_info()?;
 
@@ -428,6 +434,7 @@ mod tests {
         let info = mock_info("creator", &[]);
 
         let msg = InstantiateMsg {
+            owner: None,
             admin: None,
             channel_open_init_options: None,
         };
@@ -465,6 +472,7 @@ mod tests {
             env.clone(),
             info.clone(),
             InstantiateMsg {
+                owner: None,
                 admin: None,
                 channel_open_init_options: None
             },
