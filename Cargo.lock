@@ -1478,6 +1478,7 @@ dependencies = [
  "cosmos-sdk-proto",
  "cosmwasm-schema",
  "cosmwasm-std",
+ "cw-ica-controller-derive",
  "cw-multi-test",
  "cw-ownable",
  "cw-storage-plus",
