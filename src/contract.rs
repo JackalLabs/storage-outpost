@@ -15,6 +15,9 @@ use crate::helpers::filetree_helpers::{hash_and_hex, merkle_helper};
 
 
 /// Instantiates the contract.
+/// Linker confused when building outpost owner so we 
+/// enable this optional feature to disable these entry points during compilation
+#[cfg(not(feature = "no_exports"))] 
 #[entry_point]
 pub fn instantiate(
     deps: DepsMut,
@@ -62,6 +65,7 @@ pub fn instantiate(
 }
 
 /// Handles the execution of the contract.
+#[cfg(not(feature = "no_exports"))]
 #[entry_point]
 pub fn execute(
     deps: DepsMut,
@@ -97,6 +101,7 @@ pub fn execute(
 }
 
 /// Handles the query of the contract.
+#[cfg(not(feature = "no_exports"))]
 #[entry_point]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
@@ -108,6 +113,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
 }
 
 /// Migrate contract if version is lower than current version
+#[cfg(not(feature = "no_exports"))]
 #[entry_point]
 pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> Result<Response, ContractError> {
     migrate::validate_semver(deps.as_ref())?;
