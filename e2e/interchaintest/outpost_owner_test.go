@@ -87,6 +87,11 @@ func (s *OwnerTestSuite) TestOwnerCreateIcaContract() {
 	s.SetupOwnerTestSuite(ctx, icatypes.EncodingProtobuf) // NOTE: canined's ibc-go is outdated and does not support proto3json
 	// wasmd, canined := s.ChainA, s.ChainB
 
+	// We weren't able to precompute the outpost's address at the time of creation, so we need to query for the address
+	// right now
+	// query by code ID and sender address? The sender being the user that executed the creation
+	// The port id of the outpost should be wasm.contractAddress so can't we retrieve the address from that?
+
 	time.Sleep(time.Duration(10) * time.Hour)
 
 }
