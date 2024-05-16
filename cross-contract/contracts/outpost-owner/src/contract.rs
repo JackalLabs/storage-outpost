@@ -106,21 +106,31 @@ mod execute {
         )?;
 
         // Looks like Serdar used 'instantiate2' which has the ability to pre compute the outpost's address
-        // We're not using this feature for now
-        // I think we still get the code id of the outpost contract when we instantiate it 
-        //let initial_state = state::IcaContractState::new(contract_addr.clone());
+        // Unsure if 'instantiate2_address' from cosmwasm-std will work on Archway so we're not doing this for now
+        // I think we still get the code id of the outpost contract when we instantiate it
 
-        // ICA_STATES.save(deps.storage, ica_count, &initial_state)?;
+        let mut sender = info.sender;
 
-        // CONTRACT_ADDR_TO_ICA_ID.save(deps.storage, contract_addr, &ica_count)?;
+        // Idea: this owner contract can instantiate multiple outpost (ica) contracts. The CONTRACT_ADDR_TO_ICA_ID mapping
+        // simply maps the contract address of the instantiated outpost to the ica_id--the ica_id being just a number that indicates
+        // how many outposts have been deployed before them
+        // It depends on what this owner contract is doing, but each user only needs 1 outpost to be instantiated for them
+        // Why not have the mapping be 'sender address : ica_id '? The sender address being the user that executes this function
 
-        // Make an event to log the admin
-        let mut event = Event::new("cross-contract-logging");
-        event = event.add_attribute("creator", info.sender.clone());
+        // Let's just put the sender's address for now as a place holder until we figure out an alternative
+        let initial_state = state::IcaContractState::new(sender.clone());
+
+        ICA_STATES.save(deps.storage, ica_count, &initial_state)?;
+
+        CONTRACT_ADDR_TO_ICA_ID.save(deps.storage, sender.clone(), &ica_count)?;
 
         ICA_COUNT.save(deps.storage, &(ica_count + 1))?;
 
-        Ok(Response::new().add_message(cosmos_msg))
+        // Make an event to log the admin
+        let mut event = Event::new("cross-contract-logging");
+        event = event.add_attribute("creator", sender.clone());
+
+        Ok(Response::new().add_message(cosmos_msg).add_event(event))
     }
 }
 

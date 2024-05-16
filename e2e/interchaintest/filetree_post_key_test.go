@@ -120,6 +120,8 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 	},
 	)
 
+	// implement mock query server
+
 	time.Sleep(time.Duration(10) * time.Hour)
 
 }
