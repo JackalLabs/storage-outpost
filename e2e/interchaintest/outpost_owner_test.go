@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	mysuite "github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 	outpostowner "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types/outpostowner"
@@ -62,7 +63,7 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 		},
 	}
 
-	_, err = s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostOwnerContractAddr, toString(createMsg), "--gas", "500000")
+	res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostOwnerContractAddr, toString(createMsg), "--gas", "500000")
 	s.Require().NoError(err)
 
 	s.NumOfOutpostContracts++
@@ -73,6 +74,8 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 
 	// In the docker session, we can see that the ica channel was created
 
+	logger.InitLogger()
+	logger.LogEvents(res.Events)
 }
 
 func TestWithOwnerTestSuite(t *testing.T) {

@@ -122,6 +122,9 @@ mod execute {
 
         ICA_STATES.save(deps.storage, ica_count, &initial_state)?;
 
+        // We don't have the contract address at this point but the outpost does emit an event which
+        // shows its address
+        // where can apps save this? 
         CONTRACT_ADDR_TO_ICA_ID.save(deps.storage, sender.clone(), &ica_count)?;
 
         ICA_COUNT.save(deps.storage, &(ica_count + 1))?;

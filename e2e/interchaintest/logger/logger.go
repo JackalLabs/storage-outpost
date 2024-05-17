@@ -1,8 +1,11 @@
 package logger
 
 import (
+	"encoding/json"
 	"log"
 	"os"
+
+	types1 "github.com/cometbft/cometbft/abci/types"
 )
 
 var (
@@ -38,4 +41,16 @@ func LogInfo(v ...interface{}) {
 // Exported function for err logging
 func LogError(v ...interface{}) {
 	ErrorLogger.Println(v...)
+}
+
+// Exported function to log events
+func LogEvents(events []types1.Event) {
+	for _, event := range events {
+		eventJSON, err := json.Marshal(event)
+		if err != nil {
+			LogError("Failed to marshal event: ", err)
+			continue
+		}
+		LogInfo("Event: ", string(eventJSON))
+	}
 }

@@ -40,6 +40,8 @@ pub fn instantiate(
     let mut event = Event::new("logging admin");
     event = event.add_attribute("admin", admin.clone());
     event = event.add_attribute("sender", info.sender.clone());
+    event = event.add_attribute("outpost address", env.contract.address.to_string());
+
 
     // I don't think this is saving the admin properly to ContractInfo struct defined in wasmd types 
 
