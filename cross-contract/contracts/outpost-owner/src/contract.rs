@@ -87,11 +87,30 @@ mod execute {
 
         let ica_code = StorageOutpostCode::new(state.storage_outpost_code_id);
 
+        /* 
+        // nest a call back address (outpost-owner address) and a msg to be executed inside InstantiateMsg
+        // refer to https://github.com/SiennaNetwork/SiennaNetwork/blob/main/contracts/amm/factory/src/contract.rs
+
+        // callback: Callback {
+        //     contract: ContractLink {
+        //         address: env.contract.address, // should be outpost-owner address 
+        //         code_hash: env.contract_code_hash,
+        //     },
+        //     msg: to_binary(&HandleMsg::RegisterExchange { // here it will be a 'update outpost map msg' which will map the users address to their outpost address
+        //         pair: pair.clone(),                       // we need to create this execute variant inside of outpost-owner called 'update_map' or 'save_outpost_address'
+        //         signature,                                // it's just a variant of ExecuteMsg
+        //     })?,
+        // },
+
+        */
+
         let instantiate_msg = storage_outpost::types::msg::InstantiateMsg {
             owner: Some(env.contract.address.to_string()),
             admin: Some(info.sender.to_string()),
             channel_open_init_options: Some(channel_open_init_options),
             // send_callbacks_to: Some(env.contract.address.to_string()), not using for now 
+            
+            // nest the call back object here 
         };
 
         let ica_count = ICA_COUNT.load(deps.storage).unwrap_or(0);

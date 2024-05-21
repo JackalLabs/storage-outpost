@@ -137,7 +137,7 @@ impl StorageOutpostCode {
         let msg = to_json_binary(&msg.into())?;
         Ok(WasmMsg::Instantiate {
             code_id: self.code_id(),
-            msg,
+            msg, // the callback object will be nested here 
             funds: vec![],
             label: label.into(),
             admin: admin.map(Into::into),

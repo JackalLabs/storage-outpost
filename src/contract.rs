@@ -23,7 +23,7 @@ pub fn instantiate(
     deps: DepsMut,
     env: Env,
     info: MessageInfo,
-    msg: InstantiateMsg,
+    msg: InstantiateMsg, //call back object is nested here 
 ) -> Result<Response, ContractError> {
     cw2::set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
@@ -59,6 +59,13 @@ pub fn instantiate(
             channel_open_init_options.counterparty_connection_id,
             channel_open_init_options.tx_encoding,
         );
+
+    // here we can also take the callback address (outpost-owner address) as well as the msg that it wants us to give
+    // it will ask for the outpostpost's address so we well give it env.contract.address
+    // we will then call a CosmosMsg::WasmMsg::Execute to call back the outpost-owner
+    // make a vector of CosmosMsgs and call 'add_messages' below 
+
+    
 
         Ok(Response::new().add_message(ica_channel_open_init_msg).add_event(event))
     } else {
