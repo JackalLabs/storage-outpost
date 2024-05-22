@@ -44,7 +44,8 @@ pub fn execute(
         ExecuteMsg::CreateIcaContract {
             salt,
             channel_open_init_options,
-        } => execute::create_ica_contract(deps, env, info, salt, channel_open_init_options)
+        } => execute::create_ica_contract(deps, env, info, salt, channel_open_init_options),
+        ExecuteMsg::UpdateCallbackCount {} => execute::update_callback_count(deps, env, info),
     }
 }
 
@@ -63,13 +64,13 @@ mod execute {
     use cosmwasm_std::{Addr, BankMsg, Coin, CosmosMsg, Uint128, Event};
     use storage_outpost::outpost_helpers::StorageOutpostContract;
     use storage_outpost::types::msg::ExecuteMsg as IcaControllerExecuteMsg;
-    use storage_outpost::types::state::{ChannelState, /*ChannelStatus*/};
+    use storage_outpost::types::state::{CallbackCounter, ChannelState /*ChannelStatus*/};
     use storage_outpost::{
         outpost_helpers::StorageOutpostCode,
         types::msg::options::ChannelOpenInitOptions,
     };
 
-    use crate::state::{self, CONTRACT_ADDR_TO_ICA_ID, ICA_COUNT, ICA_STATES};
+    use crate::state::{self, CONTRACT_ADDR_TO_ICA_ID, ICA_COUNT, ICA_STATES, CALLBACK_COUNT};
 
     use super::*;
 
@@ -153,6 +154,28 @@ mod execute {
         event = event.add_attribute("creator", sender.clone());
 
         Ok(Response::new().add_message(cosmos_msg).add_event(event))
+    }
+
+    pub fn update_callback_count(
+        deps: DepsMut,
+        env: Env,
+        info: MessageInfo,
+    ) -> Result<Response, ContractError> {
+        let state = STATE.load(deps.storage)?;
+        if state.admin != info.sender {
+            return Err(ContractError::Unauthorized {});
+        }
+
+        let callback_count = CALLBACK_COUNT.load(deps.storage).unwrap_or(0);
+
+
+        CALLBACK_COUNT.save(deps.storage, &(callback_count + 1))?;
+
+        // Make an event to log the admin
+        let mut event = Event::new("cross-contract-logging");
+        event = event.add_attribute("creator", info.sender.clone());
+
+        Ok(Response::new().add_event(event))
     }
 }
 

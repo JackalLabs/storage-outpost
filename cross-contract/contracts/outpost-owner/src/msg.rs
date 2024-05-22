@@ -15,6 +15,9 @@ pub enum ExecuteMsg {
         salt: Option<String>,
         channel_open_init_options: ChannelOpenInitOptions,
     },
+    UpdateCallbackCount {
+
+    }
 }
 
 #[cw_serde]

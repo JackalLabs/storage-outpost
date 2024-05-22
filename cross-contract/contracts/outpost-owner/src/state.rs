@@ -13,6 +13,11 @@ pub const ICA_STATES: Map<u64, IcaContractState> = Map::new("ica_states");
 pub const ICA_COUNT: Item<u64> = Item::new("ica_count");
 /// The item used to map contract addresses to ICA IDs.
 pub const CONTRACT_ADDR_TO_ICA_ID: Map<Addr, u64> = Map::new("contract_addr_to_ica_id");
+/// NOTE: this is just temporary usage. If we can confirm the callback works, we'll create
+/// a mapping of user_bech32_addresses <> outpost_contract_addresses
+/// 
+/// The item used to track if the callback was successful
+pub const CALLBACK_COUNT: Item<u64> = Item::new("call_back_count");
 
 mod contract {
     use crate::ContractError;
