@@ -59,6 +59,7 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 			ChannelOpenInitOptions: outpostowner.ChannelOpenInitOptions{
 				ConnectionId:             s.ChainAConnID,
 				CounterpartyConnectionId: s.ChainBConnID,
+				TxEncoding:               outpostowner.TxEncoding(encoding),
 			},
 		},
 	}

@@ -5,6 +5,8 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Binary, CosmosMsg};
 
+use super::callback::Callback;
+
 /// The message to instantiate the ICA controller contract.
 #[cw_serde]
 pub struct InstantiateMsg {
@@ -20,6 +22,10 @@ pub struct InstantiateMsg {
     /// If not specified, the IBC channel is not initialized, and the relayer must.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub channel_open_init_options: Option<options::ChannelOpenInitOptions>,
+    /// The callback information to be used
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub callback: Option<Callback>
+
 }
 
 /// The messages to execute the ICA controller contract.

@@ -57,11 +57,12 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
             to_json_binary(&query::ica_state(deps, ica_id)?)
         }
         QueryMsg::GetIcaCount {} => to_json_binary(&query::ica_count(deps)?),
+        QueryMsg::GetCallbackCount {} => to_json_binary(&query::callback_count(deps)?),
     }
 }
 
 mod execute {
-    use cosmwasm_std::{Addr, BankMsg, Coin, CosmosMsg, Uint128, Event};
+    use cosmwasm_std::{Addr, BankMsg, Coin, CosmosMsg, Uint128, Event, to_json_binary};
     use storage_outpost::outpost_helpers::StorageOutpostContract;
     use storage_outpost::types::msg::ExecuteMsg as IcaControllerExecuteMsg;
     use storage_outpost::types::state::{CallbackCounter, ChannelState /*ChannelStatus*/};
@@ -69,6 +70,7 @@ mod execute {
         outpost_helpers::StorageOutpostCode,
         types::msg::options::ChannelOpenInitOptions,
     };
+    use storage_outpost::types::callback::Callback;
 
     use crate::state::{self, CONTRACT_ADDR_TO_ICA_ID, ICA_COUNT, ICA_STATES, CALLBACK_COUNT};
 
@@ -82,42 +84,35 @@ mod execute {
         channel_open_init_options: ChannelOpenInitOptions,
     ) -> Result<Response, ContractError> {
         let state = STATE.load(deps.storage)?;
-        if state.admin != info.sender {
-            return Err(ContractError::Unauthorized {});
-        }
+        // TODO: determine who is best to be admin
+        // if state.admin != info.sender {
+        //     return Err(ContractError::Unauthorized {});
+        // }
 
         let ica_code = StorageOutpostCode::new(state.storage_outpost_code_id);
 
-        /* 
-        // nest a call back address (outpost-owner address) and a msg to be executed inside InstantiateMsg
-        // refer to https://github.com/SiennaNetwork/SiennaNetwork/blob/main/contracts/amm/factory/src/contract.rs
-
-        // callback: Callback {
-        //     contract: ContractLink {
-        //         address: env.contract.address, // should be outpost-owner address 
-        //         code_hash: env.contract_code_hash,
-        //     },
-        //     msg: to_binary(&HandleMsg::RegisterExchange { // here it will be a 'update outpost map msg' which will map the users address to their outpost address
-        //         pair: pair.clone(),                       // we need to create this execute variant inside of outpost-owner called 'update_map' or 'save_outpost_address'
-        //         signature,                                // it's just a variant of ExecuteMsg
-        //     })?,
-        // },
-
-        */
+        let callback = Callback {
+            contract: env.contract.address.to_string(),
+            // WARNING: do not use unwrap()
+            msg: to_json_binary(&ExecuteMsg::UpdateCallbackCount {}).ok().unwrap(), 
+        };
 
         let instantiate_msg = storage_outpost::types::msg::InstantiateMsg {
             owner: Some(env.contract.address.to_string()),
             admin: Some(info.sender.to_string()),
             channel_open_init_options: Some(channel_open_init_options),
-            // send_callbacks_to: Some(env.contract.address.to_string()), not using for now 
-            
             // nest the call back object here 
+            callback: Some(callback),
         };
 
         let ica_count = ICA_COUNT.load(deps.storage).unwrap_or(0);
 
-        let salt = salt.unwrap_or(env.block.time.seconds().to_string());
+        let callback_count = CALLBACK_COUNT.load(deps.storage).unwrap_or(0);
+
         let label = format!("storage_outpost-{}-{}", env.contract.address, ica_count);
+
+        // 'instantiate2' which has the ability to pre compute the outpost's address
+        // Unsure if 'instantiate2_address' from cosmwasm-std will work on Archway so we're not doing this for now
 
         let cosmos_msg = ica_code.instantiate(
             instantiate_msg,
@@ -125,29 +120,24 @@ mod execute {
             Some(info.sender.to_string()),
         )?;
 
-        // Looks like Serdar used 'instantiate2' which has the ability to pre compute the outpost's address
-        // Unsure if 'instantiate2_address' from cosmwasm-std will work on Archway so we're not doing this for now
-        // I think we still get the code id of the outpost contract when we instantiate it
-
         let mut sender = info.sender;
 
         // Idea: this owner contract can instantiate multiple outpost (ica) contracts. The CONTRACT_ADDR_TO_ICA_ID mapping
         // simply maps the contract address of the instantiated outpost to the ica_id--the ica_id being just a number that indicates
         // how many outposts have been deployed before them
         // It depends on what this owner contract is doing, but each user only needs 1 outpost to be instantiated for them
-        // Why not have the mapping be 'sender address : ica_id '? The sender address being the user that executes this function
+        // Why not have the mapping be 'sender address : outpost contract address'? The sender address being the user that executes this function
 
         // Let's just put the sender's address for now as a place holder until we figure out an alternative
         let initial_state = state::IcaContractState::new(sender.clone());
 
         ICA_STATES.save(deps.storage, ica_count, &initial_state)?;
 
-        // We don't have the contract address at this point but the outpost does emit an event which
-        // shows its address
-        // where can apps save this? 
         CONTRACT_ADDR_TO_ICA_ID.save(deps.storage, sender.clone(), &ica_count)?;
 
         ICA_COUNT.save(deps.storage, &(ica_count + 1))?;
+
+        CALLBACK_COUNT.save(deps.storage, &(callback_count + 97))?;
 
         // Make an event to log the admin
         let mut event = Event::new("cross-contract-logging");
@@ -162,16 +152,16 @@ mod execute {
         info: MessageInfo,
     ) -> Result<Response, ContractError> {
         let state = STATE.load(deps.storage)?;
-        if state.admin != info.sender {
-            return Err(ContractError::Unauthorized {});
-        }
+        // TODO: the callback count is really just a placeholder that shows our callback pattern works
+        // we may delete this function once we've used the callback pattern extensively
+        // if state.admin != info.sender {
+        //     return Err(ContractError::Unauthorized {});
+        // }
 
         let callback_count = CALLBACK_COUNT.load(deps.storage).unwrap_or(0);
 
-
         CALLBACK_COUNT.save(deps.storage, &(callback_count + 1))?;
 
-        // Make an event to log the admin
         let mut event = Event::new("cross-contract-logging");
         event = event.add_attribute("creator", info.sender.clone());
 
@@ -180,7 +170,7 @@ mod execute {
 }
 
 mod query {
-    use crate::state::{IcaContractState, ICA_COUNT, ICA_STATES};
+    use crate::state::{IcaContractState, ICA_COUNT, ICA_STATES, CALLBACK_COUNT};
 
     use super::*;
 
@@ -197,6 +187,11 @@ mod query {
     /// Returns the saved ICA count.
     pub fn ica_count(deps: Deps) -> StdResult<u64> {
         ICA_COUNT.load(deps.storage)
+    }
+
+    /// Returns the callback count
+    pub fn callback_count(deps: Deps) -> StdResult<u64> {
+        CALLBACK_COUNT.load(deps.storage)
     }
 }
 

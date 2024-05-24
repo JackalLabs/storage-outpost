@@ -57,6 +57,12 @@ pub enum ContractError {
     #[error("invalid account address")]
     InvalidAddress {},
 
+    // don't need this anymore because callbacks should be optionl
+    // but we will leave here as a placeholder for future errors that
+    // are related to our callback pattern
+    #[error("No callback address provided")]
+    NoCallback {},
+
     #[error("unsupported transaction type {0}")]
     UnsupportedTxType(String),
 

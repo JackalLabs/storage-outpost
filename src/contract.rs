@@ -2,7 +2,7 @@
 
 use cosmos_sdk_proto::tendermint::p2p::packet;
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Event, Empty};
+use cosmwasm_std::{to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Event, Empty, CosmosMsg};
 use crate::ibc::types::stargate::channel::new_ica_channel_open_init_cosmos_msg;
 use crate::types::keys::{self, CONTRACT_NAME, CONTRACT_VERSION};
 use crate::types::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
@@ -25,6 +25,10 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg, //call back object is nested here 
 ) -> Result<Response, ContractError> {
+    use cosmwasm_std::WasmMsg;
+
+    use crate::types::callback;
+
     cw2::set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
     let owner = msg.owner.unwrap_or_else(|| info.sender.to_string());
@@ -36,15 +40,12 @@ pub fn instantiate(
         info.sender.clone()
     };
 
-    // Make an event to log the admin
     let mut event = Event::new("logging admin");
     event = event.add_attribute("admin", admin.clone());
     event = event.add_attribute("sender", info.sender.clone());
     event = event.add_attribute("outpost address", env.contract.address.to_string());
 
-
-    // I don't think this is saving the admin properly to ContractInfo struct defined in wasmd types 
-
+    // This is not the same thing as saving the admin properly to ContractInfo struct defined in wasmd types 
     // Save the admin. Ica address is determined during handshake.
     STATE.save(deps.storage, &ContractState::new(admin))?;
     // Initialize the callback counter.
@@ -61,13 +62,26 @@ pub fn instantiate(
         );
 
     // here we can also take the callback address (outpost-owner address) as well as the msg that it wants us to give
-    // it will ask for the outpostpost's address so we well give it env.contract.address
     // we will then call a CosmosMsg::WasmMsg::Execute to call back the outpost-owner
-    // make a vector of CosmosMsgs and call 'add_messages' below 
 
-    
+    // we only add the callback message if needed
+    let callback_owner_msg = if let Some(callback) = &msg.callback {
+        Some(CosmosMsg::Wasm(WasmMsg::Execute { 
+            contract_addr: callback.contract.clone(), 
+            msg: callback.msg.clone(), 
+            funds: vec![], 
+        }))
+    } else {
+        None
+    };
 
-        Ok(Response::new().add_message(ica_channel_open_init_msg).add_event(event))
+    let mut messages: Vec<CosmosMsg> = Vec::new();
+    messages.push(ica_channel_open_init_msg);
+    if let Some(msg) = callback_owner_msg {
+        messages.push(msg)
+    }
+
+    Ok(Response::new().add_messages(messages).add_event(event))
     } else {
         Ok(Response::default())
     }

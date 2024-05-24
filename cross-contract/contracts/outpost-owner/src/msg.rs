@@ -32,4 +32,7 @@ pub enum QueryMsg {
     /// GetIcaCount returns the number of ICAs.
     #[returns(u64)]
     GetIcaCount {},
+    /// GetCallBackCount returns the count in the callback object.
+    #[returns(u64)]
+    GetCallbackCount {},
 }
