@@ -66,6 +66,7 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 
 	res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostOwnerContractAddr, toString(createMsg), "--gas", "500000")
 	s.Require().NoError(err)
+	logger.LogInfo(res)
 
 	s.NumOfOutpostContracts++
 
@@ -75,8 +76,18 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 
 	// In the docker session, we can see that the ica channel was created
 
+	mapOutpostMsg := outpostowner.ExecuteMsg{
+		MapUserOutpost: &outpostowner.ExecuteMsg_MapUserOutpost{
+			OutpostAddress: "wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay",
+			OutpostOwner:   s.UserA.FormattedAddress(),
+		},
+	}
+	// This should fail but the events should still emit no? or is it just the error that we get back?
+	updatedResponse, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostOwnerContractAddr, toString(mapOutpostMsg), "--gas", "500000")
+	s.Require().NoError(err)
+
 	logger.InitLogger()
-	logger.LogEvents(res.Events)
+	logger.LogEvents(updatedResponse.Events)
 }
 
 func TestWithOwnerTestSuite(t *testing.T) {

@@ -19,6 +19,10 @@ pub const CONTRACT_ADDR_TO_ICA_ID: Map<Addr, u64> = Map::new("contract_addr_to_i
 /// The item used to track if the callback was successful
 pub const CALLBACK_COUNT: Item<u64> = Item::new("call_back_count");
 
+/// A mapping of the user's address to the outpost address they own
+/// NOTE: Should we consider calling this 'OWNER_ADDR...' given that each outpost belongs to one user and is owned by that user?
+pub const USER_ADDR_TO_OUTPOST_ADDR: Map<&str, String> = Map::new("user_addr_to_outpost_addr");
+
 mod contract {
     use crate::ContractError;
 
@@ -47,7 +51,7 @@ mod contract {
             if self.admin == sender.into() {
                 Ok(())
             } else {
-                Err(ContractError::Unauthorized {})
+                Err(ContractError::Unauthorized { expected: todo!(), actual: todo!() })
             }
         }
     }

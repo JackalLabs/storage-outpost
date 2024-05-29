@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CallbackCounter",
+  "description": "CallbackCounter tracks the number of callbacks in store.",
+  "type": "object",
+  "required": [
+    "error",
+    "success",
+    "timeout"
+  ],
+  "properties": {
+    "error": {
+      "description": "The number of erroneous callbacks.",
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 0.0
+    },
+    "success": {
+      "description": "The number of successful callbacks.",
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 0.0
+    },
+    "timeout": {
+      "description": "The number of timeout callbacks. The channel is closed after a timeout due to the semantics of ordered channels.",
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 0.0
+    }
+  },
+  "additionalProperties": false
+}

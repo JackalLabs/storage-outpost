@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "InstantiateMsg",
+  "description": "The message to instantiate the ICA controller contract.",
+  "type": "object",
+  "properties": {
+    "admin": {
+      "description": "The address of the admin of the ICA application. If not specified, the sender is the admin.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "callback": {
+      "description": "The callback information to be used",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/Callback"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "channel_open_init_options": {
+      "description": "The options to initialize the IBC channel upon contract instantiation. If not specified, the IBC channel is not initialized, and the relayer must.",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ChannelOpenInitOptions"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "owner": {
+      "description": "The address of the owner of the ICA application. If not specified, the sender is the owner.",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "Binary": {
+      "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>. See also <https://github.com/CosmWasm/cosmwasm/blob/main/docs/MESSAGE_TYPES.md>.",
+      "type": "string"
+    },
+    "Callback": {
+      "description": "The message to instantiate the ICA controller contract.",
+      "type": "object",
+      "required": [
+        "contract",
+        "msg"
+      ],
+      "properties": {
+        "contract": {
+          "description": "The contract address that we will call back",
+          "type": "string"
+        },
+        "msg": {
+          "description": "The msg we will make the above contract execute",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Binary"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "ChannelOpenInitOptions": {
+      "description": "The message used to provide the MsgChannelOpenInit with the required data.",
+      "type": "object",
+      "required": [
+        "connection_id",
+        "counterparty_connection_id"
+      ],
+      "properties": {
+        "connection_id": {
+          "description": "The connection id on this chain.",
+          "type": "string"
+        },
+        "counterparty_connection_id": {
+          "description": "The counterparty connection id on the counterparty chain.",
+          "type": "string"
+        },
+        "counterparty_port_id": {
+          "description": "The counterparty port id. If not specified, [crate::ibc::types::keys::HOST_PORT_ID] is used. Currently, this contract only supports the host port.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tx_encoding": {
+          "description": "TxEncoding is the encoding used for the ICA txs. If not specified, [TxEncoding::Protobuf] is used.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TxEncoding"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "TxEncoding": {
+      "description": "Encoding is the encoding of the transactions sent to the ICA host.",
+      "oneOf": [
+        {
+          "description": "Protobuf is the protobuf serialization of the CosmosSDK's Any.",
+          "type": "string",
+          "enum": [
+            "proto3"
+          ]
+        },
+        {
+          "description": "Proto3Json is the json serialization of the CosmosSDK's Any.",
+          "type": "string",
+          "enum": [
+            "proto3json"
+          ]
+        }
+      ]
+    }
+  }
+}

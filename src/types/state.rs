@@ -35,6 +35,8 @@ mod contract {
         /// If true, the IBC application will accept `MsgChannelOpenInit` messages.
         #[serde(default)]
         pub allow_channel_open_init: bool,
+        // TODO: add string to save the address of the outpost factory incase the outpost needs to call the factory 
+        // at any other time besides during instantiation
     }
 
     impl ContractState {

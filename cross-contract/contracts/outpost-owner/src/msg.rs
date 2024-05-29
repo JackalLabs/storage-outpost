@@ -17,6 +17,12 @@ pub enum ExecuteMsg {
     },
     UpdateCallbackCount {
 
+    },
+    // When the outpost is created for a user, the created outpost contract will call back this owner contract
+    // to execute the below function and map the user's address to their owned outpost
+    MapUserOutpost {
+        outpost_owner: String, // this function is called for a specific purpose of updating a map so nothing is optional
+        outpost_address: String,
     }
 }
 
@@ -35,4 +41,7 @@ pub enum QueryMsg {
     /// GetCallBackCount returns the count in the callback object.
     #[returns(u64)]
     GetCallbackCount {},
+    /// GetUserOutpostAddress returns the outpost address owned by the given user address
+    #[returns(String)]
+    GetUserOutpostAddress { user_address: String},
 }

@@ -91,6 +91,26 @@ pub enum ExecuteMsg {
     },
 }
 
+/// The outpost owner depends on the outpost, which causes a cyclic dependency if the outpost called
+/// The outpost owner's ExecuteMsg enum.
+/// We can get around this by creating the below enum which has the variant 'MapUserOutpost' from outpost-owner.
+/// This is not elegant, but is simple, readable and fits our needs for now.
+/// If the topology of cross contract interactions gets too complicated, creating a shared library of ExecuteMsg enums
+/// or using a macro to merge two enum variants is a more elegant solution
+/// 
+// #[ica_callback_execute] This is Serdar's macro to merge two enum variants, we can use it later if needed.
+#[cw_serde]
+pub enum OutpostOwnerExecuteMsg {
+    /// When the outpost is created for a user, the created outpost contract will call back the owner contract
+    /// to execute the below function and map the user's address to their owned outpost
+    MapUserOutpost {
+        /// The user's address who will own the outpost
+        outpost_owner: String, // this function is called for a specific purpose of updating a map so nothing is optional
+        /// The address of the outpost contract
+        outpost_address: String,
+    }
+}
+
 /// The messages to query the ICA controller contract.
 #[cw_ownable::cw_ownable_query]
 #[cw_serde]

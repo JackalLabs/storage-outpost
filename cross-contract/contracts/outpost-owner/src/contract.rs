@@ -46,6 +46,7 @@ pub fn execute(
             channel_open_init_options,
         } => execute::create_ica_contract(deps, env, info, salt, channel_open_init_options),
         ExecuteMsg::UpdateCallbackCount {} => execute::update_callback_count(deps, env, info),
+        ExecuteMsg::MapUserOutpost { outpost_owner, outpost_address } => execute::map_user_outpost(deps, env, info, outpost_owner, outpost_address),
     }
 }
 
@@ -58,6 +59,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         }
         QueryMsg::GetIcaCount {} => to_json_binary(&query::ica_count(deps)?),
         QueryMsg::GetCallbackCount {} => to_json_binary(&query::callback_count(deps)?),
+        QueryMsg::GetUserOutpostAddress { user_address } => to_json_binary(&query::user_outpost_address(deps, user_address)?),
     }
 }
 
@@ -72,7 +74,7 @@ mod execute {
     };
     use storage_outpost::types::callback::Callback;
 
-    use crate::state::{self, CONTRACT_ADDR_TO_ICA_ID, ICA_COUNT, ICA_STATES, CALLBACK_COUNT};
+    use crate::state::{self, CONTRACT_ADDR_TO_ICA_ID, ICA_COUNT, ICA_STATES, CALLBACK_COUNT, USER_ADDR_TO_OUTPOST_ADDR};
 
     use super::*;
 
@@ -94,6 +96,8 @@ mod execute {
         let callback = Callback {
             contract: env.contract.address.to_string(),
             // WARNING: do not use unwrap()
+            // TODO: I don't think the msg can always be pre prepared, so it might make sense to make this
+            // optional
             msg: to_json_binary(&ExecuteMsg::UpdateCallbackCount {}).ok().unwrap(), 
         };
 
@@ -167,10 +171,97 @@ mod execute {
 
         Ok(Response::new().add_event(event))
     }
+
+    pub fn map_user_outpost(
+        deps: DepsMut,
+        env: Env,
+        info: MessageInfo,
+        outpost_owner: String,
+        outpost_address: String,
+    ) -> Result<Response, ContractError> {
+        let state = STATE.load(deps.storage)?;
+/* 
+        Cross contract executions are made with the calling contract's address as info.sender
+        This creates a security risk and makes this function un-elegant
+
+        If Alice wanted to maliciously pre-create Bob's kv pair with "foobar" as value, the following would be true:
+        info.sender == AliceAddress
+        outpost_owner == BobAddress
+        outpost_address == foobar
+
+        A legit creation would be:
+        info.sender == BobOutpostAddress
+        outpost_owner == BobAddress
+        outpost_address == BobOutpostAddress
+
+        to prevent Alice from being malicious, we can implement the following check:
+
+        if (info.sender != outpost_owner) AND (info.sender != outpost_address) 
+         return unauthorized error
+
+         */
+            // Ensure that the sender is either the outpost owner or the outpost address
+    if info.sender != Addr::unchecked(outpost_owner.clone()) && info.sender != Addr::unchecked(outpost_address.clone()) {
+        return Err(ContractError::Unauthorized { 
+            expected: outpost_address.to_string(), 
+            actual: info.sender.to_string(),
+        });
+    }
+
+        // this contract can't have an owner becaues it needs to be called back by every outpost it instantiates 
+
+        // can't we just require that outpost_address be equal to info.sender? 
+        // but outpost_address is a 
+
+        // This function is intended for this sole purpose:
+        // When an outpost is created (instantiated) by this contract, it will make a call back to this contract 
+        // to execute this function. The CosmWasm framework dictates that
+        // the sender of this cross-contract msg is the calling contract, i.e., the outpost (not 100% sure if this is flexible atm)
+        let sender_of_callback_msg = info.sender; // will be outpost's address
+        
+        // We need the map key to be the bech32 address of the user who owns the outpost, so jackal.js can instantly query for the user's outpost address 
+        // but unfortunately, anyone can call this function and put any user address as the 'outpost_owner'
+        match USER_ADDR_TO_OUTPOST_ADDR.may_load(deps.storage, &outpost_owner)? {
+            Some(mapped_outpost_address) => {
+                // We check that the outpost_address that's mapped to the given outpost_owner, is one and the same
+                // as the info.sender. This ensures that only outpost contracts can override this map--they never would, this is more of 
+                // a security feature that prevents Bob from malicously ovewrriting Alice's mapped outpost address.
+
+                // If someone wanted to give full ownership of their outpost to another user--indirectly transfering ownership of the jkl ica host--the
+                // outpost can have a 'change_owner' function. If we want this feature, the 'change_owner' function can call this function
+                // to create a new kv pair for the new owner bech32 address
+                if sender_of_callback_msg != Addr::unchecked(mapped_outpost_address.clone()) {
+                
+                    return Err(ContractError::Unauthorized { expected: mapped_outpost_address.to_string(), actual: sender_of_callback_msg.to_string()  })
+
+                }
+            },
+            None => {
+                // If the key does not exist, anyone can create it 
+                // PROBLEM: Couldn't Alice maliciously create a key value pair using Bob's address as the outpost owner, and a random "foobar" string
+                // for the value?
+                // This would mean that when Bob goes to make his key, he wouldn't be allowed because of the above check?
+
+            }
+        }
+
+    // Save the new key-value pair
+    // use info.sender to guarantee that the value is always the outpost address? 
+    // info.sender could just be a regular user's bech32 address?
+
+    USER_ADDR_TO_OUTPOST_ADDR.save(deps.storage, &outpost_owner, &outpost_address)?; 
+
+    let mut event = Event::new("user to outpost map");
+        event = event.add_attribute("sender_of_callback_msg", sender_of_callback_msg.to_string());
+        event = event.add_attribute("outpost_owner", outpost_owner.clone());
+        event = event.add_attribute("outpost_address", outpost_address.clone());
+
+    Ok(Response::new().add_event(event))
+    }
 }
 
 mod query {
-    use crate::state::{IcaContractState, ICA_COUNT, ICA_STATES, CALLBACK_COUNT};
+    use crate::state::{IcaContractState, ICA_COUNT, ICA_STATES, CALLBACK_COUNT, USER_ADDR_TO_OUTPOST_ADDR};
 
     use super::*;
 
@@ -192,6 +283,11 @@ mod query {
     /// Returns the callback count
     pub fn callback_count(deps: Deps) -> StdResult<u64> {
         CALLBACK_COUNT.load(deps.storage)
+    }
+
+    /// Returns the outpost address this user owns
+    pub fn user_outpost_address(deps: Deps, user_address: String) -> StdResult<String> {
+        USER_ADDR_TO_OUTPOST_ADDR.load(deps.storage, &user_address)
     }
 }
 

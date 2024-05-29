@@ -5,7 +5,7 @@ use cosmwasm_std::entry_point;
 use cosmwasm_std::{to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Event, Empty, CosmosMsg};
 use crate::ibc::types::stargate::channel::new_ica_channel_open_init_cosmos_msg;
 use crate::types::keys::{self, CONTRACT_NAME, CONTRACT_VERSION};
-use crate::types::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+use crate::types::msg::{OutpostOwnerExecuteMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::types::state::{
     self, CallbackCounter, ChannelState, ContractState, CALLBACK_COUNTER, CHANNEL_STATE, STATE,
 };
@@ -64,11 +64,16 @@ pub fn instantiate(
     // here we can also take the callback address (outpost-owner address) as well as the msg that it wants us to give
     // we will then call a CosmosMsg::WasmMsg::Execute to call back the outpost-owner
 
+    let callback_msg = OutpostOwnerExecuteMsg::MapUserOutpost { 
+        outpost_owner: info.sender.to_string(), 
+        outpost_address: env.contract.address.to_string() 
+    };
+
     // we only add the callback message if needed
     let callback_owner_msg = if let Some(callback) = &msg.callback {
         Some(CosmosMsg::Wasm(WasmMsg::Execute { 
             contract_addr: callback.contract.clone(), 
-            msg: callback.msg.clone(), 
+            msg: to_json_binary(&callback_msg).ok().unwrap(), // WARNING: do not use unwrap
             funds: vec![], 
         }))
     } else {
