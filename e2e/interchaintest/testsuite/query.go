@@ -12,7 +12,7 @@ import (
 	msgv1 "cosmossdk.io/api/cosmos/msg/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
 
-	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
+	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 )
 
 var queryReqToPath = make(map[string]string)
@@ -40,10 +40,21 @@ func populateQueryReqToPath(ctx context.Context, chain *cosmos.CosmosChain) erro
 	return nil
 }
 
+// TEMPORARY FUNCTION
+// For debugging, prints the content of the queryReqToPath variable
+func queryPrinter(m map[string]string) {
+	fmt.Println("Contents of queryReqToPath:")
+	for key, value := range m {
+		fmt.Println("Key:", key, ", Value:", value)
+	}
+}
+
 // Queries the chain with a query request and deserializes the response to T
 func GRPCQuery[T any](ctx context.Context, chain *cosmos.CosmosChain, req proto.Message, opts ...grpc.CallOption) (*T, error) {
 	path, ok := queryReqToPath[proto.MessageName(req)]
 	if !ok {
+		fmt.Println("MILO, PRINTING QUERYREQ:")
+		queryPrinter(queryReqToPath)
 		return nil, fmt.Errorf("no path found for %s", proto.MessageName(req))
 	}
 
@@ -80,10 +91,16 @@ func queryFileDescriptors(ctx context.Context, chain *cosmos.CosmosChain) (*refl
 	defer grpcConn.Close()
 
 	resp := new(reflectionv1.FileDescriptorsResponse)
+
+	/*
+	 Replaced the constant ReflectionService_FileDescriptors_FullMethodName with "/cosmos.reflection.v1.ReflectionService/FileDescriptors".
+	 Our cosmossdk version (v0.3.1) lacks this constant. Constant definition here: https://pkg.go.dev/cosmossdk.io/api@v0.7.5/cosmos/reflection/v1
+	*/
 	err = grpcConn.Invoke(
-		ctx, reflectionv1.ReflectionService_FileDescriptors_FullMethodName,
+		ctx, "/cosmos.reflection.v1.ReflectionService/FileDescriptors",
 		&reflectionv1.FileDescriptorsRequest{}, resp,
 	)
+
 	if err != nil {
 		return nil, err
 	}
