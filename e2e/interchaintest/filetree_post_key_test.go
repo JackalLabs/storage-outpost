@@ -12,7 +12,9 @@ import (
 	"github.com/google/uuid"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
+	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	filetreetypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/filetreetypes"
 	testtypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -115,6 +117,13 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 			[]proto.Message{filetreeMakeRootMsg}, nil, nil, rootMsgTypeURL,
 		)
 		err := s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg1)
+
+		// Attempt, and fail, to query for a public key through the GRPCQuery function
+		contractInfoResp, err := testsuite.GRPCQuery[wasmtypes.QueryContractInfoResponse](ctx, s.ChainB, &wasmtypes.QueryContractInfoRequest{
+			Address: s.Contract.IcaAddress,
+		})
+		fmt.Println("Output test!: ", contractInfoResp, err)
+
 		s.Require().NoError(err)
 
 	},
