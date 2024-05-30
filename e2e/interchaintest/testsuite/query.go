@@ -96,8 +96,16 @@ func queryFileDescriptors(ctx context.Context, chain *cosmos.CosmosChain) (*refl
 	 Replaced the constant ReflectionService_FileDescriptors_FullMethodName with "/cosmos.reflection.v1.ReflectionService/FileDescriptors".
 	 Our cosmossdk version (v0.3.1) lacks this constant. Constant definition here: https://pkg.go.dev/cosmossdk.io/api@v0.7.5/cosmos/reflection/v1
 	*/
+
+	/*
+		Previous endpoints:
+			- /cosmos.reflection.v1.ReflectionService/FileDescriptors
+			- https://api.jackalprotocol.com/jackal-dao/canine-chain/filetree/pubkeys/<Address>
+			- /jackal-dao/canine-chain/filetree/pubkeys
+	*/
+	var test_endpoint = "/jackal-dao/canine-chain/filetree/pubkeys"
 	err = grpcConn.Invoke(
-		ctx, "/cosmos.reflection.v1.ReflectionService/FileDescriptors",
+		ctx, test_endpoint,
 		&reflectionv1.FileDescriptorsRequest{}, resp,
 	)
 

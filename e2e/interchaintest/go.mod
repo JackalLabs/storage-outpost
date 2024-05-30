@@ -18,8 +18,10 @@ require (
 	github.com/strangelove-ventures/interchaintest/v7 v7.0.0
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/zap v1.26.0
+	google.golang.org/genproto/googleapis/api v0.0.0-20230822172742-b8732ec3820d
 	google.golang.org/grpc v1.59.0
 	google.golang.org/protobuf v1.31.0
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
@@ -218,11 +220,9 @@ require (
 	google.golang.org/api v0.126.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230822172742-b8732ec3820d // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20230822172742-b8732ec3820d // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230913181813-007df8e322eb // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	lukechampine.com/blake3 v1.1.7 // indirect
 	lukechampine.com/uint128 v1.2.0 // indirect

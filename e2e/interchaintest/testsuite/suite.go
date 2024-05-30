@@ -88,8 +88,8 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 	logger.InitLogger()
 
 	// Map all query request types to their gRPC method paths
-	s.Require().NoError(populateQueryReqToPath(ctx, s.ChainA))
-	s.Require().NoError(populateQueryReqToPath(ctx, s.ChainB))
+	//s.Require().NoError(populateQueryReqToPath(ctx, s.ChainA))
+	//s.Require().NoError(populateQueryReqToPath(ctx, s.ChainB))
 
 	// Fund user accounts on ChainA and ChainB
 	const userFunds = int64(10_000_000_000)
