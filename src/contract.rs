@@ -31,6 +31,11 @@ pub fn instantiate(
 
     cw2::set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
+    // SECURITY WARNING: msg.owner can be passed in by anyone. Alice could maliciously instantiate an outpost 
+    // with Bob as the owner. She'd have no reason for doing so, but some people just want to watch the world burn
+    // TODO: force the owner to always be info.sender (sender is msg executor whose signature is authenticated by wasmd)
+    // In the case that outpost factory creates an outpost, the factory can return ownership back to the outpost
+    // when it's been called back 
     let owner = msg.owner.unwrap_or_else(|| info.sender.to_string());
     cw_ownable::initialize_owner(deps.storage, deps.api, Some(&owner))?;
 
@@ -40,9 +45,8 @@ pub fn instantiate(
         info.sender.clone()
     };
 
-    let mut event = Event::new("logging admin");
-    event = event.add_attribute("admin", admin.clone());
-    event = event.add_attribute("sender", info.sender.clone());
+    let mut event = Event::new("OUTPOST: instantiate");
+    event = event.add_attribute("info.sender", info.sender.clone());
     event = event.add_attribute("outpost address", env.contract.address.to_string());
 
     // This is not the same thing as saving the admin properly to ContractInfo struct defined in wasmd types 
@@ -65,11 +69,10 @@ pub fn instantiate(
     // we will then call a CosmosMsg::WasmMsg::Execute to call back the outpost-owner
 
     let callback_msg = OutpostOwnerExecuteMsg::MapUserOutpost { 
-        outpost_owner: info.sender.to_string(), 
-        outpost_address: env.contract.address.to_string() 
+        outpost_owner: info.sender.to_string(), // WARNING: Not good. info.sender is address of outpost owner, not wasmd user. Need to pass in wasmd user in callback
     };
 
-    // we only add the callback message if needed
+    // we only take the msg from 'msg.callback' if we know it exists
     let callback_owner_msg = if let Some(callback) = &msg.callback {
         Some(CosmosMsg::Wasm(WasmMsg::Execute { 
             contract_addr: callback.contract.clone(), 

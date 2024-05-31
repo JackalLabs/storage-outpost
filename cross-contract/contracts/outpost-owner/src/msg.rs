@@ -15,14 +15,10 @@ pub enum ExecuteMsg {
         salt: Option<String>,
         channel_open_init_options: ChannelOpenInitOptions,
     },
-    UpdateCallbackCount {
-
-    },
     // When the outpost is created for a user, the created outpost contract will call back this owner contract
     // to execute the below function and map the user's address to their owned outpost
     MapUserOutpost {
         outpost_owner: String, // this function is called for a specific purpose of updating a map so nothing is optional
-        outpost_address: String,
     }
 }
 

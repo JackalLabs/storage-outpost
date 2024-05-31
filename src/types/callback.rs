@@ -12,6 +12,11 @@ pub struct Callback {
     /// The contract address that we will call back
     pub contract: String,
     /// The msg we will make the above contract execute
-    pub msg: Binary,
+    pub msg: Option<Binary>,
     
 }
+
+
+
+
+

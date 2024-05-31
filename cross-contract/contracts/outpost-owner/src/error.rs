@@ -17,4 +17,7 @@ pub enum ContractError {
 
     #[error("ica information is not set")]
     IcaInfoNotSet {},
+
+    #[error("lock file does not exist")]
+    MissingLock {},
 }

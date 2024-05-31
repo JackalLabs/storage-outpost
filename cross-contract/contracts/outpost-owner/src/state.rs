@@ -23,6 +23,10 @@ pub const CALLBACK_COUNT: Item<u64> = Item::new("call_back_count");
 /// NOTE: Should we consider calling this 'OWNER_ADDR...' given that each outpost belongs to one user and is owned by that user?
 pub const USER_ADDR_TO_OUTPOST_ADDR: Map<&str, String> = Map::new("user_addr_to_outpost_addr");
 
+/// This behaves like a lock file which ensures that users can only create an outpost for themselves
+/// It's a needed work around that's caused by inter-contract executions being signed by the calling contract instead of the user's signature
+pub const LOCK: Map<&str, bool> = Map::new("lock");
+
 mod contract {
     use crate::ContractError;
 

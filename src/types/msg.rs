@@ -10,6 +10,8 @@ use super::callback::Callback;
 /// The message to instantiate the ICA controller contract.
 #[cw_serde]
 pub struct InstantiateMsg {
+    /// TODO: remove owner and admin. Owner should be info.sender and admin is passed into the outer InstantiateMsg
+    /// This inner admin really has no authority
     /// The address of the owner of the ICA application.
     /// If not specified, the sender is the owner.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -106,8 +108,6 @@ pub enum OutpostOwnerExecuteMsg {
     MapUserOutpost {
         /// The user's address who will own the outpost
         outpost_owner: String, // this function is called for a specific purpose of updating a map so nothing is optional
-        /// The address of the outpost contract
-        outpost_address: String,
     }
 }
 
