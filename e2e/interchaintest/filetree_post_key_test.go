@@ -117,16 +117,16 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 		)
 		err := s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg1)
 
-		testsuite.QueryPubKey(ctx, s.ChainB, s.Contract.IcaAddress)
-
-		// Attempt, and fail, to query for a public key through the GRPCQuery function
-		/*contractInfoResp, err := testsuite.GRPCQuery[wasmtypes.QueryContractInfoResponse](ctx, s.ChainB, &wasmtypes.QueryContractInfoRequest{
-			Address: s.Contract.IcaAddress,
-		})
-		fmt.Println("Output test!: ", contractInfoResp, err)*/
-
 		s.Require().NoError(err)
 
+		// Query a PubKey
+		pubRes, pubErr := testsuite.PubKey(ctx, s.ChainB, s.Contract.IcaAddress)
+		s.Require().NoError(pubErr)
+		s.Require().Equal(pubRes.PubKey.GetKey(), filetreeMsg.GetKey(), "Expected PubKey does not match the returned PubKey")
+
+		// Query all Pubkeys
+		// allRes, allErr := testsuite.AllPubKeys(ctx, s.ChainB)
+		// s.Require().NoError(allErr)
 	},
 	)
 
