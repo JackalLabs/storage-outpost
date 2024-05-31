@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 INFO: 2024/05/31 10:16:21 Event:  {"type":"tx","attributes":[{"key":"fee","value":"","index":true},{"key":"fee_payer","value":"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag","index":true}]}
 INFO: 2024/05/31 10:16:21 Event:  {"type":"tx","attributes":[{"key":"acc_seq","value":"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag/3","index":true}]}
 INFO: 2024/05/31 10:16:21 Event:  {"type":"tx","attributes":[{"key":"signature","value":"LwPzeohdGTtG1U9Oa2z0sXGsG/zNNv0Su4bByjQ6hPZYvakvhP5Omrgy/zGxxKa88N3zHunwCpUevpj0Vb97rg==","index":true}]}
@@ -9,3 +10,8 @@ INFO: 2024/05/31 10:16:21 Event:  {"type":"wasm-OUTPOST: instantiate","attribute
 INFO: 2024/05/31 10:16:21 Event:  {"type":"channel_open_init","attributes":[{"key":"channel_id","value":"channel-0","index":true},{"key":"connection_id","value":"connection-0","index":true},{"key":"counterparty_channel_id","value":"","index":true},{"key":"counterparty_port_id","value":"icahost","index":true},{"key":"port_id","value":"wasm.wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay","index":true},{"key":"version","value":"{\"version\":\"ics27-1\",\"controller_connection_id\":\"connection-0\",\"host_connection_id\":\"connection-0\",\"address\":\"\",\"encoding\":\"proto3\",\"tx_type\":\"sdk_multi_msg\"}","index":true}]}
 INFO: 2024/05/31 10:16:21 Event:  {"type":"execute","attributes":[{"key":"_contract_address","value":"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8","index":true}]}
 INFO: 2024/05/31 10:16:21 Event:  {"type":"wasm-FACTORY: map_user_outpost","attributes":[{"key":"_contract_address","value":"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8","index":true},{"key":"info.sender","value":"wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay","index":true},{"key":"outpost_address","value":"wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay","index":true},{"key":"outpost_owner","value":"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8","index":true}]}
+=======
+INFO: 2024/05/30 18:13:49 The sender of instantiate is wasmd-localwasm-1-bmj
+INFO: 2024/05/30 18:14:00 [0xc0015c2000]
+INFO: 2024/05/30 18:14:39 /
+>>>>>>> grpc_server
