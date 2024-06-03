@@ -3,11 +3,14 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"log"
 	"strconv"
 	"testing"
 	"time"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
+	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	mysuite "github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 	outpostowner "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types/outpostowner"
@@ -46,13 +49,13 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 	s.Require().NoError(err)
 
 	instantiateMsg := outpostowner.InstantiateMsg{StorageOutpostCodeId: int(s.OutpostContractCodeId)}
-
+	// this is the outpost owner
 	outpostOwnerContractAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), codeId, toString(instantiateMsg), false, "--gas", "500000", "--admin", s.UserA.KeyName())
 	s.Require().NoError(err)
 
 	s.NumOfOutpostContracts = 0
 
-	// Create the Outpost Owner Factory
+	// Create UserA's outpost
 	createMsg := outpostowner.ExecuteMsg{
 		CreateIcaContract: &outpostowner.ExecuteMsg_CreateIcaContract{
 			Salt: nil,
@@ -124,8 +127,20 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 	logger.LogInfo(res5)
 
 	// Query for the relevant addresses to ensure everything exists
+	outpostAddressRes, outpostAddressErr := testsuite.OutpostAddress(ctx, s.ChainA, outpostOwnerContractAddr, s.UserA.FormattedAddress())
+	s.Require().NoError(outpostAddressErr)
+	var outpostAddress string
+	if err := json.Unmarshal(outpostAddressRes.Data, &outpostAddress); err != nil {
+		log.Fatalf("Error parsing response data: %v", err)
+	}
 
-	// Should pass the outpost address as event and compare it with the queried outpost address to double check that it was mapped correctly
+	fmt.Printf("User Outpost Address: %s\n", outpostAddress)
+
+	// To check that the mappings were done correctly.
+	// Above, we should parse out the outpost address that's created for userA using the event
+	// we should then assert that it's equal to 'outpostAddress', much like how we assert PubKeys are equal
+	// s.Require().Equal(pubRes.PubKey.GetKey(), filetreeMsg.GetKey(), "Expected PubKey does not match the returned PubKey")
+
 }
 
 func TestWithOwnerTestSuite(t *testing.T) {
