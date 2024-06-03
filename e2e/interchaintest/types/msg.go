@@ -21,6 +21,8 @@ type Callback struct {
 	Contract string `json:"contract,omitempty"`
 	// The msg we will make the above contract execute
 	Msg Binary `json:"msg,omitempty"`
+	/// The owner of the outpost
+	OutpostOwner string `json:"outpost_owner,omitempty"`
 }
 
 // ExecuteMsg is the message to execute cw-ica-controller

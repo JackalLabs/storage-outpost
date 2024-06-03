@@ -97,14 +97,22 @@ mod execute {
 
         // Ensures only info.sender can create address<>outpost_address mapping when map_user_outpost is called below
 
+        // WARNING: MUST DO: If users accidentally spam outpost creations for themselves, it becomes difficult to keep track
+        // of their outpost address
+        // TODO: can we use the LOCK to ensure a user can only call this function once ever?
+
+        // We can put a check here: If the user<>outpost mapping already exists, they can't call this function
+
         let lock = LOCK.save(deps.storage, &info.sender.to_string(), &true);
-                // TODO: can we use the LOCK to ensure a user can only call this function once ever?
+                
 
         let callback = Callback {
             contract: env.contract.address.to_string(),
             // TODO: make this comment more professional
             // refer to commit 937d8f5ffa506e4d3ba34b8946b865c7da1bb4b8 to see a msg nested in the Callback
-            msg: None, // WARNING: why is our IDE red lining here even though we can compile the wasm module?...
+            msg: None, 
+            // Even though this could be spoofed in 'map_user_outpost', that's ok because we have the lock to block
+            outpost_owner: info.sender.to_string(),
         };
 
         let instantiate_msg = storage_outpost::types::msg::InstantiateMsg {

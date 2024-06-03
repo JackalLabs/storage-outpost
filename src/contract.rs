@@ -68,15 +68,14 @@ pub fn instantiate(
     // here we can also take the callback address (outpost-owner address) as well as the msg that it wants us to give
     // we will then call a CosmosMsg::WasmMsg::Execute to call back the outpost-owner
 
-    let callback_msg = OutpostOwnerExecuteMsg::MapUserOutpost { 
-        outpost_owner: info.sender.to_string(), // WARNING: Not good. info.sender is address of outpost owner, not wasmd user. Need to pass in wasmd user in callback
-    };
-
     // we only take the msg from 'msg.callback' if we know it exists
     let callback_owner_msg = if let Some(callback) = &msg.callback {
+
         Some(CosmosMsg::Wasm(WasmMsg::Execute { 
             contract_addr: callback.contract.clone(), 
-            msg: to_json_binary(&callback_msg).ok().unwrap(), // WARNING: do not use unwrap
+            msg: to_json_binary(&OutpostOwnerExecuteMsg::MapUserOutpost { 
+                outpost_owner: callback.outpost_owner.clone(), 
+            }).ok().expect("Failed to serialize callback_msg"), // Handle the error properly
             funds: vec![], 
         }))
     } else {

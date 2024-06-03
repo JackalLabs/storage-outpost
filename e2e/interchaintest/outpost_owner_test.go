@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"testing"
 	"time"
@@ -68,8 +69,8 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 
 	res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostOwnerContractAddr, toString(createMsg), "--gas", "500000")
 	s.Require().NoError(err)
-	logger.LogEvents(res.Events)
-	// logger.LogInfo(res)
+	// logger.LogEvents(res.Events)
+	fmt.Println(res)
 
 	s.NumOfOutpostContracts++
 
@@ -79,16 +80,38 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 
 	// In the docker session, we can see that the ica channel was created
 
-	// mapOutpostMsg := outpostowner.ExecuteMsg{
-	// 	MapUserOutpost: &outpostowner.ExecuteMsg_MapUserOutpost{
-	// 		OutpostOwner: s.UserA.FormattedAddress(),
-	// 	},
-	// }
-	// // This should fail but the events should still emit no? or is it just the error that we get back?
-	// updatedResponse, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostOwnerContractAddr, toString(mapOutpostMsg), "--gas", "500000")
-	// s.Require().NoError(err)
+	mapOutpostMsg := outpostowner.ExecuteMsg{
+		MapUserOutpost: &outpostowner.ExecuteMsg_MapUserOutpost{
+			OutpostOwner: s.UserA.FormattedAddress(),
+		},
+	}
+	// This failed because UserA already used their lock when creating the outpost
+	res1, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostOwnerContractAddr, toString(mapOutpostMsg), "--gas", "500000")
+	expectedErrorMsg := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
+	s.Require().EqualError(err, expectedErrorMsg)
 
-	// logger.LogEvents(updatedResponse.Events)
+	logger.LogEvents(res1.Events)
+
+	// Let's get UserA2 to create a user<>outpost mapping WITHOUT creating an outpost. It will fail because no lock file exists
+	mapOutpostMsgForUserA2 := outpostowner.ExecuteMsg{
+		MapUserOutpost: &outpostowner.ExecuteMsg_MapUserOutpost{
+			OutpostOwner: s.UserA2.FormattedAddress(),
+		},
+	}
+
+	res2, err := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostOwnerContractAddr, toString(mapOutpostMsgForUserA2), "--gas", "500000")
+	expectedErrorMsg1 := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
+	s.Require().EqualError(err, expectedErrorMsg1)
+
+	fmt.Println(res2)
+
+	// UserA2 should be able to make an outpost
+
+	// If UserA2 tries to map again, lock file doesn't exist
+
+	// UserA2 tries to maliciously create a mapping for UserA3???
+
+	// Query for the relevant addresses to ensure everything exists
 }
 
 func TestWithOwnerTestSuite(t *testing.T) {

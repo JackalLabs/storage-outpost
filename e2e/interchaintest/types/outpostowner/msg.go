@@ -2,8 +2,8 @@
 package outpostowner
 
 type InstantiateMsg struct {
-	StorageOutpostCodeId int `json:"storage_outpost_code_id"`
 	Admin *string `json:"admin,omitempty"`
+	StorageOutpostCodeId int `json:"storage_outpost_code_id"`
 }
 
 type ExecuteMsg struct {
@@ -24,26 +24,12 @@ type QueryMsg struct {
 	GetUserOutpostAddress *QueryMsg_GetUserOutpostAddress `json:"get_user_outpost_address,omitempty"`
 }
 
-type QueryMsg_GetContractState struct{}
-
-type QueryMsg_GetIcaCount struct{}
-
-type QueryMsg_GetCallbackCount struct{}
-
-type QueryMsg_GetUserOutpostAddress struct {
-	UserAddress string `json:"user_address"`
+type ExecuteMsg_CreateIcaContract struct {
+	Salt *string `json:"salt,omitempty"`
+	ChannelOpenInitOptions ChannelOpenInitOptions `json:"channel_open_init_options"`
 }
 
-// ChannelState is the state of the IBC channel.
-type ChannelStatus string
-
-const (
-	ChannelStatus_StateUninitializedUnspecified ChannelStatus = "STATE_UNINITIALIZED_UNSPECIFIED"
-	ChannelStatus_StateInit                     ChannelStatus = "STATE_INIT"
-	ChannelStatus_StateTryopen                  ChannelStatus = "STATE_TRYOPEN"
-	ChannelStatus_StateOpen                     ChannelStatus = "STATE_OPEN"
-	ChannelStatus_StateClosed                   ChannelStatus = "STATE_CLOSED"
-)
+type QueryMsg_GetCallbackCount struct{}
 
 // IbcChannel defines all information on a channel. This is generally used in the hand-shake process, but can be queried directly.
 type IbcChannel struct {
@@ -56,16 +42,35 @@ type IbcChannel struct {
 	Version string `json:"version"`
 }
 
-// ContractState is the state of the IBC application.
-type ContractState struct {
-	// The admin of this contract.
-	Admin Addr `json:"admin"`
-	// The code ID of the storage-outpost contract.
-	StorageOutpostCodeId int `json:"storage_outpost_code_id"`
+type IbcEndpoint struct {
+	ChannelId string `json:"channel_id"`
+	PortId string `json:"port_id"`
+}
+
+// IcaState is the state of the ICA.
+type IcaState struct {
+	ChannelState ChannelState `json:"channel_state"`
+	IcaAddr string `json:"ica_addr"`
+	IcaId int `json:"ica_id"`
+	TxEncoding TxEncoding `json:"tx_encoding"`
+}
+
+// IcaContractState is the state of the storage-outpost contract.
+type IcaContractState struct {
+	ContractAddr Addr `json:"contract_addr"`
+	IcaState IcaState `json:"ica_state"`
 }
 
 type ExecuteMsg_MapUserOutpost struct {
 	OutpostOwner string `json:"outpost_owner"`
+}
+
+// ContractChannelState is the state of the IBC application's channel. This application only supports one channel.
+type ChannelState struct {
+	// The IBC channel, as defined by cosmwasm.
+	Channel IbcChannel `json:"channel"`
+	// The status of the channel.
+	ChannelStatus ChannelStatus `json:"channel_status"`
 }
 
 // Encoding is the encoding of the transactions sent to the ICA host.
@@ -78,16 +83,23 @@ const (
 	TxEncoding_Proto3Json TxEncoding = "proto3json"
 )
 
-/*
-A human readable address.
+type QueryMsg_GetIcaContractState struct {
+	IcaId int `json:"ica_id"`
+}
 
-In Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.
+type QueryMsg_GetIcaCount struct{}
 
-This type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.
+type QueryMsg_GetUserOutpostAddress struct {
+	UserAddress string `json:"user_address"`
+}
 
-This type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.
-*/
-type Addr string
+// ContractState is the state of the IBC application.
+type ContractState struct {
+	// The admin of this contract.
+	Admin Addr `json:"admin"`
+	// The code ID of the storage-outpost contract.
+	StorageOutpostCodeId int `json:"storage_outpost_code_id"`
+}
 
 // IbcOrder defines if a channel is ORDERED or UNORDERED Values come from https://github.com/cosmos/cosmos-sdk/blob/v0.40.0/proto/ibc/core/channel/v1/channel.proto#L69-L80 Naming comes from the protobuf files and go translations.
 type IbcOrder string
@@ -96,11 +108,6 @@ const (
 	IbcOrder_OrderUnordered IbcOrder = "ORDER_UNORDERED"
 	IbcOrder_OrderOrdered   IbcOrder = "ORDER_ORDERED"
 )
-
-type ExecuteMsg_CreateIcaContract struct {
-	ChannelOpenInitOptions ChannelOpenInitOptions `json:"channel_open_init_options"`
-	Salt *string `json:"salt,omitempty"`
-}
 
 // The message used to provide the MsgChannelOpenInit with the required data.
 type ChannelOpenInitOptions struct {
@@ -114,33 +121,26 @@ type ChannelOpenInitOptions struct {
 	TxEncoding TxEncoding `json:"tx_encoding"`
 }
 
-type QueryMsg_GetIcaContractState struct {
-	IcaId int `json:"ica_id"`
-}
+type QueryMsg_GetContractState struct{}
 
-type IbcEndpoint struct {
-	ChannelId string `json:"channel_id"`
-	PortId string `json:"port_id"`
-}
+/*
+A human readable address.
 
-// IcaState is the state of the ICA.
-type IcaState struct {
-	IcaAddr string `json:"ica_addr"`
-	IcaId int `json:"ica_id"`
-	TxEncoding TxEncoding `json:"tx_encoding"`
-	ChannelState ChannelState `json:"channel_state"`
-}
+In Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.
 
-// ContractChannelState is the state of the IBC application's channel. This application only supports one channel.
-type ChannelState struct {
-	// The IBC channel, as defined by cosmwasm.
-	Channel IbcChannel `json:"channel"`
-	// The status of the channel.
-	ChannelStatus ChannelStatus `json:"channel_status"`
-}
+This type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.
 
-// IcaContractState is the state of the storage-outpost contract.
-type IcaContractState struct {
-	ContractAddr Addr `json:"contract_addr"`
-	IcaState IcaState `json:"ica_state"`
-}
+This type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.
+*/
+type Addr string
+
+// ChannelState is the state of the IBC channel.
+type ChannelStatus string
+
+const (
+	ChannelStatus_StateUninitializedUnspecified ChannelStatus = "STATE_UNINITIALIZED_UNSPECIFIED"
+	ChannelStatus_StateInit                     ChannelStatus = "STATE_INIT"
+	ChannelStatus_StateTryopen                  ChannelStatus = "STATE_TRYOPEN"
+	ChannelStatus_StateOpen                     ChannelStatus = "STATE_OPEN"
+	ChannelStatus_StateClosed                   ChannelStatus = "STATE_CLOSED"
+)

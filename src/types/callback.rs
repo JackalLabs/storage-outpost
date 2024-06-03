@@ -13,6 +13,10 @@ pub struct Callback {
     pub contract: String,
     /// The msg we will make the above contract execute
     pub msg: Option<Binary>,
+
+    /// The owner of the outpost. We need this because the info.sender that instantiates the outpost is the factory address--not the user address
+    /// But we want the user to be the owner
+    pub outpost_owner: String,
     
 }
 
