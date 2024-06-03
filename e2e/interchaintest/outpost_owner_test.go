@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strconv"
 	"testing"
 	"time"
@@ -39,8 +38,6 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 	codeId, err := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/storage_outpost.wasm")
 	s.Require().NoError(err)
 
-	// admin := s.UserA.FormattedAddress()
-
 	// codeId is string and needs to be converted to uint64
 	s.OutpostContractCodeId, err = strconv.ParseInt(codeId, 10, 64)
 	s.Require().NoError(err)
@@ -55,7 +52,7 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 
 	s.NumOfOutpostContracts = 0
 
-	// Create the Outpost Contract
+	// Create the Outpost Owner Factory
 	createMsg := outpostowner.ExecuteMsg{
 		CreateIcaContract: &outpostowner.ExecuteMsg_CreateIcaContract{
 			Salt: nil,
@@ -69,8 +66,7 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 
 	res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostOwnerContractAddr, toString(createMsg), "--gas", "500000")
 	s.Require().NoError(err)
-	// logger.LogEvents(res.Events)
-	fmt.Println(res)
+	logger.LogEvents(res.Events)
 
 	s.NumOfOutpostContracts++
 
@@ -102,16 +98,34 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 	res2, err := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostOwnerContractAddr, toString(mapOutpostMsgForUserA2), "--gas", "500000")
 	expectedErrorMsg1 := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
 	s.Require().EqualError(err, expectedErrorMsg1)
-
-	fmt.Println(res2)
+	logger.LogInfo(res2)
 
 	// UserA2 should be able to make an outpost
 
-	// If UserA2 tries to map again, lock file doesn't exist
+	res3, err := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostOwnerContractAddr, toString(createMsg), "--gas", "500000")
+	logger.LogInfo(res3)
+	s.Require().NoError(err)
 
-	// UserA2 tries to maliciously create a mapping for UserA3???
+	// If UserA2 tries to map again, lock file doesn't exist because it was consumed during the creation of their outpost
+	res4, err := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostOwnerContractAddr, toString(mapOutpostMsgForUserA2), "--gas", "500000")
+	expectedErrorMsg2 := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
+	s.Require().EqualError(err, expectedErrorMsg2)
+	logger.LogInfo(res4)
+
+	// UserA2 tries to maliciously create a mapping for UserA3
+	mapOutpostMsgForUserA3 := outpostowner.ExecuteMsg{
+		MapUserOutpost: &outpostowner.ExecuteMsg_MapUserOutpost{
+			OutpostOwner: s.UserA3.FormattedAddress(), // put in UserA3 address
+		},
+	}
+	res5, err := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostOwnerContractAddr, toString(mapOutpostMsgForUserA3), "--gas", "500000")
+	expectedErrorMsg3 := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
+	s.Require().EqualError(err, expectedErrorMsg3)
+	logger.LogInfo(res5)
 
 	// Query for the relevant addresses to ensure everything exists
+
+	// Should pass the outpost address as event and compare it with the queried outpost address to double check that it was mapped correctly
 }
 
 func TestWithOwnerTestSuite(t *testing.T) {

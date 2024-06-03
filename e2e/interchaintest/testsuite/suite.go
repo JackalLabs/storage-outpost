@@ -26,6 +26,7 @@ type TestSuite struct {
 	ChainB       *cosmos.CosmosChain
 	UserA        ibc.Wallet
 	UserA2       ibc.Wallet
+	UserA3       ibc.Wallet
 	UserB        ibc.Wallet
 	ChainAConnID string
 	ChainBConnID string
@@ -100,6 +101,11 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 	userA2, err := interchaintest.GetAndFundTestUserWithMnemonic(ctx, "wasmd", userA2Seed, userFunds, s.ChainA)
 	s.Require().NoError(err)
 
+	userA3Seed := "diagram return dose exhibit better advance task dove quiz group scheme thrive crystal " +
+		"veteran clog mobile story roof over display state cannon brave machine"
+	userA3, err := interchaintest.GetAndFundTestUserWithMnemonic(ctx, "wasmd", userA3Seed, userFunds, s.ChainA)
+	s.Require().NoError(err)
+
 	// this is the seed phrase for the danny user that appears in all of canine-chain's testing scripts
 	userBSeed := "brief enhance flee chest rabbit matter chaos clever lady enable luggage arrange hint " +
 		"quarter change float embark canoe chalk husband legal dignity music web"
@@ -108,7 +114,9 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 
 	s.UserA = userA   // the primary wasmd user
 	s.UserA2 = userA2 // the secondary wasmd user
-	s.UserB = userB   //the jackal user
+	s.UserA3 = userA3 // the tertiary wasmd user
+
+	s.UserB = userB //the jackal user
 
 	// Generate a new IBC path
 	err = s.Relayer.GeneratePath(ctx, s.ExecRep, s.ChainA.Config().ChainID, s.ChainB.Config().ChainID, s.PathName)
