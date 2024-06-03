@@ -1,3 +1,3 @@
-INFO: 2024/05/31 13:37:47 Event:  {"type":"tx","attributes":[{"key":"fee","value":"","index":true},{"key":"fee_payer","value":"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag","index":true}]}
-INFO: 2024/05/31 13:37:47 Event:  {"type":"tx","attributes":[{"key":"acc_seq","value":"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag/4","index":true}]}
-INFO: 2024/05/31 13:37:47 Event:  {"type":"tx","attributes":[{"key":"signature","value":"2MXgLeLwBGvv32yOt6YZk4T+5lojk1zdGV36yyx4BJlQMXKUwOhUS6UDJOz2eM7UO5i2MOfWdqQ3aW7pkJJGVw==","index":true}]}
+INFO: 2024/05/31 17:48:05 The sender of instantiate is wasmd-localwasm-1-xsr
+INFO: 2024/05/31 17:48:17 [0xc0014a2100]
+INFO: 2024/05/31 17:48:55 /
