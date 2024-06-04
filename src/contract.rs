@@ -45,9 +45,9 @@ pub fn instantiate(
         info.sender.clone()
     };
 
-    let mut event = Event::new("OUTPOST: instantiate");
+    let mut event = Event::new("OUTPOST:instantiate");
     event = event.add_attribute("info.sender", info.sender.clone());
-    event = event.add_attribute("outpost address", env.contract.address.to_string());
+    event = event.add_attribute("outpost_address", env.contract.address.to_string());
 
     // This is not the same thing as saving the admin properly to ContractInfo struct defined in wasmd types 
     // Save the admin. Ica address is determined during handshake.

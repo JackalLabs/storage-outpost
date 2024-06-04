@@ -54,3 +54,17 @@ func LogEvents(events []types1.Event) {
 		LogInfo("Event: ", string(eventJSON))
 	}
 }
+
+// Consider moving this function out of logger.go
+func ParseOutpostAddress(events []types1.Event) string {
+	for _, event := range events {
+		if event.GetType() == "wasm-OUTPOST:instantiate" {
+			for _, attribute := range event.GetAttributes() {
+				if attribute.GetKey() == "outpost_address" {
+					return attribute.GetValue()
+				}
+			}
+		}
+	}
+	return ""
+}
