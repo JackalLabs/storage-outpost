@@ -7,7 +7,7 @@ A full suite of e2e tests will be developed for these contracts, which includes 
 
 ## Contracts
 
-### `outpost-owner`
+### `outpost-factory`
 
 This contract is used to test how the `storage-outpost` could be controlled by another smart contract.
 
@@ -15,12 +15,12 @@ This contract is used to test how the `storage-outpost` could be controlled by a
 
 Run the following commands in the root directory of this repository:
 
-### `outpost-owner`
+### `outpost-factory`
 
 ```text
 docker run --rm -v "$(pwd)":/code \
   --mount type=volume,source="devcontract_cache_burner",target=/code/contracts/burner/target \
   --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
-  cosmwasm/optimizer:0.15.1 /code/cross-contract/contracts/outpost-owner
+  cosmwasm/optimizer:0.15.1 /code/cross-contract/contracts/outpost-factory
 
 ```

@@ -75,7 +75,7 @@ cw-multi-test = "0.16.5"
 members = [
     ".",          
     "protobuf",  
-    "cross-contract/contracts/outpost-owner", # Path to the nested library crate
+    "cross-contract/contracts/outpost-factory", # Path to the nested library crate
 
 ]
 

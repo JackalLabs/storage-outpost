@@ -12,13 +12,13 @@ import (
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	mysuite "github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
-	outpostowner "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types/outpostowner"
+	outpostfactory "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types/outpostfactory"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/suite"
 )
 
-type OwnerTestSuite struct {
+type FactoryTestSuite struct {
 	mysuite.TestSuite
 
 	OutpostContractCodeId int64
@@ -30,13 +30,14 @@ type OwnerTestSuite struct {
 
 // SetupContractAndChannel starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
 // sets up the contract and does the channel handshake for the contract test suite.
-func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding string) {
+func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding string) {
 	// This starts the chains, relayer, creates the user accounts, and creates the ibc clients and connections.
 	s.SetupSuite(ctx, chainSpecs)
 
 	logger.InitLogger()
 
-	// Upload and Instantiate the contract on wasmd:
+	// TODO: how does the factory know the code ID of the outpost?
+	// Upload the outpost's wasm module on Wasmd
 	codeId, err := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/storage_outpost.wasm")
 	s.Require().NoError(err)
 
@@ -44,12 +45,12 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 	s.OutpostContractCodeId, err = strconv.ParseInt(codeId, 10, 64)
 	s.Require().NoError(err)
 
-	codeId, err = s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/outpost_owner.wasm")
+	codeId, err = s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/outpost_factory.wasm")
 	s.Require().NoError(err)
 
-	instantiateMsg := outpostowner.InstantiateMsg{StorageOutpostCodeId: int(s.OutpostContractCodeId)}
-	// this is the outpost owner
-	outpostOwnerContractAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), codeId, toString(instantiateMsg), false, "--gas", "500000", "--admin", s.UserA.KeyName())
+	instantiateMsg := outpostfactory.InstantiateMsg{StorageOutpostCodeId: int(s.OutpostContractCodeId)}
+	// this is the outpost factory
+	outpostfactoryContractAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), codeId, toString(instantiateMsg), false, "--gas", "500000", "--admin", s.UserA.KeyName())
 	s.Require().NoError(err)
 
 	s.NumOfOutpostContracts = 0
@@ -57,13 +58,13 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 	// TODO: wrapping the encoding with 'TxEncoding' is not needed anymore because 'Proto3Json'
 	// is not the recommended encoding type for the ICA channel
 	// we should just use an optional string
-	proto3Encoding := outpostowner.TxEncoding(encoding)
+	proto3Encoding := outpostfactory.TxEncoding(encoding)
 
 	// Create UserA's outpost
-	createMsg := outpostowner.ExecuteMsg{
-		CreateOutpost: &outpostowner.ExecuteMsg_CreateOutpost{
+	createMsg := outpostfactory.ExecuteMsg{
+		CreateOutpost: &outpostfactory.ExecuteMsg_CreateOutpost{
 			Salt: nil,
-			ChannelOpenInitOptions: outpostowner.ChannelOpenInitOptions{
+			ChannelOpenInitOptions: outpostfactory.ChannelOpenInitOptions{
 				ConnectionId:             s.ChainAConnID,
 				CounterpartyConnectionId: s.ChainBConnID,
 				TxEncoding:               &proto3Encoding,
@@ -71,15 +72,15 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 		},
 	}
 
-	res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostOwnerContractAddr, toString(createMsg), "--gas", "500000")
+	res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(createMsg), "--gas", "500000")
 	s.Require().NoError(err)
 	outpostAddressFromEvent := logger.ParseOutpostAddress(res.Events)
 	logger.LogInfo(outpostAddressFromEvent)
 
 	// We know that the outpost we just made emitted an event showing its address
-	// We can now query the mapping inside of 'outpost owner' to confirm that we mapped the correct address
+	// We can now query the mapping inside of 'outpost factory' to confirm that we mapped the correct address
 	// Query for the relevant addresses to ensure everything exists
-	outpostAddressRes, addressErr := testsuite.GetOutpostAddress(ctx, s.ChainA, outpostOwnerContractAddr, s.UserA.FormattedAddress())
+	outpostAddressRes, addressErr := testsuite.GetOutpostAddress(ctx, s.ChainA, outpostfactoryContractAddr, s.UserA.FormattedAddress())
 	s.Require().NoError(addressErr)
 	var mappedOutpostAddress string
 	if err := json.Unmarshal(outpostAddressRes.Data, &mappedOutpostAddress); err != nil {
@@ -97,13 +98,13 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 
 	// In the docker session, we can see that the ica channel was created
 
-	mapOutpostMsg := outpostowner.ExecuteMsg{
-		MapUserOutpost: &outpostowner.ExecuteMsg_MapUserOutpost{
+	mapOutpostMsg := outpostfactory.ExecuteMsg{
+		MapUserOutpost: &outpostfactory.ExecuteMsg_MapUserOutpost{
 			OutpostOwner: s.UserA.FormattedAddress(),
 		},
 	}
 	// This failed because UserA already used their lock when creating the outpost
-	res1, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostOwnerContractAddr, toString(mapOutpostMsg), "--gas", "500000")
+	res1, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(mapOutpostMsg), "--gas", "500000")
 	expectedErrorMsg := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
 	s.Require().EqualError(err, expectedErrorMsg)
 	fmt.Printf(res1.TxHash)
@@ -111,13 +112,13 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 	// logger.LogEvents(res1.Events)
 
 	// Let's get UserA2 to create a user<>outpost mapping WITHOUT creating an outpost. It will fail because no lock file exists
-	mapOutpostMsgForUserA2 := outpostowner.ExecuteMsg{
-		MapUserOutpost: &outpostowner.ExecuteMsg_MapUserOutpost{
+	mapOutpostMsgForUserA2 := outpostfactory.ExecuteMsg{
+		MapUserOutpost: &outpostfactory.ExecuteMsg_MapUserOutpost{
 			OutpostOwner: s.UserA2.FormattedAddress(),
 		},
 	}
 
-	res2, err := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostOwnerContractAddr, toString(mapOutpostMsgForUserA2), "--gas", "500000")
+	res2, err := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostfactoryContractAddr, toString(mapOutpostMsgForUserA2), "--gas", "500000")
 	expectedErrorMsg1 := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
 	s.Require().EqualError(err, expectedErrorMsg1)
 	fmt.Printf(res2.TxHash)
@@ -126,14 +127,14 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 
 	// UserA2 should be able to make an outpost
 
-	res3, err := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostOwnerContractAddr, toString(createMsg), "--gas", "500000")
+	res3, err := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostfactoryContractAddr, toString(createMsg), "--gas", "500000")
 	fmt.Printf(res3.TxHash)
 
 	//logger.LogInfo(res3)
 	s.Require().NoError(err)
 
 	// If UserA2 tries to map again, lock file doesn't exist because it was consumed during the creation of their outpost
-	res4, err := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostOwnerContractAddr, toString(mapOutpostMsgForUserA2), "--gas", "500000")
+	res4, err := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostfactoryContractAddr, toString(mapOutpostMsgForUserA2), "--gas", "500000")
 	expectedErrorMsg2 := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
 	s.Require().EqualError(err, expectedErrorMsg2)
 	fmt.Printf(res4.TxHash)
@@ -141,12 +142,12 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 	//logger.LogInfo(res4)
 
 	// UserA2 tries to maliciously create a mapping for UserA3
-	mapOutpostMsgForUserA3 := outpostowner.ExecuteMsg{
-		MapUserOutpost: &outpostowner.ExecuteMsg_MapUserOutpost{
+	mapOutpostMsgForUserA3 := outpostfactory.ExecuteMsg{
+		MapUserOutpost: &outpostfactory.ExecuteMsg_MapUserOutpost{
 			OutpostOwner: s.UserA3.FormattedAddress(), // put in UserA3 address
 		},
 	}
-	res5, err := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostOwnerContractAddr, toString(mapOutpostMsgForUserA3), "--gas", "500000")
+	res5, err := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostfactoryContractAddr, toString(mapOutpostMsgForUserA3), "--gas", "500000")
 	expectedErrorMsg3 := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
 	s.Require().EqualError(err, expectedErrorMsg3)
 	fmt.Printf(res5.TxHash)
@@ -160,16 +161,16 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 
 }
 
-func TestWithOwnerTestSuite(t *testing.T) {
-	suite.Run(t, new(OwnerTestSuite))
+func TestWithFactoryTestSuite(t *testing.T) {
+	suite.Run(t, new(FactoryTestSuite))
 }
 
-func (s *OwnerTestSuite) TestOwnerCreateIcaContract() {
+func (s *FactoryTestSuite) TestFactoryCreateOutpost() {
 	ctx := context.Background()
 
 	// This starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
 	// sets up the contract and does the channel handshake for the contract test suite.
-	s.SetupOwnerTestSuite(ctx, icatypes.EncodingProtobuf) // NOTE: canined's ibc-go is outdated and does not support proto3json
+	s.SetupFactoryTestSuite(ctx, icatypes.EncodingProtobuf) // NOTE: canined's ibc-go is outdated and does not support proto3json
 	// wasmd, canined := s.ChainA, s.ChainB
 
 	// We weren't able to precompute the outpost's address at the time of creation, so we need to query for the address

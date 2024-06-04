@@ -1,5 +1,5 @@
 [package]
-name = "outpost-owner"
+name = "outpost-factory"
 version = "0.1.0"
 authors = ["Bi Phan <bi@jackallabs.io>", "Serdar Turkmenafsar <IBC Protocol>"]
 edition = "2021"
@@ -32,7 +32,7 @@ library = []
 # optimize = """docker run --rm -v "$(pwd)/../../..":/workspace \
 #   --mount type=volume,source="$(basename "$(pwd)")_cache",target=/workspace/target \
 #   --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
-#   -w /workspace/cross-contract/contracts/outpost-owner \
+#   -w /workspace/cross-contract/contracts/outpost-factory \
 #   cosmwasm/optimizer:0.15.1
 # """
 
@@ -46,8 +46,8 @@ cosmwasm-std = { version = "1.4.0", features = [
 ] }
 cw-storage-plus = "1.1.0"
 cw2 = "1.1.0"
-# storage-outpost = { path = "../../..", default-features = false }
-storage-outpost = { path = "../../..", default-features = false, features = ["no_exports"] }
+storage-outpost = { path = "../../..", default-features = false }
+# storage-outpost = { path = "../../..", default-features = false, features = ["no_exports"] }
 cw-ica-controller = { version = "0.4.2", default-features = false} # The ica_callback_execute derive macro
 schemars = "0.8.10"
 serde = { version = "1.0.145", default-features = false, features = ["derive"] }

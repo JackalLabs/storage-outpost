@@ -5,7 +5,7 @@ use cosmwasm_std::entry_point;
 use cosmwasm_std::{to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Event, Empty, CosmosMsg};
 use crate::ibc::types::stargate::channel::new_ica_channel_open_init_cosmos_msg;
 use crate::types::keys::{self, CONTRACT_NAME, CONTRACT_VERSION};
-use crate::types::msg::{OutpostOwnerExecuteMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+use crate::types::msg::{OutpostFactoryExecuteMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::types::state::{
     self, CallbackCounter, ChannelState, ContractState, CALLBACK_COUNTER, CHANNEL_STATE, STATE,
 };
@@ -65,15 +65,15 @@ pub fn instantiate(
             channel_open_init_options.tx_encoding,
         );
 
-    // here we can also take the callback address (outpost-owner address) as well as the msg that it wants us to give
-    // we will then call a CosmosMsg::WasmMsg::Execute to call back the outpost-owner
+    // here we can also take the callback address (outpost-factory address) as well as the msg that it wants us to give
+    // we will then call a CosmosMsg::WasmMsg::Execute to call back the outpost-factory
 
     // we only take the msg from 'msg.callback' if we know it exists
     let callback_owner_msg = if let Some(callback) = &msg.callback {
 
         Some(CosmosMsg::Wasm(WasmMsg::Execute { 
             contract_addr: callback.contract.clone(), 
-            msg: to_json_binary(&OutpostOwnerExecuteMsg::MapUserOutpost { 
+            msg: to_json_binary(&OutpostFactoryExecuteMsg::MapUserOutpost { 
                 outpost_owner: callback.outpost_owner.clone(), 
             }).ok().expect("Failed to serialize callback_msg"), // Handle the error properly
             funds: vec![], 
