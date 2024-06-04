@@ -43,10 +43,10 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         //TODO: Change this to 'CreateOutpost'
-        ExecuteMsg::CreateIcaContract {
+        ExecuteMsg::CreateOutpost {
             salt,
             channel_open_init_options,
-        } => execute::create_ica_contract(deps, env, info, salt, channel_open_init_options),
+        } => execute::create_outpost(deps, env, info, salt, channel_open_init_options),
         ExecuteMsg::MapUserOutpost { outpost_owner} => execute::map_user_outpost(deps, env, info, outpost_owner),
     }
 }
@@ -80,7 +80,7 @@ mod execute {
     use super::*;
 // WARNING: check if kv pair for user exists before creating an outpost, to prevent users from spamming this function
 // A bad actor could spam this function by creating new addresses, but gas requirement means they'd be paying real $$$ 
-    pub fn create_ica_contract(
+    pub fn create_outpost(
         deps: DepsMut,
         env: Env,
         info: MessageInfo,

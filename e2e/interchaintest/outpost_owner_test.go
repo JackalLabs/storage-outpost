@@ -54,14 +54,19 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 
 	s.NumOfOutpostContracts = 0
 
+	// TODO: wrapping the encoding with 'TxEncoding' is not needed anymore because 'Proto3Json'
+	// is not the recommended encoding type for the ICA channel
+	// we should just use an optional string
+	proto3Encoding := outpostowner.TxEncoding(encoding)
+
 	// Create UserA's outpost
 	createMsg := outpostowner.ExecuteMsg{
-		CreateIcaContract: &outpostowner.ExecuteMsg_CreateIcaContract{
+		CreateOutpost: &outpostowner.ExecuteMsg_CreateOutpost{
 			Salt: nil,
 			ChannelOpenInitOptions: outpostowner.ChannelOpenInitOptions{
 				ConnectionId:             s.ChainAConnID,
 				CounterpartyConnectionId: s.ChainBConnID,
-				TxEncoding:               outpostowner.TxEncoding(encoding),
+				TxEncoding:               &proto3Encoding,
 			},
 		},
 	}

@@ -11,7 +11,7 @@ pub struct InstantiateMsg {
 // #[ica_callback_execute] let's implement this later
 #[cw_serde]
 pub enum ExecuteMsg {
-    CreateIcaContract {
+    CreateOutpost {
         salt: Option<String>,
         channel_open_init_options: ChannelOpenInitOptions,
     },
