@@ -7,7 +7,6 @@ import (
 	"log"
 	"strconv"
 	"testing"
-	"time"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
@@ -71,6 +70,19 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 	s.Require().NoError(err)
 	outpostAddressFromEvent := logger.ParseOutpostAddress(res.Events)
 	logger.LogInfo(outpostAddressFromEvent)
+
+	// We know that the outpost we just made emitted an event showing its address
+	// We can now query the mapping inside of 'outpost owner' to confirm that we mapped the correct address
+	// Query for the relevant addresses to ensure everything exists
+	outpostAddressRes, addressErr := testsuite.GetOutpostAddress(ctx, s.ChainA, outpostOwnerContractAddr, s.UserA.FormattedAddress())
+	s.Require().NoError(addressErr)
+	var mappedOutpostAddress string
+	if err := json.Unmarshal(outpostAddressRes.Data, &mappedOutpostAddress); err != nil {
+		log.Fatalf("Error parsing response data: %v", err)
+	}
+	s.Require().Equal(outpostAddressFromEvent, mappedOutpostAddress)
+
+	fmt.Printf("User Outpost Address: %s\n", mappedOutpostAddress)
 
 	s.NumOfOutpostContracts++
 
@@ -136,16 +148,6 @@ func (s *OwnerTestSuite) SetupOwnerTestSuite(ctx context.Context, encoding strin
 
 	// logger.LogInfo(res5)
 
-	// Query for the relevant addresses to ensure everything exists
-	outpostAddressRes, outpostAddressErr := testsuite.OutpostAddress(ctx, s.ChainA, outpostOwnerContractAddr, s.UserA.FormattedAddress())
-	s.Require().NoError(outpostAddressErr)
-	var outpostAddress string
-	if err := json.Unmarshal(outpostAddressRes.Data, &outpostAddress); err != nil {
-		log.Fatalf("Error parsing response data: %v", err)
-	}
-
-	fmt.Printf("User Outpost Address: %s\n", outpostAddress)
-
 	// To check that the mappings were done correctly.
 	// Above, we should parse out the outpost address that's created for userA using the event
 	// we should then assert that it's equal to 'outpostAddress', much like how we assert PubKeys are equal
@@ -170,7 +172,7 @@ func (s *OwnerTestSuite) TestOwnerCreateIcaContract() {
 	// query by code ID and sender address? The sender being the user that executed the creation
 	// The port id of the outpost should be wasm.contractAddress so can't we retrieve the address from that?
 
-	time.Sleep(time.Duration(10) * time.Hour)
+	// time.Sleep(time.Duration(10) * time.Hour)
 
 }
 

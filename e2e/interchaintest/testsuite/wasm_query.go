@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func OutpostAddress(ctx context.Context, chain *cosmos.CosmosChain, factoryContractAddress string, userAddress string) (*wasmtypes.QuerySmartContractStateResponse, error) {
+func GetOutpostAddress(ctx context.Context, chain *cosmos.CosmosChain, factoryContractAddress string, userAddress string) (*wasmtypes.QuerySmartContractStateResponse, error) {
 	grpcConn, err := grpc.Dial(
 		chain.GetHostGRPCAddress(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
