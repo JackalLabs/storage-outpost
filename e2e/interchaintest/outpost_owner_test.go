@@ -90,7 +90,15 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 
 	fmt.Printf("User Outpost Address: %s\n", mappedOutpostAddress)
 
+	// TODO: Why do we need this?
 	s.NumOfOutpostContracts++
+
+	// TODO: are we getting 'mappedOutpostAddress' correctly to be used in the Equality assertion?
+	// is UserA allowed to just create another outpost again? They shouldn't be able to
+	_, creationErr := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(createMsg), "--gas", "500000")
+	expectedCreationErrorMsg := fmt.Sprintf("error in transaction (code: 5): failed to execute message; message index: 0:"+
+		" Outpost already created. Outpost Address: %s: execute wasm contract failed", mappedOutpostAddress)
+	s.Require().EqualError(creationErr, expectedCreationErrorMsg)
 
 	// Wait for the channel to get set up
 	err = testutil.WaitForBlocks(ctx, 5, s.ChainA, s.ChainB)
@@ -158,6 +166,9 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	// Above, we should parse out the outpost address that's created for userA using the event
 	// we should then assert that it's equal to 'outpostAddress', much like how we assert PubKeys are equal
 	// s.Require().Equal(pubRes.PubKey.GetKey(), filetreeMsg.GetKey(), "Expected PubKey does not match the returned PubKey")
+
+	// TODO: Make sure that users are admins of their own outposts
+	// Auto-gen query client to query for the admin?
 
 }
 

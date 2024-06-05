@@ -20,4 +20,7 @@ pub enum ContractError {
 
     #[error("lock file does not exist")]
     MissingLock {},
+
+    #[error("Outpost already created. Outpost Address: {0}")]
+    AlreadyCreated(String),
 }

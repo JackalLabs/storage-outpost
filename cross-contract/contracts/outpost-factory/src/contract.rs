@@ -78,8 +78,6 @@ mod execute {
     use crate::state::{self, CONTRACT_ADDR_TO_ICA_ID, ICA_COUNT, ICA_STATES, CALLBACK_COUNT, USER_ADDR_TO_OUTPOST_ADDR, LOCK};
 
     use super::*;
-// WARNING: check if kv pair for user exists before creating an outpost, to prevent users from spamming this function
-// A bad actor could spam this function by creating new addresses, but gas requirement means they'd be paying real $$$ 
     pub fn create_outpost(
         deps: DepsMut,
         env: Env,
@@ -93,18 +91,17 @@ mod execute {
         //     return Err(ContractError::Unauthorized {});
         // }
 
-        let ica_code = StorageOutpostCode::new(state.storage_outpost_code_id);
+        let storage_outpost_code_id = StorageOutpostCode::new(state.storage_outpost_code_id);
 
-        // Ensures only info.sender can create address<>outpost_address mapping when map_user_outpost is called below
-
-        // WARNING: MUST DO: If users accidentally spam outpost creations for themselves, it becomes difficult to keep track
-        // of their outpost address
-        // TODO: can we use the LOCK to ensure a user can only call this function once ever?
-
-        // We can put a check here: If the user<>outpost mapping already exists, they can't call this function
+        // Check if key already exists and disallow multiple outpost creations 
+        // If key exists, we don't care what the address is, just the mere existence of the key means an outpost was 
+        // already created
+            
+        if let Some(value) = USER_ADDR_TO_OUTPOST_ADDR.may_load(deps.storage, &info.sender.to_string())? {
+            return Err(ContractError::AlreadyCreated(value))
+        }
 
         let lock = LOCK.save(deps.storage, &info.sender.to_string(), &true);
-                
 
         let callback = Callback {
             contract: env.contract.address.to_string(),
@@ -115,6 +112,7 @@ mod execute {
             outpost_owner: info.sender.to_string(),
         };
 
+        // TODO: Admin should be outpost_owner
         let instantiate_msg = storage_outpost::types::msg::InstantiateMsg {
             // right now the owner of every outpost is the address of the outpost factory
             owner: Some(info.sender.to_string()), // WARNING: The owner should also be the info.sender, this param will be deleted soon
@@ -129,7 +127,7 @@ mod execute {
         // 'instantiate2' which has the ability to pre compute the outpost's address
         // Unsure if 'instantiate2_address' from cosmwasm-std will work on Archway so we're not doing this for now
 
-        let cosmos_msg = ica_code.instantiate(
+        let cosmos_msg = storage_outpost_code_id.instantiate(
             instantiate_msg,
             label,
             Some(info.sender.to_string()),
@@ -177,6 +175,10 @@ mod execute {
         event = event.add_attribute("outpost_owner", &outpost_owner);
         event = event.add_attribute("outpost_address", &info.sender.to_string());
 
+    // TODO: add an attribute to show the outpost address 
+    // outpost address is info.sender because the outpost called this function 
+    // DOCUMENT: note in README that a successful outpost creation shall return the address in the tx.res.attribute 
+    // and a failure will throw 'AlreadyCreated' contractError
     Ok(Response::new().add_event(event))
     }
 }
