@@ -7,6 +7,7 @@ import (
 
 	"cosmossdk.io/math"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
+	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 
 	"github.com/cosmos/gogoproto/proto"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
@@ -44,7 +45,24 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithBuyStorage() {
 	s.Require().NoError(err)
 	logger.LogInfo(fmt.Sprintf("faucet's outpost address: %s", faucetOutpostAddress))
 
-	// Get the faucet's ICA host address
+	// START HERE
+	// Set the faucet outpost's address
+	s.FaucetOutpostContract = testtypes.NewIcaContract(testtypes.NewContract(faucetOutpostAddress, "1", s.ChainA))
+
+	// Wait for the channel to get set up
+	err = testutil.WaitForBlocks(ctx, 5, s.ChainA, s.ChainB)
+	s.Require().NoError(err)
+
+	contractState, err := s.FaucetOutpostContract.QueryContractState(ctx)
+	s.Require().NoError(err)
+	fmt.Println(contractState)
+
+	s.FaucetJKLHostAddress = contractState.IcaInfo.IcaAddress
+
+	// END HERE
+	// Make sure they're different
+	logger.LogInfo(fmt.Sprintf("WasmdUserA_Host_Address: %s", s.IcaAddress))
+	logger.LogInfo(fmt.Sprintf("WasmdFaucetJKLHostAddress: %s", s.FaucetJKLHostAddress))
 
 	// Give canined some time to complete the handshake
 	time.Sleep(time.Duration(30) * time.Second)
@@ -98,6 +116,21 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithBuyStorage() {
 		transferCoin := types.GetTransferCoin("transfer", "channel-1", "ujkl", math.NewInt(250_000_000))
 		logger.LogInfo("Jackal's IBC transfer coin Denom is:", transferCoin.Denom)
 
+		var jklForWasmdFaucetOutpostAddress = ibc.WalletAmount{
+			Address: faucetOutpostAddress, // I believe this is already in bech32 format
+			Denom:   "ujkl",
+			Amount:  math.NewInt(500_000_000), // 500 jkl
+		}
+
+		// We know the transfer channel will consistently have a channel id of 'channel-1'
+		tx1, _ := canined.SendIBCTransfer(ctx, "channel-1", caninedUser.KeyName(), jklForWasmdFaucetOutpostAddress, transferOptions)
+		// s.Require().NoError(err)
+		// *NOTE: ibc transfer completes but errors in parsing the tx hash due to sdk version mismatch between canine-chain and SL interchaintest package
+
+		logger.LogInfo("The IBC Transfer tx hash is:", tx1.TxHash) // Need to use the returned tx else 'SendIBCTransfer' just stalls
+
+		// now both the faucet and its outpost has IBC(JKL), the tricky part is getting IBC(JKL) to be sent over to the faucet_outpost_host
+		// address AND executing buy storge at the same time
 		// With jkl now on wasmd, we can do an ibc transfer straight to the ica host
 		var jklIBCWalletAmount = ibc.WalletAmount{
 			Address: s.IcaAddress,       // The ica host address
@@ -105,8 +138,11 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithBuyStorage() {
 			Amount:  transferCoin.Amount,
 		}
 
-		tx1, _ := wasmd.SendIBCTransfer(ctx, "channel-1", wasmdUser.KeyName(), jklIBCWalletAmount, transferOptions)
-		logger.LogInfo("The IBC tx hash is:", tx1.TxHash)
+		tx2, _ := wasmd.SendIBCTransfer(ctx, "channel-1", wasmdUser.KeyName(), jklIBCWalletAmount, transferOptions)
+		logger.LogInfo("The IBC tx hash is:", tx2.TxHash)
+
+		// Let's broadcast an IBC transfer from the faucet to the faucet's jkl host account
+		Broadcaster(ctx, s.Suite.T(), s.ChainA, s.ChainB, s.ChainAFaucet, s.FaucetJKLHostAddress, transferCoin)
 
 		// Now that the ica host has ujkl, we can buy storage
 
@@ -141,7 +177,7 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithBuyStorage() {
 	},
 	)
 
-	// time.Sleep(time.Duration(10) * time.Hour)
+	time.Sleep(time.Duration(10) * time.Hour)
 
 }
 

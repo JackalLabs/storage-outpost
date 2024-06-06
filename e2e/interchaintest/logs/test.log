@@ -1,5 +1,8 @@
-INFO: 2024/06/06 11:31:15 The sender of instantiate is wasmd-localwasm-1-cqd
-INFO: 2024/06/06 11:31:34 faucet's outpost address: wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay
-INFO: 2024/06/06 11:33:08 The IBC Transfer tx hash is: 
-INFO: 2024/06/06 11:33:08 Jackal's IBC transfer coin Denom is: ibc/08D1E6BD9CB813AE1E5FF4C0EBC9F4B96B1F3D23DE75077EE6BE79127C497145
-INFO: 2024/06/06 11:33:09 The IBC tx hash is: 
+INFO: 2024/06/06 14:32:06 The sender of instantiate is wasmd-localwasm-1-rnh
+INFO: 2024/06/06 14:32:23 faucet's outpost address: wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay
+INFO: 2024/06/06 14:32:35 WasmdUserA_Host_Address: jkl1973ytex2vf3atezjc0zeectpv2etkgy4yw74agwm6dzhmsxht4hqsns8fr
+INFO: 2024/06/06 14:32:35 WasmdFaucetJKLHostAddress: jkl1dqpf2pf9ced8cv8n6slv8gq9h9frl93fvskvrf2ntwng63mfxyesch66sf
+INFO: 2024/06/06 14:34:11 The IBC Transfer tx hash is: 
+INFO: 2024/06/06 14:34:11 Jackal's IBC transfer coin Denom is: ibc/08D1E6BD9CB813AE1E5FF4C0EBC9F4B96B1F3D23DE75077EE6BE79127C497145
+INFO: 2024/06/06 14:34:11 The IBC Transfer tx hash is: 
+INFO: 2024/06/06 14:34:12 The IBC tx hash is: 
