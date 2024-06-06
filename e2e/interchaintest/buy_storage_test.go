@@ -39,7 +39,7 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithBuyStorage() {
 	// Give canined some time to complete the handshake
 	time.Sleep(time.Duration(30) * time.Second)
 
-	s.Run(fmt.Sprintf("TestSendCustomIcaMesssagesSuccess-%s", encoding), func() {
+	s.Run(fmt.Sprintf("TestBuyStorageSuccess-%s", encoding), func() {
 
 		// let's open the transfer channel
 
@@ -48,6 +48,7 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithBuyStorage() {
 		createTransferChannelMsg := testtypes.ExecuteMsg{
 			CreateTransferChannel: &testtypes.ExecuteMsg_CreateTransferChannel{
 				// NOTE: in contract.rs, the order of these params is: connection_id, counterpart_port_id, counterparty_connection_id
+				// I don't think this really matters
 				ConnectionId:             s.ChainAConnID,
 				CounterpartyConnectionId: s.ChainBConnID,
 				CounterpartyPortId:       &CounterpartyPortId,
@@ -88,7 +89,7 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithBuyStorage() {
 		// With jkl now on wasmd, we can do an ibc transfer straight to the ica host
 		var jklIBCWalletAmount = ibc.WalletAmount{
 			Address: s.IcaAddress,       // The ica host address
-			Denom:   transferCoin.Denom, //jkl's ibc denom on wasmd, which will convert back to jkl
+			Denom:   transferCoin.Denom, // jkl's ibc denom on wasmd, which will convert back to jkl
 			Amount:  transferCoin.Amount,
 		}
 
@@ -97,6 +98,18 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithBuyStorage() {
 
 		// Now that the ica host has ujkl, we can buy storage
 
+		// I think we can have the faucet's jkl host address execute this
+		// If the faucet's jkl host is the one buying storage for the user's ica host, the faucet's jkl host needs JKL tokens
+		// So it looks like this:
+		// Give faucet address IBC(JKL) tokens on Wasmd
+
+		// Tricky part is getting the two below to execute in the same Tx:
+		// Faucet address sends IBC(JKL) to faucet's host address
+		// Faucet's host address buys storage for the user's ica host address
+
+		// We could just load a JKL account with JKL tokens and buy storage for them but kind of defeats the whole purpose of
+		// using IBC(JKL)
+		// If we can figure this out, making the user's outpost buy storage using IBC(JKL) tokens on Arch is a nothing burger
 		buyStorageMsg := &storagetypes.MsgBuyStorage{
 			Creator:      icaHostAddress, // The ica host address
 			ForAddress:   icaHostAddress,

@@ -20,8 +20,9 @@ import (
 type ContractTestSuite struct {
 	mysuite.TestSuite
 
-	Contract   *types.IcaContract
-	IcaAddress string
+	Contract             *types.IcaContract
+	IcaAddress           string
+	FaucetJKLHostAddress string
 }
 
 // SetupContractAndChannel starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
