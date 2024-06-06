@@ -24,6 +24,7 @@ type TestSuite struct {
 
 	ChainA       *cosmos.CosmosChain
 	ChainB       *cosmos.CosmosChain
+	ChainAFaucet ibc.Wallet
 	UserA        ibc.Wallet
 	UserA2       ibc.Wallet
 	UserA3       ibc.Wallet
@@ -117,6 +118,13 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 	s.UserA3 = userA3 // the tertiary wasmd user
 
 	s.UserB = userB //the jackal user
+
+	// Fund the Faucet on ChainA
+	ChainAFaucetSeed := "correct rate reveal jump dutch behind witness grief fiction gather fruit " +
+		"choose metal property sort sail shop nice east arrow detect east scare culture"
+	ChainAFaucet, err := interchaintest.GetAndFundTestUserWithMnemonic(ctx, "wasmd", ChainAFaucetSeed, userFunds, s.ChainA)
+	s.Require().NoError(err)
+	s.ChainAFaucet = ChainAFaucet
 
 	// Generate a new IBC path
 	err = s.Relayer.GeneratePath(ctx, s.ExecRep, s.ChainA.Config().ChainID, s.ChainB.Config().ChainID, s.PathName)

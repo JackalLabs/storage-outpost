@@ -36,6 +36,11 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithBuyStorage() {
 	caninedUser := s.UserB
 	icaHostAddress := s.Contract.IcaAddress
 
+	// // Let's instantiate an outpost for the faucet
+	// instantiateMsg := testtypes.NewInstantiateMsgWithChannelInitOptions(&admin, s.ChainAConnID, s.ChainBConnID, nil, &encoding)
+	// contractAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), codeId, instantiateMsg, false, "--gas", "500000", "--admin", s.UserA.KeyName())
+	// s.Require().NoError(err)
+
 	// Give canined some time to complete the handshake
 	time.Sleep(time.Duration(30) * time.Second)
 
