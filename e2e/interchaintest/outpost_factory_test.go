@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
 	"strconv"
 	"testing"
+	"time"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
@@ -73,9 +75,28 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	}
 
 	res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(createMsg), "--gas", "500000")
+	fmt.Println(res)
 	s.Require().NoError(err)
 	outpostAddressFromEvent := logger.ParseOutpostAddress(res.Events)
+
+	logger.LogInfo(fmt.Sprintf("raw extracted data is: %s", res.Data))
+
+	dataDecoded, decodeError := hex.DecodeString(res.Data) //res.Data is already String, no need to wrap it in string()
+	s.Require().NoError(decodeError)
+	logger.LogInfo(fmt.Sprintf("data decoded is: %s", dataDecoded))
+
+	/* Looks to me like Data field got encoded to protobuf:
+
+		data decoded is: .
+	,/cosmwasm.wasm.v1.MsgExecuteContractResponse
+
+	need to decode from protobuf
+	*/
+	logger.LogInfo(fmt.Sprintf("data from utf8 is: %s", string(dataDecoded)))
+
 	logger.LogInfo(outpostAddressFromEvent)
+
+	time.Sleep(time.Duration(10) * time.Hour)
 
 	// We know that the outpost we just made emitted an event showing its address
 	// We can now query the mapping inside of 'outpost factory' to confirm that we mapped the correct address

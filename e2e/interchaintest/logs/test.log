@@ -1,1 +1,6 @@
-INFO: 2024/06/05 12:15:36 wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay
+INFO: 2024/06/05 14:37:46 raw extracted data is: 122E0A2C2F636F736D7761736D2E7761736D2E76312E4D736745786563757465436F6E7472616374526573706F6E7365
+INFO: 2024/06/05 14:37:46 data decoded is: .
+,/cosmwasm.wasm.v1.MsgExecuteContractResponse
+INFO: 2024/06/05 14:37:46 data from utf8 is: .
+,/cosmwasm.wasm.v1.MsgExecuteContractResponse
+INFO: 2024/06/05 14:37:46 wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay

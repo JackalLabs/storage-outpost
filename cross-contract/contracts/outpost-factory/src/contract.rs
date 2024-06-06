@@ -170,6 +170,7 @@ mod execute {
 
     USER_ADDR_TO_OUTPOST_ADDR.save(deps.storage, &outpost_owner, &info.sender.to_string())?; // again, info.sender is actually the outpost address
 
+    // TODO: put the event back in
     let mut event = Event::new("FACTORY: map_user_outpost");
         event = event.add_attribute("info.sender", &info.sender.to_string());
         event = event.add_attribute("outpost_owner", &outpost_owner);
@@ -179,7 +180,13 @@ mod execute {
     // outpost address is info.sender because the outpost called this function 
     // DOCUMENT: note in README that a successful outpost creation shall return the address in the tx.res.attribute 
     // and a failure will throw 'AlreadyCreated' contractError
-    Ok(Response::new().add_event(event))
+
+    // calling '.add_attribute' just adds a key value pair to the main wasm attribute 
+    // WARNING: is it possible at all that these bytes are non-deterministic?
+    // This can't be because we take from 'info.sender' which only exists if this function is called in the first place
+    // This function is called only if the outpost executes the callback, otherwise the Tx was abandoned while sitting in the 
+    // mem pool
+    Ok(Response::new().set_data(info.sender.to_string().as_bytes()))
     }
 }
 
