@@ -9,7 +9,7 @@ use crate::state::{ContractState, STATE};
 
 /*
 // version info for migration info
-const CONTRACT_NAME: &str = "crates.io:cw-ica-owner";
+const CONTRACT_NAME: &str = "crates.io:outpost-factory"; // just a placeholder, not yet published
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 */
 
@@ -20,16 +20,15 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    // TODO: admin of the outpost factory should really just be info.sender but that can be passed into the outer Instantiate msg
-    let admin = if let Some(admin) = msg.admin {
-        deps.api.addr_validate(&admin)?
-    } else {
-        info.sender
-    };
+    // TODO: admin should be set in the wasm.Instanstiate protobuf msg
+    // Setting it into contract state is actually useless when wasmd checks for migration permissions
+    
+    // This contract cannot have an owner because it needs to be called by all users to map their outpost
+    // We have a check below which ensures that users cannot call 'map' twice 
 
     STATE.save(
         deps.storage,
-        &ContractState::new(admin, msg.storage_outpost_code_id),
+        &ContractState::new(msg.storage_outpost_code_id),
     )?;
     Ok(Response::default())
 }
@@ -161,6 +160,7 @@ mod execute {
             // If it does, overwrite it with false
             LOCK.save(deps.storage, &outpost_owner, &false)?;
         } else {
+            // This function can only get called if the Lock was set in 'create_outpost'
             // If it doesn't exist or is false, return an unauthorized error
             return Err(ContractError::MissingLock {  })
         }

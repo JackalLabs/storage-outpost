@@ -4,7 +4,6 @@ use storage_outpost::types::msg::options::ChannelOpenInitOptions;
 
 #[cw_serde]
 pub struct InstantiateMsg {
-    pub admin: Option<String>,
     pub storage_outpost_code_id: u64,
 }
 

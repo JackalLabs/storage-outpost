@@ -8,7 +8,6 @@ import (
 	"log"
 	"strconv"
 	"testing"
-	"time"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
@@ -96,7 +95,7 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 
 	logger.LogInfo(outpostAddressFromEvent)
 
-	time.Sleep(time.Duration(10) * time.Hour)
+	// time.Sleep(time.Duration(10) * time.Hour)
 
 	// We know that the outpost we just made emitted an event showing its address
 	// We can now query the mapping inside of 'outpost factory' to confirm that we mapped the correct address

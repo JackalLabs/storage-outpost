@@ -35,27 +35,15 @@ mod contract {
     /// ContractState is the state of the IBC application.
     #[cw_serde]
     pub struct ContractState {
-        /// The admin of this contract.
-        pub admin: Addr,
         /// The code ID of the storage-outpost contract.
         pub storage_outpost_code_id: u64,
     }
 
     impl ContractState {
         /// Creates a new ContractState.
-        pub fn new(admin: Addr, storage_outpost_code_id: u64) -> Self {
+        pub fn new(storage_outpost_code_id: u64) -> Self {
             Self {
-                admin,
                 storage_outpost_code_id,
-            }
-        }
-
-        /// Checks if the address is the admin
-        pub fn verify_admin(&self, sender: impl Into<String>) -> Result<(), ContractError> {
-            if self.admin == sender.into() {
-                Ok(())
-            } else {
-                Err(ContractError::Unauthorized { expected: todo!(), actual: todo!() })
             }
         }
     }
