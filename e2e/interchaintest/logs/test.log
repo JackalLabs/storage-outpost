@@ -1,6 +1,16 @@
-INFO: 2024/06/07 13:59:54 raw extracted data is: 122E0A2C2F636F736D7761736D2E7761736D2E76312E4D736745786563757465436F6E7472616374526573706F6E7365
-INFO: 2024/06/07 13:59:54 data decoded is: .
-,/cosmwasm.wasm.v1.MsgExecuteContractResponse
-INFO: 2024/06/07 13:59:54 data from utf8 is: .
-,/cosmwasm.wasm.v1.MsgExecuteContractResponse
-INFO: 2024/06/07 13:59:54 wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay
+INFO: 2024/06/10 14:09:29 raw extracted data is: 124C0A2C2F636F736D7761736D2E7761736D2E76312E4D736745786563757465436F6E7472616374526573706F6E7365121C0A1A6461746120696E73696465206372656174655F6F7574706F7374
+INFO: 2024/06/10 14:09:29 data decoded is: L
+,/cosmwasm.wasm.v1.MsgExecuteContractResponse
+data inside create_outpost
+INFO: 2024/06/10 14:09:29 0. Decoded data (as string): 
+INFO: 2024/06/10 14:09:29 1. Decoded data (as string): L
+INFO: 2024/06/10 14:09:29 2. Decoded data (as string): 
+
+INFO: 2024/06/10 14:09:29 data unmarshalled from proto is: 
+INFO: 2024/06/10 14:09:29 2nd attempt: data unmarshalled from proto is: 
+INFO: 2024/06/10 14:09:29 
+INFO: 2024/06/10 14:09:29 []
+INFO: 2024/06/10 14:09:29 data from utf8 is: L
+,/cosmwasm.wasm.v1.MsgExecuteContractResponse
+data inside create_outpost
+INFO: 2024/06/10 14:09:29 wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay

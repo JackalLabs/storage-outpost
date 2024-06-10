@@ -138,10 +138,13 @@ mod execute {
         // It depends on what this owner contract is doing, but each user only needs 1 outpost to be instantiated for them
         // Why not have the mapping be 'sender address : outpost contract address'? The sender address being the user that executes this function
 
+        let mut s = String::new();
+        s.push_str("data inside create_outpost");
+
         let mut event = Event::new("FACTORY: create_ica_contract");
         event = event.add_attribute("info.sender", &info.sender.to_string());
 
-        Ok(Response::new().add_message(cosmos_msg).add_event(event))
+        Ok(Response::new().add_message(cosmos_msg).add_event(event).set_data(s.as_bytes()))
     }
 
     pub fn map_user_outpost(

@@ -9,11 +9,13 @@ import (
 	"strconv"
 	"testing"
 
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	mysuite "github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 	outpostfactory "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types/outpostfactory"
+	"github.com/cosmos/gogoproto/proto"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/suite"
@@ -54,6 +56,8 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	outpostfactoryContractAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), codeId, toString(instantiateMsg), false, "--gas", "500000", "--admin", s.UserA.KeyName())
 	s.Require().NoError(err)
 
+	// TODO: auto-gen query client and query to double check admin is set
+
 	s.NumOfOutpostContracts = 0
 
 	// TODO: wrapping the encoding with 'TxEncoding' is not needed anymore because 'Proto3Json'
@@ -83,6 +87,31 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	dataDecoded, decodeError := hex.DecodeString(res.Data) //res.Data is already String, no need to wrap it in string()
 	s.Require().NoError(decodeError)
 	logger.LogInfo(fmt.Sprintf("data decoded is: %s", dataDecoded))
+	logger.LogInfo(fmt.Sprintf("0. Decoded data (as string): %s", string(dataDecoded[0])))
+	logger.LogInfo(fmt.Sprintf("1. Decoded data (as string): %s", string(dataDecoded[1])))
+	logger.LogInfo(fmt.Sprintf("2. Decoded data (as string): %s", string(dataDecoded[2])))
+
+	//
+
+	var executeResponse wasmtypes.MsgExecuteContractResponse
+	unmarshalError := proto.Unmarshal(dataDecoded, &executeResponse)
+	if unmarshalError != nil {
+		logger.LogInfo(fmt.Sprintf("Unmarshal error: %v", unmarshalError))
+	} else {
+		logger.LogInfo(fmt.Sprintf("data unmarshalled from proto is: %s", executeResponse.Data))
+	}
+	//
+
+	var executeResponse2 wasmtypes.MsgExecuteContractResponse
+	unmarshalError2 := executeResponse2.XXX_Unmarshal(dataDecoded)
+	if unmarshalError2 != nil {
+		logger.LogInfo(fmt.Sprintf("Unmarshal error 2: %v", unmarshalError2))
+	} else {
+		logger.LogInfo(fmt.Sprintf("2nd attempt: data unmarshalled from proto is: %s", executeResponse2.String()))
+	}
+	logger.LogInfo(executeResponse2.String())
+	logger.LogInfo(executeResponse2.Data)
+	// nothing comes out--I think it's because only the top level contract execution response is returned, not the called back function 'map user outpost'
 
 	/* Looks to me like Data field got encoded to protobuf:
 
