@@ -78,49 +78,22 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	}
 
 	res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(createMsg), "--gas", "500000")
-	fmt.Println(res)
 	s.Require().NoError(err)
 	outpostAddressFromEvent := logger.ParseOutpostAddress(res.Events)
 
-	logger.LogInfo(fmt.Sprintf("raw extracted data is: %s", res.Data))
-
-	dataDecoded, decodeError := hex.DecodeString(res.Data) //res.Data is already String, no need to wrap it in string()
+	dataFromHex, decodeError := hex.DecodeString(res.Data) //res.Data is already String, no need to wrap it in string()
 	s.Require().NoError(decodeError)
-	logger.LogInfo(fmt.Sprintf("data decoded is: %s", dataDecoded))
-	logger.LogInfo(fmt.Sprintf("0. Decoded data (as string): %s", string(dataDecoded[0])))
-	logger.LogInfo(fmt.Sprintf("1. Decoded data (as string): %s", string(dataDecoded[1])))
-	logger.LogInfo(fmt.Sprintf("2. Decoded data (as string): %s", string(dataDecoded[2])))
-
-	//
+	logger.LogInfo(fmt.Sprintf("length of data from Hex is: %d", len(dataFromHex)))
+	logger.LogInfo(fmt.Sprintf("data from Hex is: %s", dataFromHex))
+	logger.LogInfo(fmt.Sprintf("data from Hex as string is: %s", string(dataFromHex)))
 
 	var executeResponse wasmtypes.MsgExecuteContractResponse
-	unmarshalError := proto.Unmarshal(dataDecoded, &executeResponse)
+	unmarshalError := proto.Unmarshal(dataFromHex, &executeResponse)
 	if unmarshalError != nil {
 		logger.LogInfo(fmt.Sprintf("Unmarshal error: %v", unmarshalError))
 	} else {
 		logger.LogInfo(fmt.Sprintf("data unmarshalled from proto is: %s", executeResponse.Data))
 	}
-	//
-
-	var executeResponse2 wasmtypes.MsgExecuteContractResponse
-	unmarshalError2 := executeResponse2.XXX_Unmarshal(dataDecoded)
-	if unmarshalError2 != nil {
-		logger.LogInfo(fmt.Sprintf("Unmarshal error 2: %v", unmarshalError2))
-	} else {
-		logger.LogInfo(fmt.Sprintf("2nd attempt: data unmarshalled from proto is: %s", executeResponse2.String()))
-	}
-	logger.LogInfo(executeResponse2.String())
-	logger.LogInfo(executeResponse2.Data)
-	// nothing comes out--I think it's because only the top level contract execution response is returned, not the called back function 'map user outpost'
-
-	/* Looks to me like Data field got encoded to protobuf:
-
-		data decoded is: .
-	,/cosmwasm.wasm.v1.MsgExecuteContractResponse
-
-	need to decode from protobuf
-	*/
-	logger.LogInfo(fmt.Sprintf("data from utf8 is: %s", string(dataDecoded)))
 
 	logger.LogInfo(outpostAddressFromEvent)
 

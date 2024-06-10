@@ -144,7 +144,7 @@ mod execute {
         let mut event = Event::new("FACTORY: create_ica_contract");
         event = event.add_attribute("info.sender", &info.sender.to_string());
 
-        Ok(Response::new().add_message(cosmos_msg).add_event(event).set_data(s.as_bytes()))
+        Ok(Response::new().add_message(cosmos_msg).add_event(event).set_data(s.as_bytes())) // this data is returned in the tx res
     }
 
     pub fn map_user_outpost(
@@ -189,7 +189,7 @@ mod execute {
     // This can't be because we take from 'info.sender' which only exists if this function is called in the first place
     // This function is called only if the outpost executes the callback, otherwise the Tx was abandoned while sitting in the 
     // mem pool
-    Ok(Response::new().set_data(info.sender.to_string().as_bytes()))
+    Ok(Response::new().set_data(info.sender.to_string().as_bytes())) // this data is not propagated back up to the tx resp of the 'create_outpost' call
     }
 }
 
