@@ -31,6 +31,23 @@ import (
 		As a result, the helper function only slightly reduced the code for the grpc.Dial call.
 */
 
+/*
+  rpc Params(QueryParams) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/jackal/canine/filetree/params";
+  }
+
+  // Queries a File by address and owner_address.
+  rpc File(QueryFile) returns (QueryFileResponse) {
+    option (google.api.http).get =
+        "/jackal/canine-chain/filetree/files/{address}/{owner_address}";
+  }
+
+  // Queries a list of File items.
+  rpc AllFiles(QueryAllFiles) returns (QueryAllFilesResponse) {
+    option (google.api.http).get = "/jackal/canine-chain/filetree/files";
+  }
+*/
+
 func AllPubKeys(ctx context.Context, chain *cosmos.CosmosChain) (*treetypes.QueryAllPubKeysResponse, error) {
 	grpcConn, err := grpc.Dial(
 		chain.GetHostGRPCAddress(),
