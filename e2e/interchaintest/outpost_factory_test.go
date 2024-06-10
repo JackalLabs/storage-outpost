@@ -2,20 +2,17 @@ package main
 
 import (
 	"context"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
 	"strconv"
 	"testing"
 
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	mysuite "github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 	outpostfactory "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types/outpostfactory"
-	"github.com/cosmos/gogoproto/proto"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/suite"
@@ -80,20 +77,6 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(createMsg), "--gas", "500000")
 	s.Require().NoError(err)
 	outpostAddressFromEvent := logger.ParseOutpostAddress(res.Events)
-
-	dataFromHex, decodeError := hex.DecodeString(res.Data) //res.Data is already String, no need to wrap it in string()
-	s.Require().NoError(decodeError)
-	logger.LogInfo(fmt.Sprintf("length of data from Hex is: %d", len(dataFromHex)))
-	logger.LogInfo(fmt.Sprintf("data from Hex is: %s", dataFromHex))
-	logger.LogInfo(fmt.Sprintf("data from Hex as string is: %s", string(dataFromHex)))
-
-	var executeResponse wasmtypes.MsgExecuteContractResponse
-	unmarshalError := proto.Unmarshal(dataFromHex, &executeResponse)
-	if unmarshalError != nil {
-		logger.LogInfo(fmt.Sprintf("Unmarshal error: %v", unmarshalError))
-	} else {
-		logger.LogInfo(fmt.Sprintf("data unmarshalled from proto is: %s", executeResponse.Data))
-	}
 
 	logger.LogInfo(outpostAddressFromEvent)
 
