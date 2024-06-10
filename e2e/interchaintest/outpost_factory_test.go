@@ -95,6 +95,8 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 
 	fmt.Printf("User Outpost Address: %s\n", mappedOutpostAddress)
 
+	// TODO: parse the outpost address from the attribute
+
 	// TODO: Why do we need this?
 	s.NumOfOutpostContracts++
 
