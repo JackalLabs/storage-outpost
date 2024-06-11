@@ -1,15 +1,49 @@
 use cosmwasm_std::{DepsMut, MessageInfo, Response, StdResult};
 
-use crate::state::{OWNER, OLD_BEFORE_MIGRATE};
+use crate::state::OWNER;
+
+/*
+pub fn instantiate(
+    deps: DepsMut,
+    info: MessageInfo,
+    counter: u64,
+    minimal_donation: Coin,
+) -> StdResult<Response> {
+    STATE.save(
+        deps.storage,
+        &State {
+            counter,
+            minimal_donation,
+        },
+    )?;
+    OWNER.save(deps.storage, &info.sender)?;
+    Ok(Response::new())
+}
+
+pub fn migrate(deps: DepsMut) -> StdResult<Response> {
+    const COUNTER: Item<u64> = Item::new("counter");
+    const MINIMAL_DONATION: Item<Coin> = Item::new("minimal_donation");
+
+    let counter = COUNTER.load(deps.storage)?;
+    let minimal_donation = MINIMAL_DONATION.load(deps.storage)?;
+
+    STATE.save(
+        deps.storage,
+        &State {
+            counter,
+            minimal_donation,
+        },
+    )?;
+
+    Ok(Response::new())
+}
+*/
 
 pub fn instantiate(
     deps: DepsMut,
     info: MessageInfo,
 ) -> StdResult<Response> {
     OWNER.save(deps.storage, &info.sender)?;
-    
-    let mut_str: String = String::from("Data to migrate!");
-    OLD_BEFORE_MIGRATE.save(deps.storage, &mut_str)?;
 
     Ok(Response::new())
 }
