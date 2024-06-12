@@ -181,6 +181,8 @@ mod execute {
     // This can't be because we take from 'info.sender' which only exists if this function is called in the first place
     // This function is called only if the outpost executes the callback, otherwise the Tx was abandoned while sitting in the 
     // mem pool
+
+    // TODO: is it more meaningful to put this attribute inside of the outpost's instantiation response?
     Ok(Response::new().add_attribute("outpost_address", &info.sender.to_string())) // this data is not propagated back up to the tx resp of the 'create_outpost' call
     }
 }

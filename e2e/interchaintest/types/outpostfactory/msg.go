@@ -6,7 +6,7 @@ type InstantiateMsg struct {
 }
 
 type ExecuteMsg struct {
-	CreateOutpost *ExecuteMsg_CreateOutpost `json:"create_outpost,omitempty"`
+	CreateOutpost  *ExecuteMsg_CreateOutpost  `json:"create_outpost,omitempty"`
 	MapUserOutpost *ExecuteMsg_MapUserOutpost `json:"map_user_outpost,omitempty"`
 }
 
@@ -38,18 +38,18 @@ const (
 // IbcChannel defines all information on a channel. This is generally used in the hand-shake process, but can be queried directly.
 type IbcChannel struct {
 	// The connection upon which this channel was created. If this is a multi-hop channel, we only expose the first hop.
-	ConnectionId string `json:"connection_id"`
+	ConnectionId         string      `json:"connection_id"`
 	CounterpartyEndpoint IbcEndpoint `json:"counterparty_endpoint"`
-	Endpoint IbcEndpoint `json:"endpoint"`
-	Order IbcOrder `json:"order"`
+	Endpoint             IbcEndpoint `json:"endpoint"`
+	Order                IbcOrder    `json:"order"`
 	// Note: in ibcv3 this may be "", in the IbcOpenChannel handshake messages
 	Version string `json:"version"`
 }
 
 // IcaContractState is the state of the storage-outpost contract.
 type IcaContractState struct {
-	ContractAddr Addr `json:"contract_addr"`
-	IcaState *IcaState `json:"ica_state,omitempty"`
+	ContractAddr Addr      `json:"contract_addr"`
+	IcaState     *IcaState `json:"ica_state,omitempty"`
 }
 
 type QueryMsg_GetIcaCount struct{}
@@ -66,10 +66,10 @@ type ContractState struct {
 
 // IcaState is the state of the ICA.
 type IcaState struct {
-	TxEncoding TxEncoding `json:"tx_encoding"`
+	TxEncoding   TxEncoding   `json:"tx_encoding"`
 	ChannelState ChannelState `json:"channel_state"`
-	IcaAddr string `json:"ica_addr"`
-	IcaId int `json:"ica_id"`
+	IcaAddr      string       `json:"ica_addr"`
+	IcaId        int          `json:"ica_id"`
 }
 
 /*
@@ -111,7 +111,7 @@ type QueryMsg_GetIcaContractState struct {
 
 type IbcEndpoint struct {
 	ChannelId string `json:"channel_id"`
-	PortId string `json:"port_id"`
+	PortId    string `json:"port_id"`
 }
 
 // ContractChannelState is the state of the IBC application's channel. This application only supports one channel.
@@ -134,7 +134,7 @@ const (
 )
 
 type ExecuteMsg_CreateOutpost struct {
-	Salt *string `json:"salt,omitempty"`
+	Salt                   *string                `json:"salt,omitempty"`
 	ChannelOpenInitOptions ChannelOpenInitOptions `json:"channel_open_init_options"`
 }
 

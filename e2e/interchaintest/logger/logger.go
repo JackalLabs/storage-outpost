@@ -61,7 +61,7 @@ func LogEvents(events []types1.Event) {
 
 // Retrieves outpost_address from the main 'wasm' event which is emitted by 'map_user_outpost'
 // Consider moving this function out of logger.go
-func ParseOutpostAddress(events []types1.Event) string {
+func ParseOutpostAddressFromEvent(events []types1.Event) string {
 	for _, event := range events {
 		if event.GetType() == "wasm" {
 			for _, attribute := range event.GetAttributes() {

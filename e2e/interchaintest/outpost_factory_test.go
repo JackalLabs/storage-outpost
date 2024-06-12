@@ -55,7 +55,7 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 
 	// Confirm that UserA is the admin of the outpost factory
 	// Jackal Labs account will be the admin of the outpost factory
-	factoryContractInfoRes, infoErr := testsuite.GetContractInfo(ctx, s.ChainA, outpostfactoryContractAddr, s.UserA.FormattedAddress())
+	factoryContractInfoRes, infoErr := testsuite.GetContractInfo(ctx, s.ChainA, outpostfactoryContractAddr)
 	s.Require().NoError(infoErr)
 	s.Require().Equal(factoryContractInfoRes.Admin, s.UserA.FormattedAddress())
 	logger.LogInfo(fmt.Sprintf("contract Info is: %s", factoryContractInfoRes))
@@ -66,7 +66,7 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	proto3Encoding := outpostfactory.TxEncoding(encoding)
 
 	// Create UserA's outpost
-	createMsg := outpostfactory.ExecuteMsg{
+	createOutpostMsg := outpostfactory.ExecuteMsg{
 		CreateOutpost: &outpostfactory.ExecuteMsg_CreateOutpost{
 			Salt: nil,
 			ChannelOpenInitOptions: outpostfactory.ChannelOpenInitOptions{
@@ -77,13 +77,13 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 		},
 	}
 
-	res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(createMsg), "--gas", "500000")
+	res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(createOutpostMsg), "--gas", "500000")
 	s.Require().NoError(err)
 	logger.LogEvents(res.Events)
 	// Confirm that UserA is the admin of the created outpost
 	// For now, Jackal Labs does not want to be the admin of all users' created outposts--this violates ethos.
-	outpostAddressFromEvent := logger.ParseOutpostAddress(res.Events)
-	outpostContractInfoRes, outpostInfoErr := testsuite.GetContractInfo(ctx, s.ChainA, outpostAddressFromEvent, s.UserA.FormattedAddress())
+	outpostAddressFromEvent := logger.ParseOutpostAddressFromEvent(res.Events)
+	outpostContractInfoRes, outpostInfoErr := testsuite.GetContractInfo(ctx, s.ChainA, outpostAddressFromEvent)
 	s.Require().NoError(outpostInfoErr)
 	s.Require().Equal(outpostContractInfoRes.Admin, s.UserA.FormattedAddress())
 	logger.LogInfo(fmt.Sprintf("outpostContractInfo is: %s", outpostContractInfoRes))
@@ -91,24 +91,16 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	// We know that the outpost we just made emitted an event showing its address
 	// We can now query the mapping inside of 'outpost factory' to confirm that we mapped the correct address
 	// Query for the relevant addresses to ensure everything exists
-	outpostAddressRes, addressErr := testsuite.GetOutpostAddress(ctx, s.ChainA, outpostfactoryContractAddr, s.UserA.FormattedAddress())
+	outpostAddressFromMap, addressErr := testsuite.GetOutpostAddressFromFactoryMap(ctx, s.ChainA, outpostfactoryContractAddr, s.UserA.FormattedAddress())
 	s.Require().NoError(addressErr)
 	var mappedOutpostAddress string
-	if err := json.Unmarshal(outpostAddressRes.Data, &mappedOutpostAddress); err != nil {
+	if err := json.Unmarshal(outpostAddressFromMap.Data, &mappedOutpostAddress); err != nil {
 		log.Fatalf("Error parsing response data: %v", err)
 	}
 	s.Require().Equal(outpostAddressFromEvent, mappedOutpostAddress)
 
-	fmt.Printf("User Outpost Address: %s\n", mappedOutpostAddress)
-
-	// TODO: parse the outpost address from the attribute
-
-	// TODO: Why do we need this?
-	s.NumOfOutpostContracts++
-
-	// TODO: are we getting 'mappedOutpostAddress' correctly to be used in the Equality assertion?
 	// is UserA allowed to just create another outpost again? They shouldn't be able to
-	_, creationErr := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(createMsg), "--gas", "500000")
+	_, creationErr := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(createOutpostMsg), "--gas", "500000")
 	expectedCreationErrorMsg := fmt.Sprintf("error in transaction (code: 5): failed to execute message; message index: 0:"+
 		" Outpost already created. Outpost Address: %s: execute wasm contract failed", mappedOutpostAddress)
 	s.Require().EqualError(creationErr, expectedCreationErrorMsg)
@@ -125,55 +117,55 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 		},
 	}
 	// This failed because UserA already used their lock when creating the outpost
-	res1, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(mapOutpostMsg), "--gas", "500000")
+	_, mapOutpostError := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(mapOutpostMsg), "--gas", "500000")
 	expectedErrorMsg := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
-	s.Require().EqualError(err, expectedErrorMsg)
-	fmt.Printf(res1.TxHash)
-
-	// logger.LogEvents(res1.Events)
+	s.Require().EqualError(mapOutpostError, expectedErrorMsg)
 
 	// Let's get UserA2 to create a user<>outpost mapping WITHOUT creating an outpost. It will fail because no lock file exists
+	// The lock file is made available to be used only when 'create_outpost' is called
 	mapOutpostMsgForUserA2 := outpostfactory.ExecuteMsg{
 		MapUserOutpost: &outpostfactory.ExecuteMsg_MapUserOutpost{
 			OutpostOwner: s.UserA2.FormattedAddress(),
 		},
 	}
 
-	res2, err := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostfactoryContractAddr, toString(mapOutpostMsgForUserA2), "--gas", "500000")
-	expectedErrorMsg1 := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
-	s.Require().EqualError(err, expectedErrorMsg1)
-	fmt.Printf(res2.TxHash)
-
-	//logger.LogInfo(res2)
+	_, mapOutpostA2Error := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostfactoryContractAddr, toString(mapOutpostMsgForUserA2), "--gas", "500000")
+	expectedErrorMsgA2 := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
+	s.Require().EqualError(mapOutpostA2Error, expectedErrorMsgA2)
 
 	// UserA2 should be able to make an outpost
+	makeOutpostA2Res, makeOutpostA2Error := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostfactoryContractAddr, toString(createOutpostMsg), "--gas", "500000")
+	s.Require().NoError(makeOutpostA2Error)
 
-	res3, err := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostfactoryContractAddr, toString(createMsg), "--gas", "500000")
-	fmt.Printf(res3.TxHash)
+	// Confirm that A2 is the admin of their created outpost
+	outpostAddressA2FromEvent := logger.ParseOutpostAddressFromEvent(makeOutpostA2Res.Events)
+	outpostContractInfoA2Res, outpostInfoA2Err := testsuite.GetContractInfo(ctx, s.ChainA, outpostAddressA2FromEvent)
+	s.Require().NoError(outpostInfoA2Err)
+	s.Require().Equal(outpostContractInfoA2Res.Admin, s.UserA2.FormattedAddress())
 
-	//logger.LogInfo(res3)
-	s.Require().NoError(err)
+	// Confirm that A2's address<>outpostAddress mapping was done correctly
+	outpostAddressA2FromMap, addressA2Err := testsuite.GetOutpostAddressFromFactoryMap(ctx, s.ChainA, outpostfactoryContractAddr, s.UserA2.FormattedAddress())
+	s.Require().NoError(addressA2Err)
+	var mappedOutpostAddressA2 string
+	if err := json.Unmarshal(outpostAddressA2FromMap.Data, &mappedOutpostAddressA2); err != nil {
+		log.Fatalf("Error parsing response data: %v", err)
+	}
+	s.Require().Equal(outpostAddressA2FromEvent, mappedOutpostAddressA2)
 
 	// If UserA2 tries to map again, lock file doesn't exist because it was consumed during the creation of their outpost
-	res4, err := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostfactoryContractAddr, toString(mapOutpostMsgForUserA2), "--gas", "500000")
+	_, Error := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostfactoryContractAddr, toString(mapOutpostMsgForUserA2), "--gas", "500000")
 	expectedErrorMsg2 := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
-	s.Require().EqualError(err, expectedErrorMsg2)
-	fmt.Printf(res4.TxHash)
-
-	//logger.LogInfo(res4)
+	s.Require().EqualError(Error, expectedErrorMsg2)
 
 	// UserA2 tries to maliciously create a mapping for UserA3
 	mapOutpostMsgForUserA3 := outpostfactory.ExecuteMsg{
 		MapUserOutpost: &outpostfactory.ExecuteMsg_MapUserOutpost{
-			OutpostOwner: s.UserA3.FormattedAddress(), // put in UserA3 address
+			OutpostOwner: s.UserA3.FormattedAddress(),
 		},
 	}
-	res5, err := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostfactoryContractAddr, toString(mapOutpostMsgForUserA3), "--gas", "500000")
+	_, maliciousErr := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostfactoryContractAddr, toString(mapOutpostMsgForUserA3), "--gas", "500000")
 	expectedErrorMsg3 := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
-	s.Require().EqualError(err, expectedErrorMsg3)
-	fmt.Printf(res5.TxHash)
-
-	// logger.LogInfo(res5)
+	s.Require().EqualError(maliciousErr, expectedErrorMsg3)
 
 	// To check that the mappings were done correctly.
 	// Above, we should parse out the outpost address that's created for userA using the event
