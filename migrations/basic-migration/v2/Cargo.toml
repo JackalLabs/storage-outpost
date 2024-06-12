@@ -1,5 +1,5 @@
 [package]
-name = "basic-migration"
+name = "basic-migration-v2"
 version = "0.1.0"
 authors = ["Milo Goodfellow <milo@jackallabs.io>", "Bi Phan <bi@jackallabs.io>"]
 edition = "2021"

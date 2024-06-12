@@ -76,7 +76,7 @@ members = [
     ".",          
     "protobuf",  
     "cross-contract/contracts/outpost-factory", # Path to the nested library crate
-    "migrations/basic-migration/v1",
+    "migrations/basic-migration/v1", "migrations/basic-migration/v2",
 
 ]
 
