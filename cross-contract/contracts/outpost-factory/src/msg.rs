@@ -11,7 +11,6 @@ pub struct InstantiateMsg {
 #[cw_serde]
 pub enum ExecuteMsg {
     CreateOutpost {
-        salt: Option<String>,
         channel_open_init_options: ChannelOpenInitOptions,
     },
     // When the outpost is created for a user, the created outpost contract will call back this owner contract

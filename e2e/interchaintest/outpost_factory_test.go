@@ -8,7 +8,9 @@ import (
 	"log"
 	"strconv"
 	"testing"
+	"time"
 
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	mysuite "github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
@@ -55,9 +57,12 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	outpostfactoryContractAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), codeId, toString(instantiateMsg), false, "--gas", "500000", "--admin", s.UserA.KeyName())
 	s.Require().NoError(err)
 
-	// TODO: auto-gen query client and query to double check admin is set
-
-	s.NumOfOutpostContracts = 0
+	// Confirm that UserA is the admin of the outpost factory
+	// Jackal Labs account will be the admin of the outpost factory
+	contractInfoRes, infoErr := testsuite.GetContractInfo(ctx, s.ChainA, outpostfactoryContractAddr, s.UserA.FormattedAddress())
+	s.Require().NoError(infoErr)
+	s.Require().Equal(contractInfoRes.Admin, s.UserA.FormattedAddress())
+	logger.LogInfo(fmt.Sprintf("contract Info is: %s", contractInfoRes))
 
 	// TODO: wrapping the encoding with 'TxEncoding' is not needed anymore because 'Proto3Json'
 	// is not the recommended encoding type for the ICA channel
@@ -112,29 +117,6 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	logger.LogInfo("******************")
 	logger.LogInfo(fullyDecodedData)
 	logger.LogInfo("******************")
-
-	// IGNORE unmarshalling attempts below
-
-	var executeResponse wasmtypes.MsgExecuteContractResponse
-	unmarshalError := executeResponse.Unmarshal(dataDecoded)
-	if unmarshalError != nil {
-		logger.LogInfo(fmt.Sprintf("NEW: Unmarshal error: %v", unmarshalError))
-	} else {
-		logger.LogInfo(fmt.Sprintf("NEW: data unmarshalled from proto is: %v", executeResponse.Data))
-	}
-	logger.LogInfo(fmt.Sprintf("NEW: data unmarshalled from proto as string is: %s", string(executeResponse.Data)))
-	logger.LogInfo(fmt.Sprintf("NEW: data unmarshalled from proto length is: %d", len(executeResponse.Data)))
-	logger.LogInfo(fmt.Sprintf("NEW: data unmarshalled from proto length is: %x", executeResponse.Data))
-
-	// nothing comes out--I think it's because only the top level contract execution response is returned, not the called back function 'map user outpost'
-
-	/* Looks to me like Data field got encoded to protobuf:
-
-		data decoded is: .
-	,/cosmwasm.wasm.v1.MsgExecuteContractResponse
-
-	need to decode from protobuf
-	*/
 
 	logger.LogInfo(outpostAddressFromEvent)
 
@@ -254,7 +236,7 @@ func (s *FactoryTestSuite) TestFactoryCreateOutpost() {
 	// query by code ID and sender address? The sender being the user that executed the creation
 	// The port id of the outpost should be wasm.contractAddress so can't we retrieve the address from that?
 
-	// time.Sleep(time.Duration(10) * time.Hour)
+	time.Sleep(time.Duration(10) * time.Hour)
 
 }
 

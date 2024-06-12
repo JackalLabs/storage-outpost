@@ -1,21 +1,16 @@
-INFO: 2024/06/10 17:57:30 data decoded is: L
-,/cosmwasm.wasm.v1.MsgExecuteContractResponse
-data inside create_outpost
-INFO: 2024/06/10 17:57:30 data decoded as value is: [18 76 10 44 47 99 111 115 109 119 97 115 109 46 119 97 115 109 46 118 49 46 77 115 103 69 120 101 99 117 116 101 67 111 110 116 114 97 99 116 82 101 115 112 111 110 115 101 18 28 10 26 100 97 116 97 32 105 110 115 105 100 101 32 99 114 101 97 116 101 95 111 117 116 112 111 115 116]
-INFO: 2024/06/10 17:57:30 L
-,/cosmwasm.wasm.v1.MsgExecuteContractResponse
-data inside create_outpost
-INFO: 2024/06/10 17:57:30 Length of MsgResponses: 1
-INFO: 2024/06/10 17:57:30 type URL of response is: /cosmwasm.wasm.v1.MsgExecuteContractResponse
-INFO: 2024/06/10 17:57:30 value of response is: [10 26 100 97 116 97 32 105 110 115 105 100 101 32 99 114 101 97 116 101 95 111 117 116 112 111 115 116]
-INFO: 2024/06/10 17:57:30 value of any as string is: 
-data inside create_outpost
-INFO: 2024/06/10 17:57:30 NEW: data after unmarshalling 'Any' value to type noted in typeURL is: data inside create_outpost
-INFO: 2024/06/10 17:57:30 ******************
-INFO: 2024/06/10 17:57:30 data inside create_outpost
-INFO: 2024/06/10 17:57:30 ******************
-INFO: 2024/06/10 17:57:30 NEW: data unmarshalled from proto is: []
-INFO: 2024/06/10 17:57:30 NEW: data unmarshalled from proto as string is: 
-INFO: 2024/06/10 17:57:30 NEW: data unmarshalled from proto length is: 0
-INFO: 2024/06/10 17:57:30 NEW: data unmarshalled from proto length is: 
-INFO: 2024/06/10 17:57:30 wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay
+INFO: 2024/06/12 14:16:29 contract Info is: address:"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" contract_info:<code_id:2 creator:"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag" admin:"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag" label:"wasm-contract" created:<block_height:59 > ibc_port_id:"wasm.wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" > 
+INFO: 2024/06/12 14:16:29 Admin of the factory is: wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag
+INFO: 2024/06/12 14:16:35 data decoded is: .
+,/cosmwasm.wasm.v1.MsgExecuteContractResponse
+INFO: 2024/06/12 14:16:35 data decoded as value is: [18 46 10 44 47 99 111 115 109 119 97 115 109 46 119 97 115 109 46 118 49 46 77 115 103 69 120 101 99 117 116 101 67 111 110 116 114 97 99 116 82 101 115 112 111 110 115 101]
+INFO: 2024/06/12 14:16:35 .
+,/cosmwasm.wasm.v1.MsgExecuteContractResponse
+INFO: 2024/06/12 14:16:35 Length of MsgResponses: 1
+INFO: 2024/06/12 14:16:35 type URL of response is: /cosmwasm.wasm.v1.MsgExecuteContractResponse
+INFO: 2024/06/12 14:16:35 value of response is: []
+INFO: 2024/06/12 14:16:35 value of any as string is: 
+INFO: 2024/06/12 14:16:35 NEW: data after unmarshalling 'Any' value to type noted in typeURL is: 
+INFO: 2024/06/12 14:16:35 ******************
+INFO: 2024/06/12 14:16:35 
+INFO: 2024/06/12 14:16:35 ******************
+INFO: 2024/06/12 14:16:35 wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay

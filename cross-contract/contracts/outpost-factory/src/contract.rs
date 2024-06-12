@@ -41,15 +41,13 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        //TODO: Change this to 'CreateOutpost'
         ExecuteMsg::CreateOutpost {
-            salt,
             channel_open_init_options,
-        } => execute::create_outpost(deps, env, info, salt, channel_open_init_options),
+        } => execute::create_outpost(deps, env, info, channel_open_init_options),
         ExecuteMsg::MapUserOutpost { outpost_owner} => execute::map_user_outpost(deps, env, info, outpost_owner),
     }
 }
-
+// TODO: figure out which queries and states are useless
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
@@ -81,14 +79,10 @@ mod execute {
         deps: DepsMut,
         env: Env,
         info: MessageInfo,
-        salt: Option<String>,
         channel_open_init_options: ChannelOpenInitOptions,
     ) -> Result<Response, ContractError> {
         let state = STATE.load(deps.storage)?;
-        // TODO: determine who is best to be admin
-        // if state.admin != info.sender {
-        //     return Err(ContractError::Unauthorized {});
-        // }
+        // WARNING: This function is called by the user, so we cannot error:unauthorized if info.sender != admin 
 
         let storage_outpost_code_id = StorageOutpostCode::new(state.storage_outpost_code_id);
 
@@ -100,12 +94,12 @@ mod execute {
             return Err(ContractError::AlreadyCreated(value))
         }
 
-        let lock = LOCK.save(deps.storage, &info.sender.to_string(), &true);
+        let _lock = LOCK.save(deps.storage, &info.sender.to_string(), &true);
 
         let callback = Callback {
             contract: env.contract.address.to_string(),
-            // TODO: make this comment more professional
-            // refer to commit 937d8f5ffa506e4d3ba34b8946b865c7da1bb4b8 to see a msg nested in the Callback
+            // Only nest a msg if use case calls for it. 
+            // Refer to commit 937d8f5ffa506e4d3ba34b8946b865c7da1bb4b8 to see a msg nested in the Callback
             msg: None, 
             // Even though this could be spoofed in 'map_user_outpost', that's ok because we have the lock to block
             outpost_owner: info.sender.to_string(),
@@ -115,7 +109,7 @@ mod execute {
         let instantiate_msg = storage_outpost::types::msg::InstantiateMsg {
             // right now the owner of every outpost is the address of the outpost factory
             owner: Some(info.sender.to_string()), // WARNING: The owner should also be the info.sender, this param will be deleted soon
-            admin: Some(info.sender.to_string()),
+            admin: Some(info.sender.to_string()), // WARNING: I think the owner and admin is the user? query in E2E to double check 
             channel_open_init_options: Some(channel_open_init_options),
             // nest the call back object here 
             callback: Some(callback),
@@ -223,3 +217,7 @@ mod query {
 
 #[cfg(test)]
 mod tests {}
+
+
+
+
