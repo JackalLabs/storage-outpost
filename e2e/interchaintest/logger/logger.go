@@ -1,11 +1,15 @@
 package logger
 
 import (
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	types1 "github.com/cometbft/cometbft/abci/types"
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
 )
 
 var (
@@ -68,4 +72,39 @@ func ParseOutpostAddress(events []types1.Event) string {
 		}
 	}
 	return ""
+}
+
+// Function to parse data
+func parseData(resData string) (string, error) {
+	// Decode the hex string
+	dataFromHex, fromHexError := hex.DecodeString(resData)
+	if fromHexError != nil {
+		return "", fmt.Errorf("error decoding hex string: %w", fromHexError)
+	}
+
+	// Unmarshal dataFromHex into TxMsgData
+	var txMsgData sdktypes.TxMsgData
+	unmarshalMsgDataError := txMsgData.Unmarshal(dataFromHex)
+	if unmarshalMsgDataError != nil {
+		return "", fmt.Errorf("error unmarshalling TxMsgData: %w", unmarshalMsgDataError)
+	}
+
+	// Ensure there is at least one MsgResponse
+	if len(txMsgData.MsgResponses) == 0 {
+		return "", fmt.Errorf("no MsgResponses found in TxMsgData")
+	}
+
+	// Get the first MsgResponse and unmarshal it
+	MsgResponseAsAny := txMsgData.MsgResponses[0]
+
+	var executeResponseFromAny wasmtypes.MsgExecuteContractResponse
+	unmarshalFromAnyError := executeResponseFromAny.Unmarshal(MsgResponseAsAny.Value)
+	if unmarshalFromAnyError != nil {
+		return "", fmt.Errorf("error unmarshalling MsgExecuteContractResponse: %w", unmarshalFromAnyError)
+	}
+
+	// Return the fully decoded data as a string
+	fullyDecodedData := string(executeResponseFromAny.Data)
+
+	return fullyDecodedData, nil
 }

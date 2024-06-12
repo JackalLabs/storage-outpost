@@ -2,20 +2,17 @@ package main
 
 import (
 	"context"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
 	"strconv"
 	"testing"
 
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	mysuite "github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 	outpostfactory "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types/outpostfactory"
-	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/suite"
@@ -90,43 +87,6 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	s.Require().NoError(outpostInfoErr)
 	s.Require().Equal(outpostContractInfoRes.Admin, s.UserA.FormattedAddress())
 	logger.LogInfo(fmt.Sprintf("outpostContractInfo is: %s", outpostContractInfoRes))
-
-	// Successful unmarshalling attempt:
-
-	dataDecoded, decodeError := hex.DecodeString(res.Data) //res.Data is already String, no need to wrap it in string()
-	s.Require().NoError(decodeError)
-	logger.LogInfo(fmt.Sprintf("data decoded is: %s", dataDecoded))
-	logger.LogInfo(fmt.Sprintf("data decoded as value is: %v", dataDecoded))
-	logger.LogInfo(string(dataDecoded))
-
-	var txMsgData sdktypes.TxMsgData
-	unmarshalMsgDataError := txMsgData.Unmarshal(dataDecoded)
-	if unmarshalMsgDataError != nil {
-		logger.LogInfo(fmt.Sprintf("NEW: unmarshalMsgDataError: %s", unmarshalMsgDataError))
-	} else {
-		logger.LogInfo(fmt.Sprintf("Length of MsgResponses: %v", len(txMsgData.MsgResponses)))
-	}
-
-	MsgResponseAsAny := txMsgData.MsgResponses[0]
-	logger.LogInfo(fmt.Sprintf("type URL of response is: %s", MsgResponseAsAny.TypeUrl))
-	logger.LogInfo(fmt.Sprintf("value of response is: %v", MsgResponseAsAny.Value))
-	logger.LogInfo(fmt.Sprintf("value of any as string is: %s", string(MsgResponseAsAny.Value)))
-
-	var executeResponseFromAny wasmtypes.MsgExecuteContractResponse
-	unmarshalFromAnyError := executeResponseFromAny.Unmarshal(MsgResponseAsAny.Value)
-	if unmarshalFromAnyError != nil {
-		logger.LogInfo(fmt.Sprintf("NEW: unmarshalFromAnyError: %v", unmarshalFromAnyError))
-	} else {
-		logger.LogInfo(fmt.Sprintf("NEW: data after unmarshalling 'Any' value to type noted in typeURL is: %s", string(executeResponseFromAny.Data)))
-	}
-	fullyDecodedData := string(executeResponseFromAny.Data)
-	logger.LogInfo("******************")
-	logger.LogInfo(fullyDecodedData)
-	logger.LogInfo("******************")
-
-	logger.LogInfo(outpostAddressFromEvent)
-
-	// time.Sleep(time.Duration(10) * time.Hour)
 
 	// We know that the outpost we just made emitted an event showing its address
 	// We can now query the mapping inside of 'outpost factory' to confirm that we mapped the correct address
