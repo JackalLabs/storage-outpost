@@ -34,7 +34,7 @@ pub fn execute(_deps: DepsMut, _env: Env, _info: MessageInfo, _msg: Empty) -> St
 
 /* 
     WARNING: Remove this in production!
-    Test the v1 contract to make sure we're getting properly initing the contract
+    Test the v1 contract to make sure we're properly initing the contract
 */
 mod test {
     use cosmwasm_std::{Addr, Empty};
