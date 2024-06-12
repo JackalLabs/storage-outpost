@@ -1,20 +1,16 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::Coin;
 
+// Type you SEND to the query service
 #[cw_serde]
-pub struct InstantiateMsg {}
-
-#[cw_serde]
-pub enum ExecMsg {
-    Withdraw {},
-    WithdrawTo {
-        receiver: String,
-        #[serde(default)]
-        funds: Vec<Coin>,
-    },
+pub enum QueryMsg { 
+    Value {}
 }
 
+/*
+    Response containing a string
+    In this test contract, only serialized then sent back from the query entrypoint
+*/
 #[cw_serde]
 pub struct ValueResp {
-    pub value: u64,
+    pub value: String,
 }

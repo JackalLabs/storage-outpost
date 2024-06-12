@@ -1,5 +1,4 @@
-use cosmwasm_std::Addr;
 use cw_storage_plus::Item;
 
-pub const OWNER: Item<Addr> = Item::new("owner");
-pub const OLD_BEFORE_MIGRATE: Item<String> = Item::new("old_before_migrate");
+// Store a test value to migrate on the V2 contract
+pub const DATA_TO_MIGRATE: Item<String> = Item::new("data_to_migrate");

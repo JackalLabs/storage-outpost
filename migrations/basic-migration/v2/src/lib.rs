@@ -1,7 +1,7 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 
-use cosmwasm_std::{DepsMut, Env, MessageInfo, Response, StdResult};
+use cosmwasm_std::{DepsMut, Empty, Env, MessageInfo, Response, StdResult};
 use error::ContractError;
 use msg::InstantiateMsg;
 
@@ -34,4 +34,9 @@ pub fn execute(
         Withdraw {} => exec::withdraw(deps, env, info),
         WithdrawTo { receiver, funds } => exec::withdraw_to(deps, env, info, receiver, funds),
     }
+}
+
+#[cfg_attr(not(feature = "library"), entry_point)]
+pub fn migrate(deps: DepsMut, _env: Env, _msg: Empty) -> StdResult<Response> {
+    contract::migrate(deps)
 }
