@@ -8,7 +8,6 @@ import (
 	"log"
 	"strconv"
 	"testing"
-	"time"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
@@ -59,10 +58,10 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 
 	// Confirm that UserA is the admin of the outpost factory
 	// Jackal Labs account will be the admin of the outpost factory
-	contractInfoRes, infoErr := testsuite.GetContractInfo(ctx, s.ChainA, outpostfactoryContractAddr, s.UserA.FormattedAddress())
+	factoryContractInfoRes, infoErr := testsuite.GetContractInfo(ctx, s.ChainA, outpostfactoryContractAddr, s.UserA.FormattedAddress())
 	s.Require().NoError(infoErr)
-	s.Require().Equal(contractInfoRes.Admin, s.UserA.FormattedAddress())
-	logger.LogInfo(fmt.Sprintf("contract Info is: %s", contractInfoRes))
+	s.Require().Equal(factoryContractInfoRes.Admin, s.UserA.FormattedAddress())
+	logger.LogInfo(fmt.Sprintf("contract Info is: %s", factoryContractInfoRes))
 
 	// TODO: wrapping the encoding with 'TxEncoding' is not needed anymore because 'Proto3Json'
 	// is not the recommended encoding type for the ICA channel
@@ -83,7 +82,14 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 
 	res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(createMsg), "--gas", "500000")
 	s.Require().NoError(err)
+	logger.LogEvents(res.Events)
+	// Confirm that UserA is the admin of the created outpost
+	// For now, Jackal Labs does not want to be the admin of all users' created outposts--this violates ethos.
 	outpostAddressFromEvent := logger.ParseOutpostAddress(res.Events)
+	outpostContractInfoRes, outpostInfoErr := testsuite.GetContractInfo(ctx, s.ChainA, outpostAddressFromEvent, s.UserA.FormattedAddress())
+	s.Require().NoError(outpostInfoErr)
+	s.Require().Equal(outpostContractInfoRes.Admin, s.UserA.FormattedAddress())
+	logger.LogInfo(fmt.Sprintf("outpostContractInfo is: %s", outpostContractInfoRes))
 
 	// Successful unmarshalling attempt:
 
@@ -236,7 +242,7 @@ func (s *FactoryTestSuite) TestFactoryCreateOutpost() {
 	// query by code ID and sender address? The sender being the user that executed the creation
 	// The port id of the outpost should be wasm.contractAddress so can't we retrieve the address from that?
 
-	time.Sleep(time.Duration(10) * time.Hour)
+	// time.Sleep(time.Duration(10) * time.Hour)
 
 }
 

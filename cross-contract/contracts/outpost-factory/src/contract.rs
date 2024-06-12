@@ -115,7 +115,8 @@ mod execute {
             callback: Some(callback),
         };
 
-        let label = format!("storage_outpost-owned by: {}", &info.sender.to_string());
+        let label
+         = format!("storage_outpost-owned by: {}", &info.sender.to_string());
 
         // 'instantiate2' which has the ability to pre compute the outpost's address
         // Unsure if 'instantiate2_address' from cosmwasm-std will work on Archway so we're not doing this for now
