@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -13,6 +14,7 @@ import (
 	mysuite "github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 	outpostfactory "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types/outpostfactory"
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/suite"
@@ -77,6 +79,62 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(createMsg), "--gas", "500000")
 	s.Require().NoError(err)
 	outpostAddressFromEvent := logger.ParseOutpostAddress(res.Events)
+
+	// Successful unmarshalling attempt:
+
+	dataDecoded, decodeError := hex.DecodeString(res.Data) //res.Data is already String, no need to wrap it in string()
+	s.Require().NoError(decodeError)
+	logger.LogInfo(fmt.Sprintf("data decoded is: %s", dataDecoded))
+	logger.LogInfo(fmt.Sprintf("data decoded as value is: %v", dataDecoded))
+	logger.LogInfo(string(dataDecoded))
+
+	var txMsgData sdktypes.TxMsgData
+	unmarshalMsgDataError := txMsgData.Unmarshal(dataDecoded)
+	if unmarshalMsgDataError != nil {
+		logger.LogInfo(fmt.Sprintf("NEW: unmarshalMsgDataError: %s", unmarshalMsgDataError))
+	} else {
+		logger.LogInfo(fmt.Sprintf("Length of MsgResponses: %v", len(txMsgData.MsgResponses)))
+	}
+
+	MsgResponseAsAny := txMsgData.MsgResponses[0]
+	logger.LogInfo(fmt.Sprintf("type URL of response is: %s", MsgResponseAsAny.TypeUrl))
+	logger.LogInfo(fmt.Sprintf("value of response is: %v", MsgResponseAsAny.Value))
+	logger.LogInfo(fmt.Sprintf("value of any as string is: %s", string(MsgResponseAsAny.Value)))
+
+	var executeResponseFromAny wasmtypes.MsgExecuteContractResponse
+	unmarshalFromAnyError := executeResponseFromAny.Unmarshal(MsgResponseAsAny.Value)
+	if unmarshalFromAnyError != nil {
+		logger.LogInfo(fmt.Sprintf("NEW: unmarshalFromAnyError: %v", unmarshalFromAnyError))
+	} else {
+		logger.LogInfo(fmt.Sprintf("NEW: data after unmarshalling 'Any' value to type noted in typeURL is: %s", string(executeResponseFromAny.Data)))
+	}
+	fullyDecodedData := string(executeResponseFromAny.Data)
+	logger.LogInfo("******************")
+	logger.LogInfo(fullyDecodedData)
+	logger.LogInfo("******************")
+
+	// IGNORE unmarshalling attempts below
+
+	var executeResponse wasmtypes.MsgExecuteContractResponse
+	unmarshalError := executeResponse.Unmarshal(dataDecoded)
+	if unmarshalError != nil {
+		logger.LogInfo(fmt.Sprintf("NEW: Unmarshal error: %v", unmarshalError))
+	} else {
+		logger.LogInfo(fmt.Sprintf("NEW: data unmarshalled from proto is: %v", executeResponse.Data))
+	}
+	logger.LogInfo(fmt.Sprintf("NEW: data unmarshalled from proto as string is: %s", string(executeResponse.Data)))
+	logger.LogInfo(fmt.Sprintf("NEW: data unmarshalled from proto length is: %d", len(executeResponse.Data)))
+	logger.LogInfo(fmt.Sprintf("NEW: data unmarshalled from proto length is: %x", executeResponse.Data))
+
+	// nothing comes out--I think it's because only the top level contract execution response is returned, not the called back function 'map user outpost'
+
+	/* Looks to me like Data field got encoded to protobuf:
+
+		data decoded is: .
+	,/cosmwasm.wasm.v1.MsgExecuteContractResponse
+
+	need to decode from protobuf
+	*/
 
 	logger.LogInfo(outpostAddressFromEvent)
 
