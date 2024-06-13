@@ -87,8 +87,8 @@ pub fn instantiate(
     if let Some(msg) = callback_owner_msg {
         messages.push(msg)
     }
-
-    Ok(Response::new().add_messages(messages).add_event(event))
+    // does this attribute still come out in the main wasm event? 
+    Ok(Response::new().add_messages(messages).add_event(event).add_attribute("outpost_address", env.contract.address.to_string()))  
     } else {
         Ok(Response::default())
     }
