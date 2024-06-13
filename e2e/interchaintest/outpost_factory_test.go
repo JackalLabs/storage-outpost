@@ -167,14 +167,6 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	expectedErrorMsg3 := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
 	s.Require().EqualError(maliciousErr, expectedErrorMsg3)
 
-	// To check that the mappings were done correctly.
-	// Above, we should parse out the outpost address that's created for userA using the event
-	// we should then assert that it's equal to 'outpostAddress', much like how we assert PubKeys are equal
-	// s.Require().Equal(pubRes.PubKey.GetKey(), filetreeMsg.GetKey(), "Expected PubKey does not match the returned PubKey")
-
-	// TODO: Make sure that users are admins of their own outposts
-	// Auto-gen query client to query for the admin?
-
 }
 
 func TestWithFactoryTestSuite(t *testing.T) {
@@ -187,26 +179,10 @@ func (s *FactoryTestSuite) TestFactoryCreateOutpost() {
 	// This starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
 	// sets up the contract and does the channel handshake for the contract test suite.
 	s.SetupFactoryTestSuite(ctx, icatypes.EncodingProtobuf) // NOTE: canined's ibc-go is outdated and does not support proto3json
-	// wasmd, canined := s.ChainA, s.ChainB
-
-	// We weren't able to precompute the outpost's address at the time of creation, so we need to query for the address
-	// right now
-	// query by code ID and sender address? The sender being the user that executed the creation
-	// The port id of the outpost should be wasm.contractAddress so can't we retrieve the address from that?
 
 	// time.Sleep(time.Duration(10) * time.Hour)
 
 }
-
-// // toJSONString returns a string representation of the given value
-// // by marshaling it to JSON. It panics if marshaling fails.
-// func toJSONString(v any) string {
-// 	bz, err := json.Marshal(v)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	return string(bz)
-// }
 
 // toString converts the message to a string using json
 func toString(msg any) string {

@@ -52,11 +52,6 @@ pub fn execute(
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::GetContractState {} => to_json_binary(&query::state(deps)?),
-        QueryMsg::GetIcaContractState { ica_id } => {
-            to_json_binary(&query::ica_state(deps, ica_id)?)
-        }
-        QueryMsg::GetIcaCount {} => to_json_binary(&query::ica_count(deps)?),
-        QueryMsg::GetCallbackCount {} => to_json_binary(&query::callback_count(deps)?),
         QueryMsg::GetUserOutpostAddress { user_address } => to_json_binary(&query::user_outpost_address(deps, user_address)?),
     }
 }
@@ -72,7 +67,7 @@ mod execute {
     };
     use storage_outpost::types::callback::Callback;
 
-    use crate::state::{self, CONTRACT_ADDR_TO_ICA_ID, ICA_COUNT, ICA_STATES, CALLBACK_COUNT, USER_ADDR_TO_OUTPOST_ADDR, LOCK};
+    use crate::state::{self, USER_ADDR_TO_OUTPOST_ADDR, LOCK};
 
     use super::*;
     pub fn create_outpost(
@@ -188,28 +183,13 @@ mod execute {
 }
 
 mod query {
-    use crate::state::{IcaContractState, ICA_COUNT, ICA_STATES, CALLBACK_COUNT, USER_ADDR_TO_OUTPOST_ADDR};
+    use crate::state::{USER_ADDR_TO_OUTPOST_ADDR};
 
     use super::*;
 
     /// Returns the saved contract state.
     pub fn state(deps: Deps) -> StdResult<ContractState> {
         STATE.load(deps.storage)
-    }
-
-    /// Returns the saved ICA state for the given ICA ID.
-    pub fn ica_state(deps: Deps, ica_id: u64) -> StdResult<IcaContractState> {
-        ICA_STATES.load(deps.storage, ica_id)
-    }
-
-    /// Returns the saved ICA count.
-    pub fn ica_count(deps: Deps) -> StdResult<u64> {
-        ICA_COUNT.load(deps.storage)
-    }
-
-    /// Returns the callback count
-    pub fn callback_count(deps: Deps) -> StdResult<u64> {
-        CALLBACK_COUNT.load(deps.storage)
     }
 
     /// Returns the outpost address this user owns
