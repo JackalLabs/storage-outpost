@@ -54,6 +54,7 @@ serde = { version = "1.0.145", default-features = false, features = ["derive"] }
 serde-json-wasm = "0.5.1"
 thiserror = { version = "1.0.31" }
 cw-multi-test = "0.16.5"
+basic-migration-v1 = { version = "0.1.0", path = "../v1" }
 
 [dev-dependencies]
 cw-multi-test = "0.16.5"

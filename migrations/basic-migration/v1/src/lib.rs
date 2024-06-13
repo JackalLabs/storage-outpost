@@ -5,7 +5,8 @@ use msg::ValueResp;
 use state::DATA_TO_MIGRATE;
 
 pub mod msg;
-mod state;
+// Normally private, public here for a test.
+pub mod state;
 
 // Instantiate a contract, always with "Data to migrate!" as the value of "DATA_TO_MIGRATE" in state
 #[entry_point]
@@ -62,7 +63,7 @@ mod test {
                 Addr::unchecked("sender"),
                 &Empty {},
                 &[],
-                "Counting contract",
+                "v1 contract",
                 None,
             )
             .unwrap();

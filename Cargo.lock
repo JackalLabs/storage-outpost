@@ -89,7 +89,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 
 [[package]]
-name = "basic-migration"
+name = "basic-migration-v1"
 version = "0.1.0"
 dependencies = [
  "cosmwasm-schema",
@@ -109,6 +109,7 @@ dependencies = [
 name = "basic-migration-v2"
 version = "0.1.0"
 dependencies = [
+ "basic-migration-v1",
  "cosmwasm-schema",
  "cosmwasm-std",
  "cw-ica-controller",
