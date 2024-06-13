@@ -20,7 +20,7 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    // TODO: admin should be set in the wasm.Instanstiate protobuf msg
+    // NOTE: admin should be set in the wasm.Instanstiate protobuf msg
     // Setting it into contract state is actually useless when wasmd checks for migration permissions
     
     // This contract cannot have an owner because it needs to be called by all users to map their outpost
@@ -47,7 +47,6 @@ pub fn execute(
         ExecuteMsg::MapUserOutpost { outpost_owner} => execute::map_user_outpost(deps, env, info, outpost_owner),
     }
 }
-// TODO: figure out which queries and states are useless
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
@@ -100,13 +99,11 @@ mod execute {
             outpost_owner: info.sender.to_string(),
         };
 
-        // TODO: Admin should be outpost_owner
         let instantiate_msg = storage_outpost::types::msg::InstantiateMsg {
-            // right now the owner of every outpost is the address of the outpost factory
-            owner: Some(info.sender.to_string()), // WARNING: The owner should also be the info.sender, this param will be deleted soon
-            admin: Some(info.sender.to_string()), // WARNING: I think the owner and admin is the user? query in E2E to double check 
+            // NOTE: The user that executes this function is both the owner and the admin of the outpost they create
+            owner: Some(info.sender.to_string()), 
+            admin: Some(info.sender.to_string()), 
             channel_open_init_options: Some(channel_open_init_options),
-            // nest the call back object here 
             callback: Some(callback),
         };
 
@@ -155,30 +152,22 @@ mod execute {
             return Err(ContractError::MissingLock {  })
         }
 
-    // When the factory created an outpost, the factory's address was set as the outpost owner
-    // TODO: give ownership of the outpost to the outpost_owner
-
     USER_ADDR_TO_OUTPOST_ADDR.save(deps.storage, &outpost_owner, &info.sender.to_string())?; // again, info.sender is actually the outpost address
 
-    // TODO: put the event back in
-    let mut event = Event::new("FACTORY: map_user_outpost");
+    let mut event = Event::new("FACTORY:map_user_outpost");
         event = event.add_attribute("info.sender", &info.sender.to_string());
-        event = event.add_attribute("outpost_owner", &outpost_owner);
-        event = event.add_attribute("outpost_address", &info.sender.to_string());
 
-    // TODO: add an attribute to show the outpost address 
-    // outpost address is info.sender because the outpost called this function 
     // DOCUMENT: note in README that a successful outpost creation shall return the address in the tx.res.attribute 
     // and a failure will throw 'AlreadyCreated' contractError
 
-    // calling '.add_attribute' just adds a key value pair to the main wasm attribute 
+    // NOTE: calling '.add_attribute' just adds a key value pair to the main wasm attribute 
     // WARNING: is it possible at all that these bytes are non-deterministic?
     // This can't be because we take from 'info.sender' which only exists if this function is called in the first place
     // This function is called only if the outpost executes the callback, otherwise the Tx was abandoned while sitting in the 
     // mem pool
 
     // TODO: is it more meaningful to put this attribute inside of the outpost's instantiation response?
-    Ok(Response::new().add_attribute("outpost_address", &info.sender.to_string())) // this data is not propagated back up to the tx resp of the 'create_outpost' call
+    Ok(Response::new().add_event(event)) // this data is not propagated back up to the tx resp of the 'create_outpost' call
     }
 }
 
