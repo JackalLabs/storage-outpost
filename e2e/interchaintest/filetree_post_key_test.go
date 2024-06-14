@@ -77,6 +77,7 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 		sendStargateMsg := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
 			[]proto.Message{filetreeMsg}, nil, nil, typeURL,
 		)
+		// TODO: Confirm owner and admin
 		error := s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg)
 		s.Require().NoError(error)
 

@@ -5,7 +5,7 @@
   "type": "object",
   "properties": {
     "admin": {
-      "description": "The address of the admin of the ICA application. If not specified, the sender is the admin.",
+      "description": "This inner admin really has no authority The address of the admin of the outpost. If not specified, the sender is the admin.",
       "type": [
         "string",
         "null"
@@ -23,7 +23,7 @@
       ]
     },
     "channel_open_init_options": {
-      "description": "The options to initialize the IBC channel upon contract instantiation. If not specified, the IBC channel is not initialized, and the relayer must.",
+      "description": "The options to initialize the IBC channel upon contract instantiation. If not specified, the IBC channel is not initialized, and the relayer must create the channel",
       "anyOf": [
         {
           "$ref": "#/definitions/ChannelOpenInitOptions"
@@ -34,7 +34,7 @@
       ]
     },
     "owner": {
-      "description": "The address of the owner of the ICA application. If not specified, the sender is the owner.",
+      "description": "The address of the owner of the outpost. If not specified, the sender is the owner.",
       "type": [
         "string",
         "null"
@@ -52,7 +52,7 @@
       "type": "object",
       "required": [
         "contract",
-        "msg"
+        "outpost_owner"
       ],
       "properties": {
         "contract": {
@@ -61,11 +61,18 @@
         },
         "msg": {
           "description": "The msg we will make the above contract execute",
-          "allOf": [
+          "anyOf": [
             {
               "$ref": "#/definitions/Binary"
+            },
+            {
+              "type": "null"
             }
           ]
+        },
+        "outpost_owner": {
+          "description": "The owner of the outpost. We need this because the info.sender that instantiates the outpost is the factory address--not the user address But we want the user to be the owner",
+          "type": "string"
         }
       },
       "additionalProperties": false

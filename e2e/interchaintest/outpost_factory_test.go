@@ -175,7 +175,7 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	expectedErrorMsg3 := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
 	s.Require().EqualError(maliciousErr, expectedErrorMsg3)
 
-	// TODO: Confirm ownership
+	// TODO: Confirm that outpost made actually works to store pubkey
 
 }
 

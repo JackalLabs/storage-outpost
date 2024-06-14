@@ -27,18 +27,20 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     use cosmwasm_std::WasmMsg;
 
-    use crate::types::callback;
-
     cw2::set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
-    // SECURITY WARNING: msg.owner can be passed in by anyone. Alice could maliciously instantiate an outpost 
-    // with Bob as the owner. She'd have no reason for doing so, but some people just want to watch the world burn
-    // TODO: force the owner to always be info.sender (sender is msg executor whose signature is authenticated by wasmd)
-    // In the case that outpost factory creates an outpost, the factory can return ownership back to the outpost
-    // when it's been called back 
+    // SECURITY NOTE: If Alice instantiated an outpost that's owned by Bob, this really has no consequence
+    // Alice wouldn't be able to use that outpost and Bob could just instantiate a fresh outpost for himself
+
+    // NOTE: When the factory calls this function, its address is info.sender, so it will need to pass in the User's address 
+    // as owner and admin to 'msg: InstantiateMsg'. 
+    // If a user calls this function directly without using the factory, they can leave 'msg: InstantiateMsg' empty and 
+    // their address--automatically set in info.sender--will be used as owner and admin
     let owner = msg.owner.unwrap_or_else(|| info.sender.to_string());
     cw_ownable::initialize_owner(deps.storage, deps.api, Some(&owner))?;
 
+    // TODO: consider deleting this, I'm not sure verifying the admin here is needed because the admin is
+    // set when wasm.Instantiate is called and the caller set their address as admin in wasm's InstantiateMsg  
     let admin = if let Some(admin) = msg.admin {
         deps.api.addr_validate(&admin)?
     } else {
@@ -49,9 +51,13 @@ pub fn instantiate(
     event = event.add_attribute("info.sender", info.sender.clone());
     event = event.add_attribute("outpost_address", env.contract.address.to_string());
 
+    // TODO: consider deleting admin from 'ContractState'
     // This is not the same thing as saving the admin properly to ContractInfo struct defined in wasmd types 
+
     // Save the admin. Ica address is determined during handshake.
     STATE.save(deps.storage, &ContractState::new(admin))?;
+
+    // TODO: consider deleting CALLBACK_COUNTER
     // Initialize the callback counter.
     CALLBACK_COUNTER.save(deps.storage, &CallbackCounter::default())?;
 
@@ -65,17 +71,14 @@ pub fn instantiate(
             channel_open_init_options.tx_encoding,
         );
 
-    // here we can also take the callback address (outpost-factory address) as well as the msg that it wants us to give
-    // we will then call a CosmosMsg::WasmMsg::Execute to call back the outpost-factory
-
-    // we only take the msg from 'msg.callback' if we know it exists
-    let callback_owner_msg = if let Some(callback) = &msg.callback {
+    // Only call the factory contract back and execute 'MapuserOutpost' if instructed to do so--i.e., callback object exists
+    let callback_factory_msg = if let Some(callback) = &msg.callback {
 
         Some(CosmosMsg::Wasm(WasmMsg::Execute { 
             contract_addr: callback.contract.clone(), 
             msg: to_json_binary(&OutpostFactoryExecuteMsg::MapUserOutpost { 
                 outpost_owner: callback.outpost_owner.clone(), 
-            }).ok().expect("Failed to serialize callback_msg"), // Handle the error properly
+            }).ok().expect("Failed to serialize callback_msg"), 
             funds: vec![], 
         }))
     } else {
@@ -84,10 +87,10 @@ pub fn instantiate(
 
     let mut messages: Vec<CosmosMsg> = Vec::new();
     messages.push(ica_channel_open_init_msg);
-    if let Some(msg) = callback_owner_msg {
+    if let Some(msg) = callback_factory_msg {
         messages.push(msg)
     }
-    // does this attribute still come out in the main wasm event? 
+    
     Ok(Response::new().add_messages(messages).add_event(event).add_attribute("outpost_address", env.contract.address.to_string()))  
     } else {
         Ok(Response::default())
@@ -227,12 +230,12 @@ mod execute {
         packet_memo: Option<String>,
         timeout_seconds: Option<u64>,
     ) -> Result<Response, ContractError> {
-        // TODO: We can assert ownership of the contract later, but does this really make a difference if the
-        // ica module ensures the controller 'owns' or 'is paired with' the host?
-        // Ownership of the root Files{} object for filetree is also checked in canine-chain
+
+        // NOTE: Ownership of the root Files{} object for filetree is also checked in canine-chain
+        // NOTE: You could give ownership of the outpost to a non-factory contract, e.g., an nft minter
+        // and the nft minter could call this function
         cw_ownable::assert_owner(deps.storage, &info.sender)?;
 
-        // cw_ownable::assert_owner(deps.storage, &info.sender)?;
         let contract_state = STATE.load(deps.storage)?;
         let ica_info = contract_state.get_ica_info()?;
 
@@ -244,13 +247,7 @@ mod execute {
         )?;
         let send_packet_msg = ica_packet.to_ibc_msg(&env, ica_info.channel_id, timeout_seconds)?;
 
-        // Make a logging event 
-        let mut event = Event::new("logging");
-
-        // Add some placeholder logs
-        event = event.add_attribute("log", "placeholder logs");
-
-        Ok(Response::default().add_message(send_packet_msg).add_event(event))
+        Ok(Response::default().add_message(send_packet_msg))
 
     }
 
@@ -327,7 +324,7 @@ mod execute {
         Ok(Response::default().add_message(send_packet_msg).add_event(event))
     }
 
-    /// Sends an array of [`CosmosMsg`] to the ICA host.
+    /// Sends an IBC Transfer 
     #[allow(clippy::needless_pass_by_value)]
     pub fn send_transfer_msg(
         deps: DepsMut,

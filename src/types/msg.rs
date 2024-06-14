@@ -10,18 +10,17 @@ use super::callback::Callback;
 /// The message to instantiate the ICA controller contract.
 #[cw_serde]
 pub struct InstantiateMsg {
-    /// TODO: remove owner and admin. Owner should be info.sender and admin is passed into the outer InstantiateMsg
-    /// This inner admin really has no authority
-    /// The address of the owner of the ICA application.
+    /// The address of the owner of the outpost.
     /// If not specified, the sender is the owner.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub owner: Option<String>,
-    /// The address of the admin of the ICA application.
+    /// This inner admin really has no authority
+    /// The address of the admin of the outpost.
     /// If not specified, the sender is the admin.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub admin: Option<String>,
     /// The options to initialize the IBC channel upon contract instantiation.
-    /// If not specified, the IBC channel is not initialized, and the relayer must.
+    /// If not specified, the IBC channel is not initialized, and the relayer must create the channel
     #[serde(skip_serializing_if = "Option::is_none")]
     pub channel_open_init_options: Option<options::ChannelOpenInitOptions>,
     /// The callback information to be used
