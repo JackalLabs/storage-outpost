@@ -36,7 +36,6 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 
 	logger.InitLogger()
 
-	// TODO: how does the factory know the code ID of the outpost?
 	// Upload the outpost's wasm module on Wasmd
 	codeId, err := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/storage_outpost.wasm")
 	s.Require().NoError(err)
@@ -87,6 +86,15 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	s.Require().NoError(outpostInfoErr)
 	s.Require().Equal(outpostContractInfoRes.Admin, s.UserA.FormattedAddress())
 	logger.LogInfo(fmt.Sprintf("outpostContractInfo is: %s", outpostContractInfoRes))
+
+	// Confirm UserA is the owner of the outpost they just made
+	ownerQueryRes, ownerError := testsuite.GetOutpostOwner(ctx, s.ChainA, outpostAddressFromEvent)
+	s.Require().NoError(ownerError)
+	var outpostOwner string
+	if err := json.Unmarshal(ownerQueryRes.Data, &outpostOwner); err != nil {
+		log.Fatalf("Error parsing response data: %v", err)
+	}
+	s.Require().Equal(s.UserA.FormattedAddress(), outpostOwner)
 
 	// We know that the outpost we just made emitted an event showing its address
 	// We can now query the mapping inside of 'outpost factory' to confirm that we mapped the correct address
@@ -166,6 +174,8 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	_, maliciousErr := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostfactoryContractAddr, toString(mapOutpostMsgForUserA3), "--gas", "500000")
 	expectedErrorMsg3 := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
 	s.Require().EqualError(maliciousErr, expectedErrorMsg3)
+
+	// TODO: Confirm ownership
 
 }
 

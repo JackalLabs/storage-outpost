@@ -1,1 +1,1 @@
-e4d6e0539674a0b6efa41e2731c84a27ea7024d8516a9fa14e6345fa789712c4  /target/wasm32-unknown-unknown/release/storage_outpost.wasm
+0a9cff186a62930a4ef26c1556713761c21f601eea42f15e36c02d0225935fe6  /target/wasm32-unknown-unknown/release/storage_outpost.wasm

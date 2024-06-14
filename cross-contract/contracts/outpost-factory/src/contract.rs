@@ -166,7 +166,6 @@ mod execute {
     // This function is called only if the outpost executes the callback, otherwise the Tx was abandoned while sitting in the 
     // mem pool
 
-    // TODO: is it more meaningful to put this attribute inside of the outpost's instantiation response?
     Ok(Response::new().add_event(event)) // this data is not propagated back up to the tx resp of the 'create_outpost' call
     }
 }

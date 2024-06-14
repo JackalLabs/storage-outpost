@@ -83,4 +83,7 @@ pub enum ContractError {
 
     #[error("unsupported packet encoding: {0}")]
     UnsupportedPacketEncoding(String),
+
+    #[error("No owner found")]
+    NoOwner {},
 }

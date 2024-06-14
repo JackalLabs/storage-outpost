@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	outposttypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -56,4 +57,36 @@ func GetContractInfo(ctx context.Context, chain *cosmos.CosmosChain, contractAdd
 		Address: contractAddress,
 	}
 	return queryClient.ContractInfo(ctx, params)
+}
+
+func GetOutpostOwner(ctx context.Context, chain *cosmos.CosmosChain, factoryContractAddress string) (*wasmtypes.QuerySmartContractStateResponse, error) {
+	grpcConn, err := grpc.Dial(
+		chain.GetHostGRPCAddress(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer grpcConn.Close()
+	queryClient := wasmtypes.NewQueryClient(grpcConn)
+
+	// // TODO: replace with query msg type in types/outpostfactory/msg.go
+	// queryData := map[string]interface{}{
+	// 	"ownership": map[string]string{},
+	// }
+
+	queryData := outposttypes.QueryMsg{
+		Ownership: &struct{}{},
+	}
+
+	queryDataBytes, err := json.Marshal(queryData)
+	if err != nil {
+		return nil, err
+	}
+
+	params := &wasmtypes.QuerySmartContractStateRequest{
+		Address:   factoryContractAddress,
+		QueryData: queryDataBytes,
+	}
+	return queryClient.SmartContractState(ctx, params)
 }

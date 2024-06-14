@@ -46,8 +46,8 @@ cosmwasm-std = { version = "1.4.0", features = [
 ] }
 cw-storage-plus = "1.1.0"
 cw2 = "1.1.0"
-# storage-outpost = { path = "../../..", default-features = false }
-storage-outpost = { path = "../../..", default-features = false, features = ["no_exports"] }
+storage-outpost = { path = "../../..", default-features = false }
+# storage-outpost = { path = "../../..", default-features = false, features = ["no_exports"] }
 cw-ica-controller = { version = "0.4.2", default-features = false} # The ica_callback_execute derive macro
 schemars = "0.8.10"
 serde = { version = "1.0.145", default-features = false, features = ["derive"] }

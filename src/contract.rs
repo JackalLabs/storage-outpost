@@ -138,7 +138,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::GetContractState {} => to_json_binary(&query::state(deps)?),
         QueryMsg::GetChannel {} => to_json_binary(&query::channel(deps)?),
         QueryMsg::GetCallbackCounter {} => to_json_binary(&query::callback_counter(deps)?),
-        QueryMsg::Ownership {} => to_json_binary(&cw_ownable::get_ownership(deps.storage)?),
+        QueryMsg::Ownership {} => to_json_binary(&query::get_owner(deps)?),
     }
 }
 
@@ -369,6 +369,10 @@ mod execute {
 
 
 mod query {
+    use std::error::Error;
+
+    use cosmwasm_std::StdError;
+
     use super::*;
 
     /// Returns the saved contract state.
@@ -384,6 +388,17 @@ mod query {
     /// Returns the saved callback counter.
     pub fn callback_counter(deps: Deps) -> StdResult<CallbackCounter> {
         CALLBACK_COUNTER.load(deps.storage)
+    }
+
+    /// Return the outpost owner
+    pub fn get_owner(deps: Deps) -> StdResult<String> {
+        let ownership = cw_ownable::get_ownership(deps.storage)?;
+
+        if let Some(owner) = ownership.owner {
+            Ok(owner.to_string())
+        } else {
+            Err(StdError::generic_err("No owner found"))
+        }
     }
 }
 
