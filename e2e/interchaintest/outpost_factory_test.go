@@ -7,6 +7,7 @@ import (
 	"log"
 	"strconv"
 	"testing"
+	"time"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
@@ -190,7 +191,7 @@ func (s *FactoryTestSuite) TestFactoryCreateOutpost() {
 	// sets up the contract and does the channel handshake for the contract test suite.
 	s.SetupFactoryTestSuite(ctx, icatypes.EncodingProtobuf) // NOTE: canined's ibc-go is outdated and does not support proto3json
 
-	// time.Sleep(time.Duration(10) * time.Hour)
+	time.Sleep(time.Duration(10) * time.Hour)
 
 }
 
