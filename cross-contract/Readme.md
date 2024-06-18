@@ -30,14 +30,14 @@ docker run --rm -v "$(pwd)":/code \
 
 The below command will create the outpost and the user_address<>contract_address mapping via callback. 
 
-`wasmd tx wasm execute <bech32_contract_address> <json-instructions> [flags]  `
+`wasmd tx wasm execute <bech32_contract_address> <JsonObject> [flags]  `
 
 
 Example:
 
-`wasmd tx wasm execute wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8 <json-instructions> --gas 500000 --gas-prices 0.00uwsm --gas-adjustment 1.3 --from alice --keyring-backend test --output json -y --chain-id localwasm-1` 
+`wasmd tx wasm execute wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8 <JsonObject> --gas 500000 --gas-prices 0.00uwsm --gas-adjustment 1.3 --from alice --keyring-backend test --output json -y --chain-id localwasm-1` 
 
-with json-instructions as: 
+with JsonObject as: 
 
 ```json
 {
@@ -56,13 +56,13 @@ with json-instructions as:
 We can query for the user's outpost address with the below command.
 
 
-`wasmd query wasm contract-state smart [bech32_contract_address] <json-instructions> [flags]`
+`wasmd query wasm contract-state smart [bech32_contract_address] <JsonObject> [flags]`
 
 Example:
 
-`wasmd query wasm contract-state smart wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8 <json-instructions> --output json` 
+`wasmd query wasm contract-state smart wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8 <JsonObject> --output json` 
 
-with json-instructions as: 
+with JsonObject as: 
 
 ```json
 {
