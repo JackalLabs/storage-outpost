@@ -1,5 +1,16 @@
 package main
 
+import (
+	"context"
+	"testing"
+
+	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
+	"github.com/stretchr/testify/suite"
+	// interchaintest "github.com/strangelove-ventures/interchaintest/v7"
+	//"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos/wasm"
+	//"github.com/strangelove-ventures/interchaintest/v7/ibc"
+)
+
 /*
 Here are two different testing commands in e2e/interchaintest:
 
@@ -15,13 +26,13 @@ go test -v . -run TestWithMigrationTestSuite -testify.m TestBasicMigration -time
 
 Your migration object to act upon:
 
-type MigrationTestSuite struct {
-	mysuite.TestSuite
+	type MigrationTestSuite struct {
+		mysuite.TestSuite
 
-	Contract              *types.IcaContract
-	IcaAddress            string
-	FaucetOutpostContract *types.IcaContract
-	FaucetJKLHostAddress  string
+		Contract              *types.IcaContract
+		IcaAddress            string
+		FaucetOutpostContract *types.IcaContract
+		FaucetJKLHostAddress  string
 
 }
 
@@ -38,5 +49,21 @@ successful.
 4. Execute updated contract and query for updated state to confirm new contract works and old state is gone.
 
 TODO: Need more checks to show that old state is definitely gone.
-
 */
+
+func TestWithMigrationTestSuite(t *testing.T) {
+	suite.Run(t, new(MigrationTestSuite))
+}
+
+func (s *MigrationTestSuite) TestBasicMigration() {
+	ctx := context.Background()
+
+	logger.InitLogger()
+
+	// This starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
+	// sets up the contract and does the channel handshake for the contract test suite.
+	s.SetupSuite(ctx, chainSpecs)
+	_, canined := s.ChainA, s.ChainB
+
+	logger.LogInfo(canined.FullNodes)
+}

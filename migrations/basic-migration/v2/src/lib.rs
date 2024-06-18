@@ -121,7 +121,11 @@ mod test {
             Some(admin.to_string())
         ).unwrap();
     
-        let data_before = basic_migration_v1::state::DATA_TO_MIGRATE.query(&app.wrap(), contract.clone()).unwrap();
+        let data_before_resp: ValueResp = app
+            .wrap()
+            .query_wasm_smart(contract.clone(), &QueryMsg::Value{})
+            .unwrap();
+        let data_before: String = data_before_resp.value;
 
         let _migrate_response = app
             .migrate_contract(
@@ -130,7 +134,7 @@ mod test {
             &Empty {},
             new_code_id
         ).unwrap();
-    
+
         let data_after = DATA_AFTER_MIGRATION.query(&app.wrap(), contract.clone()).unwrap();
         assert_eq!(data_before, data_after);
     }
