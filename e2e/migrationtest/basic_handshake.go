@@ -20,7 +20,7 @@ import (
 type MigrationTestSuite struct {
 	mysuite.TestSuite
 
-	Contract              *types.IcaContract
+	Contract              *types.Contract
 	IcaAddress            string
 	FaucetOutpostContract *types.IcaContract
 	FaucetJKLHostAddress  string
@@ -109,8 +109,8 @@ var chainSpecs = []*interchaintest.ChainSpec{
 			ChainID: "puppy-1",
 			Images: []ibc.DockerImage{
 				{
-					Repository: "jackallabs/canined", // FOR LOCAL IMAGE USE: Docker Image Name
-					Version:    "canary",             // FOR LOCAL IMAGE USE: Docker Image Tag
+					Repository: "milocanine", // FOR LOCAL IMAGE USE: Docker Image Name
+					Version:    "0.0.1",      // FOR LOCAL IMAGE USE: Docker Image Tag
 				},
 			},
 			Bin:            "canined",

@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
+	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
+	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	"github.com/stretchr/testify/suite"
 	// interchaintest "github.com/strangelove-ventures/interchaintest/v7"
 	//"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos/wasm"
@@ -44,7 +47,7 @@ interacting with wasmd at the moment.
 2. Upload v1 of basic migration. Confirm that v1 works by executing contract and querying contract for state to confirm that execution was
 successful.
 
-3. Perform congration migration.
+3. Perform contract migration.
 
 4. Execute updated contract and query for updated state to confirm new contract works and old state is gone.
 
@@ -60,10 +63,56 @@ func (s *MigrationTestSuite) TestBasicMigration() {
 
 	logger.InitLogger()
 
+	encoding := icatypes.EncodingProtobuf
+
 	// This starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
 	// sets up the contract and does the channel handshake for the contract test suite.
 	s.SetupSuite(ctx, chainSpecs)
-	_, canined := s.ChainA, s.ChainB
+	//wasmd, canined := s.ChainA, s.ChainB
 
-	logger.LogInfo(canined.FullNodes)
+	s.Run(fmt.Sprintf("TestRunBasicMigration-%s", encoding), func() {
+		// Store and instantiate v1 contract
+		codeId, err := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/basic_migration_v1.wasm")
+		s.Require().NoError(err)
+
+		instantiateMsg := "{}"
+		contractAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), codeId, instantiateMsg, false, "--gas", "500000", "--admin", s.UserA.KeyName())
+		s.Require().NoError(err)
+
+		s.Contract = &types.Contract{}
+		s.Contract.Address = contractAddr
+		s.Contract.CodeID = codeId
+		s.Contract.Chain = s.ChainA
+
+		type ValueResp struct {
+			Value string `json:"value"`
+		}
+
+		type Response struct {
+			Data ValueResp `json:"data"`
+		}
+
+		resp := Response{
+			Data: ValueResp{
+				"Before Turnover",
+			},
+		}
+
+		err = s.Contract.Chain.QueryContract(ctx, s.Contract.Address, "{\"value\":{}}", &resp)
+		s.Require().NoError(err)
+		s.Assert().Equal("Data to migrate!", resp.Data.Value)
+
+		/*sendStargateMsg := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
+			[]proto.Message{}, nil, nil, typeURL,
+		)
+		// TODO: Confirm owner and admin
+		error := s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg)
+		s.Require().NoError(error)
+
+		sendStargateMsg1 := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
+			[]proto.Message{}, nil, nil, rootMsgTypeURL,
+		)
+		err := s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg1)
+		s.Require().NoError(err)*/
+	})
 }

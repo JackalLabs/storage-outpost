@@ -1,0 +1,95 @@
+INFO: 2024/06/19 17:39:48 Wasmd First light client is
+INFO: 2024/06/19 17:39:48 [
+  {
+    "client_id": "07-tendermint-0",
+    "client_state": {
+      "chain_id": "puppy-1"
+    }
+  },
+  {
+    "client_id": "09-localhost",
+    "client_state": {
+      "chain_id": ""
+    }
+  }
+]
+INFO: 2024/06/19 17:39:48 Wasmd Second light client is
+INFO: 2024/06/19 17:39:48 null
+INFO: 2024/06/19 17:39:48 jackal first light client is
+INFO: 2024/06/19 17:39:48 [
+  {
+    "client_id": "07-tendermint-0",
+    "client_state": {
+      "chain_id": "localwasm-1"
+    }
+  }
+]
+INFO: 2024/06/19 17:39:48 jackal second light client is
+INFO: 2024/06/19 17:39:48 null
+INFO: 2024/06/19 17:40:15 {
+  "id": "connection-0",
+  "client_id": "07-tendermint-0",
+  "versions": [
+    {
+      "identifier": "1",
+      "features": [
+        "ORDER_ORDERED",
+        "ORDER_UNORDERED"
+      ]
+    }
+  ],
+  "state": "STATE_OPEN",
+  "counterparty": {
+    "client_id": "07-tendermint-0",
+    "connection_id": "connection-0",
+    "prefix": {
+      "key_prefix": "aWJj"
+    }
+  },
+  "delay_period": "0"
+}
+INFO: 2024/06/19 17:40:15 {
+  "id": "connection-localhost",
+  "client_id": "09-localhost",
+  "versions": [
+    {
+      "identifier": "1",
+      "features": [
+        "ORDER_ORDERED",
+        "ORDER_UNORDERED"
+      ]
+    }
+  ],
+  "state": "STATE_OPEN",
+  "counterparty": {
+    "client_id": "09-localhost",
+    "connection_id": "connection-localhost",
+    "prefix": {
+      "key_prefix": "aWJj"
+    }
+  },
+  "delay_period": "0"
+}
+INFO: 2024/06/19 17:40:16 The first canined connections are:
+INFO: 2024/06/19 17:40:16 {
+  "id": "connection-0",
+  "client_id": "07-tendermint-0",
+  "versions": [
+    {
+      "identifier": "1",
+      "features": [
+        "ORDER_ORDERED",
+        "ORDER_UNORDERED"
+      ]
+    }
+  ],
+  "state": "STATE_OPEN",
+  "counterparty": {
+    "client_id": "07-tendermint-0",
+    "connection_id": "connection-0",
+    "prefix": {
+      "key_prefix": "aWJj"
+    }
+  },
+  "delay_period": "0"
+}
