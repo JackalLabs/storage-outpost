@@ -2,9 +2,7 @@
 
 The outpost wraps the controller functionality from the interchain accounts standard. This contract can port all of canine-chain's functionality over to any cosmos chain, so long as that chain supports cosmwasm.
 
-A topology diagram of a file's trip starting with our javascript SDK, through the outpost contract, before arriving at canine-chain is below.
-
-[Storage Outpost Topology Diagram](https://www.figma.com/community/file/1335344086198579221/storage-outpost-right-to-left)
+A complete topology diagram is in the works.
 
 A filetree msg has been successfully sent from wasmd to canined in the e2e environment.
 

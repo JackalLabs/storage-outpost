@@ -89,6 +89,41 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 
 [[package]]
+name = "basic-migration-v1"
+version = "0.1.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw-ica-controller",
+ "cw-multi-test",
+ "cw-storage-plus",
+ "cw2",
+ "schemars",
+ "serde",
+ "serde-json-wasm 0.5.2",
+ "storage-outpost",
+ "thiserror",
+]
+
+[[package]]
+name = "basic-migration-v2"
+version = "0.1.0"
+dependencies = [
+ "basic-migration-v1",
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw-ica-controller",
+ "cw-multi-test",
+ "cw-storage-plus",
+ "cw2",
+ "schemars",
+ "serde",
+ "serde-json-wasm 0.5.2",
+ "storage-outpost",
+ "thiserror",
+]
+
+[[package]]
 name = "bech32"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -935,7 +970,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c08d65885ee38876c4f86fa503fb49d7b507c2b62552df7c70b2fce627e06381"
 
 [[package]]
-name = "outpost-owner"
+name = "outpost-factory"
 version = "0.1.0"
 dependencies = [
  "cosmwasm-schema",

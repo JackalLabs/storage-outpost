@@ -64,6 +64,7 @@ cw-ica-controller-derive = "0.4.2"
 sha2 = "0.10.2"
 hex = "0.4.3"
 log = "0.4"
+
 # simplelog = "0.11"
 # once_cell = "1.19.0"
 
@@ -74,7 +75,8 @@ cw-multi-test = "0.16.5"
 members = [
     ".",          
     "protobuf",  
-    "cross-contract/contracts/outpost-owner", # Path to the nested library crate
+    "cross-contract/contracts/outpost-factory", # Path to the nested library crate
+    "migrations/basic-migration/v1", "migrations/basic-migration/v2",
 
 ]
 

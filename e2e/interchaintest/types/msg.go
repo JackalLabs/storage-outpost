@@ -12,6 +12,17 @@ type InstantiateMsg struct {
 	// The contract address that the channel and packet lifecycle callbacks are sent to.
 	// If not specified, then no callbacks are sent.
 	SendCallbacksTo *string `json:"send_callbacks_to,omitempty"`
+	// The callback information to be used
+	Callback *Callback `json:"callback,omitempty"`
+}
+
+type Callback struct {
+	// The address of the contract that we will call back
+	Contract string `json:"contract,omitempty"`
+	// The msg we will make the above contract execute
+	Msg Binary `json:"msg,omitempty"`
+	/// The owner of the outpost
+	OutpostOwner string `json:"outpost_owner,omitempty"`
 }
 
 // ExecuteMsg is the message to execute cw-ica-controller
