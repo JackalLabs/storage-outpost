@@ -5,8 +5,7 @@ use msg::ValueResp;
 use state::DATA_TO_MIGRATE;
 
 pub mod msg;
-// Normally private, public here for a test.
-pub mod state;
+mod state;
 
 // Instantiate a contract, always with "Data to migrate!" as the value of "DATA_TO_MIGRATE" in state
 #[entry_point]
