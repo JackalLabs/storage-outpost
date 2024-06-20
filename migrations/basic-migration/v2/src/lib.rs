@@ -53,6 +53,7 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: Empty) -> StdResult<Response> {
     WARNING: Remove this in production!
     Test the v2 contract to make sure we're properly initing the contract and to do migration
 */
+/*
 mod test {
     use cosmwasm_std::{Addr, Empty};
     use cw_multi_test::{App, Contract, ContractWrapper, Executor};
@@ -138,4 +139,4 @@ mod test {
         let data_after = DATA_AFTER_MIGRATION.query(&app.wrap(), contract.clone()).unwrap();
         assert_eq!(data_before, data_after);
     }
-}
+}*/

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
-	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	"github.com/stretchr/testify/suite"
 	// interchaintest "github.com/strangelove-ventures/interchaintest/v7"
@@ -71,48 +70,42 @@ func (s *MigrationTestSuite) TestBasicMigration() {
 	//wasmd, canined := s.ChainA, s.ChainB
 
 	s.Run(fmt.Sprintf("TestRunBasicMigration-%s", encoding), func() {
-		// Store and instantiate v1 contract
+		// Store v1 contract
 		codeId, err := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/basic_migration_v1.wasm")
 		s.Require().NoError(err)
 
+		// Instantiate v1 contract
 		instantiateMsg := "{}"
 		contractAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), codeId, instantiateMsg, false, "--gas", "500000", "--admin", s.UserA.KeyName())
 		s.Require().NoError(err)
 
-		s.Contract = &types.Contract{}
-		s.Contract.Address = contractAddr
-		s.Contract.CodeID = codeId
-		s.Contract.Chain = s.ChainA
-
 		type ValueResp struct {
 			Value string `json:"value"`
 		}
-
 		type Response struct {
 			Data ValueResp `json:"data"`
 		}
-
 		resp := Response{
 			Data: ValueResp{
 				"Before Turnover",
 			},
 		}
 
-		err = s.Contract.Chain.QueryContract(ctx, s.Contract.Address, "{\"value\":{}}", &resp)
+		err = s.ChainA.QueryContract(ctx, contractAddr, "{\"value\":{}}", &resp)
 		s.Require().NoError(err)
 		s.Assert().Equal("Data to migrate!", resp.Data.Value)
 
-		/*sendStargateMsg := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
-			[]proto.Message{}, nil, nil, typeURL,
-		)
-		// TODO: Confirm owner and admin
-		error := s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg)
-		s.Require().NoError(error)
+		// Store v2 contract
+		v2_codeId, err := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/basic_migration_v2.wasm")
+		s.Require().NoError(err)
 
-		sendStargateMsg1 := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
-			[]proto.Message{}, nil, nil, rootMsgTypeURL,
-		)
-		err := s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg1)
-		s.Require().NoError(err)*/
+		// Migrate
+		_, err = s.ChainA.MigrateContract(ctx, s.UserA.KeyName(), contractAddr, v2_codeId, "{}")
+		s.Require().NoError(err)
+
+		// Check to see if you can still query and if it returns the right value
+		err = s.ChainA.QueryContract(ctx, contractAddr, "{\"value\":{}}", &resp)
+		s.Require().NoError(err)
+		s.Assert().Equal("Data to migrate!", resp.Data.Value)
 	})
 }

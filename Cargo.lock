@@ -105,18 +105,13 @@ dependencies = [
 name = "basic-migration-v2"
 version = "0.1.0"
 dependencies = [
- "basic-migration-v1",
  "cosmwasm-schema",
  "cosmwasm-std",
- "cw-ica-controller",
  "cw-multi-test",
  "cw-storage-plus",
- "cw2",
  "schemars",
  "serde",
  "serde-json-wasm 0.5.2",
- "storage-outpost",
- "thiserror",
 ]
 
 [[package]]
