@@ -3,7 +3,7 @@ use cosmwasm_schema::cw_serde;
 // Type you SEND to the query entrypoint
 #[cw_serde]
 pub enum QueryMsg { 
-    Value {}
+    Data {}
 }
 
 /*

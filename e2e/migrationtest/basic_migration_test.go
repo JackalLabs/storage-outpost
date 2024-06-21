@@ -3,14 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
+	"github.com/JackalLabs/storage-outpost/e2e/migrationtest/testsuite"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	"github.com/stretchr/testify/suite"
-	// interchaintest "github.com/strangelove-ventures/interchaintest/v7"
-	//"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos/wasm"
-	//"github.com/strangelove-ventures/interchaintest/v7/ibc"
 )
 
 /*
@@ -59,15 +58,12 @@ func TestWithMigrationTestSuite(t *testing.T) {
 
 func (s *MigrationTestSuite) TestBasicMigration() {
 	ctx := context.Background()
-
 	logger.InitLogger()
-
 	encoding := icatypes.EncodingProtobuf
 
 	// This starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
 	// sets up the contract and does the channel handshake for the contract test suite.
 	s.SetupSuite(ctx, chainSpecs)
-	//wasmd, canined := s.ChainA, s.ChainB
 
 	s.Run(fmt.Sprintf("TestRunBasicMigration-%s", encoding), func() {
 		// Store v1 contract
@@ -79,6 +75,7 @@ func (s *MigrationTestSuite) TestBasicMigration() {
 		contractAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), codeId, instantiateMsg, false, "--gas", "500000", "--admin", s.UserA.KeyName())
 		s.Require().NoError(err)
 
+		// Create msg types for v1 and v2
 		type ValueResp struct {
 			Value string `json:"value"`
 		}
@@ -91,9 +88,10 @@ func (s *MigrationTestSuite) TestBasicMigration() {
 			},
 		}
 
+		// Query the v1 contract to make sure we get the right value
 		err = s.ChainA.QueryContract(ctx, contractAddr, "{\"value\":{}}", &resp)
 		s.Require().NoError(err)
-		s.Assert().Equal("Data to migrate!", resp.Data.Value)
+		s.Assert().Equal("Data saved in v1!", resp.Data.Value)
 
 		// Store v2 contract
 		v2_codeId, err := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/basic_migration_v2.wasm")
@@ -103,9 +101,15 @@ func (s *MigrationTestSuite) TestBasicMigration() {
 		_, err = s.ChainA.MigrateContract(ctx, s.UserA.KeyName(), contractAddr, v2_codeId, "{}")
 		s.Require().NoError(err)
 
-		// Check to see if you can still query and if it returns the right value
-		err = s.ChainA.QueryContract(ctx, contractAddr, "{\"value\":{}}", &resp)
+		// Check to see if contract points to v2 CodeID
+		v2_contract_info_resp, err := testsuite.GetContractInfo(ctx, s.ChainA, contractAddr)
 		s.Require().NoError(err)
-		s.Assert().Equal("Data to migrate!", resp.Data.Value)
+		int_form, _ := strconv.ParseUint(v2_codeId, 10, 64)
+		s.Require().Equal(v2_contract_info_resp.CodeID, int_form)
+
+		// Check to see if you can still query and if it returns the right value
+		err = s.ChainA.QueryContract(ctx, contractAddr, "{\"data\":{}}", &resp)
+		s.Require().NoError(err)
+		s.Assert().Equal("Data saved in v1!", resp.Data.Value)
 	})
 }

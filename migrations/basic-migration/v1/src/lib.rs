@@ -15,7 +15,7 @@ pub fn instantiate(
     _info: MessageInfo,
     _msg: Empty,
 ) -> StdResult<Response> {
-    let save_str: String = String::from("Data to migrate!");
+    let save_str: String = String::from("Data saved in v1!");
     DATA_TO_MIGRATE.save(deps.storage, &save_str)?;
     Ok(Response::new())
 }

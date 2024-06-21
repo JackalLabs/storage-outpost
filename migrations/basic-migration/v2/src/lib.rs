@@ -21,8 +21,6 @@ pub fn instantiate(
     Ok(Response::new())
 }
 
-// TEST COMMIT
-
 // Immediately return the state of "DATA_AFTER_MIGRATION"
 #[entry_point]
 pub fn query(deps: Deps, _env: Env, _msg: msg::QueryMsg) -> StdResult<Binary> {
@@ -35,16 +33,25 @@ pub fn query(deps: Deps, _env: Env, _msg: msg::QueryMsg) -> StdResult<Binary> {
 #[entry_point]
 pub fn execute(_deps: DepsMut, _env: Env, _info: MessageInfo, _msg: Empty) -> StdResult<Response> { Ok(Response::new() )}
 
+
+/*
+    On Chain:
+        data_to_migrate : "Data to migrate!"
+
+    In the contract:
+        Item<String> = Item::new
+        Item.load()
+*/
 #[entry_point]
 pub fn migrate(deps: DepsMut, _env: Env, _msg: Empty) -> StdResult<Response> {
     // Get the old data
-    const DATA_TO_MIGRATE: Item<String> = Item::new("data_to_migrate");
-    let migrating_data = DATA_TO_MIGRATE.load(deps.storage)?;
+    const DATA_TO_MIGRATE: Item<String> = Item::new("migration_key");
+    let data_from_v1_state = DATA_TO_MIGRATE.load(deps.storage)?;
 
     // Save it under the new name
     DATA_AFTER_MIGRATION.save(
         deps.storage,
-        &migrating_data,
+        &data_from_v1_state,
     )?;
 
     // Deliver the Ok response
