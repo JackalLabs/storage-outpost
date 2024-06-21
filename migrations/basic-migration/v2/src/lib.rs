@@ -21,6 +21,8 @@ pub fn instantiate(
     Ok(Response::new())
 }
 
+// TEST COMMIT
+
 // Immediately return the state of "DATA_AFTER_MIGRATION"
 #[entry_point]
 pub fn query(deps: Deps, _env: Env, _msg: msg::QueryMsg) -> StdResult<Binary> {
