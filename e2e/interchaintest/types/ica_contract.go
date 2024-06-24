@@ -134,3 +134,7 @@ func (c *IcaContract) QueryOwnership(ctx context.Context) (*OwnershipQueryRespon
 func (c *IcaContract) Execute(ctx context.Context, callerKeyName string, msg ExecuteMsg, extraExecTxArgs ...string) error {
 	return c.Contract.ExecAnyMsg(ctx, callerKeyName, msg.ToString(), extraExecTxArgs...)
 }
+
+func (c *IcaContract) Migrate(ctx context.Context, callerKeyName string, codeID string, msg MigrateMsg, extraExecTxArgs ...string) error {
+	return c.Contract.MigrateMsg(ctx, callerKeyName, codeID, msg.ToString(), extraExecTxArgs...)
+}

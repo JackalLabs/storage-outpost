@@ -30,3 +30,9 @@ func (c *Contract) ExecAnyMsg(ctx context.Context, callerKeyName string, execMsg
 	_, err := c.Chain.ExecuteContract(ctx, callerKeyName, c.Address, execMsg, extraExecTxArgs...)
 	return err
 }
+
+// MigrateMsg performs contract migration
+func (c *Contract) MigrateMsg(ctx context.Context, callerKeyName string, codeID string, migrateMsg string, extraExecTxArgs ...string) error {
+	_, err := c.Chain.MigrateContract(ctx, callerKeyName, c.Address, codeID, migrateMsg, extraExecTxArgs...)
+	return err
+}

@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QueryMsg",
+  "description": "The messages to query the ICA controller contract.",
+  "oneOf": [
+    {
+      "description": "GetChannel returns the IBC channel info.",
+      "type": "object",
+      "required": [
+        "get_channel"
+      ],
+      "properties": {
+        "get_channel": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "GetContractState returns the contact's state.",
+      "type": "object",
+      "required": [
+        "get_contract_state"
+      ],
+      "properties": {
+        "get_contract_state": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "GetCallbackCounter returns the callback counter.",
+      "type": "object",
+      "required": [
+        "get_callback_counter"
+      ],
+      "properties": {
+        "get_callback_counter": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "Query the contract's ownership information",
+      "type": "object",
+      "required": [
+        "ownership"
+      ],
+      "properties": {
+        "ownership": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}

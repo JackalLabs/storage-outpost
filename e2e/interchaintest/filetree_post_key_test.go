@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
+	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 
 	filetreetypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/filetreetypes"
 	testtypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
@@ -76,6 +77,7 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 		sendStargateMsg := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
 			[]proto.Message{filetreeMsg}, nil, nil, typeURL,
 		)
+		// TODO: Confirm owner and admin
 		error := s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg)
 		s.Require().NoError(error)
 
@@ -115,11 +117,22 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 			[]proto.Message{filetreeMakeRootMsg}, nil, nil, rootMsgTypeURL,
 		)
 		err := s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg1)
+
 		s.Require().NoError(err)
 
+		// Query a PubKey
+		pubRes, pubErr := testsuite.PubKey(ctx, s.ChainB, s.Contract.IcaAddress)
+		s.Require().NoError(pubErr)
+		s.Require().Equal(pubRes.PubKey.GetKey(), filetreeMsg.GetKey(), "Expected PubKey does not match the returned PubKey")
+
+		// Query all Pubkeys
+		// allRes, allErr := testsuite.AllPubKeys(ctx, s.ChainB)
+		// s.Require().NoError(allErr)
 	},
 	)
 
-	time.Sleep(time.Duration(10) * time.Hour)
+	// implement mock query server
+
+	// time.Sleep(time.Duration(10) * time.Hour)
 
 }
