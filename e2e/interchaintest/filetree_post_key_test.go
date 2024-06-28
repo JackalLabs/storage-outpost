@@ -10,6 +10,7 @@ import (
 	"github.com/cosmos/gogoproto/proto"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	"github.com/google/uuid"
+	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
@@ -32,7 +33,7 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 	// This starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
 	// sets up the contract and does the channel handshake for the contract test suite.
 	s.SetupContractTestSuite(ctx, encoding)
-	_, canined := s.ChainA, s.ChainB
+	wasmd, canined := s.ChainA, s.ChainB
 	wasmdUser := s.UserA
 
 	logger.LogInfo(canined.FullNodes)
@@ -117,10 +118,12 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 			[]proto.Message{filetreeMakeRootMsg}, nil, nil, rootMsgTypeURL,
 		)
 		err := s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg1)
-
 		s.Require().NoError(err)
 
 		// NOTE: sometimes fails, I think it's because the state change on canined wasn't committed before we queried below?
+		// we added the 'Wait' below to ensure the state change is committed before querying
+		err = testutil.WaitForBlocks(ctx, 5, wasmd, canined)
+		s.Require().NoError(err)
 
 		// Query a PubKey
 		pubRes, pubErr := testsuite.PubKey(ctx, s.ChainB, s.Contract.IcaAddress)
