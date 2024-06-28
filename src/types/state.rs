@@ -4,7 +4,7 @@ use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Addr, IbcChannel};
 use cw_storage_plus::Item;
 
-use super::ContractError;
+use super::{msg::options::ChannelOpenInitOptions, ContractError};
 
 pub use channel::ChannelState;
 pub use contract::{CallbackCounter, ContractState};
@@ -14,6 +14,18 @@ pub const STATE: Item<ContractState> = Item::new("state");
 
 /// The item used to store the state of the IBC application's channel.
 pub const CHANNEL_STATE: Item<ChannelState> = Item::new("ica_channel");
+
+/// The item used to store the channel open init options.
+pub const CHANNEL_OPEN_INIT_OPTIONS: Item<ChannelOpenInitOptions> =
+    Item::new("channel_open_init_options");
+
+/// The item used to store whether or not channel open init is allowed.
+/// Used to prevent relayers from opening channels. This right is reserved to the contract.
+pub const ALLOW_CHANNEL_OPEN_INIT: Item<bool> = Item::new("allow_channel_open_init");
+
+/// The item used to store whether or not channel close init is allowed.
+/// Used to prevent relayers from closing channels. This right is reserved to the contract.
+pub const ALLOW_CHANNEL_CLOSE_INIT: Item<bool> = Item::new("allow_channel_close_init");
 
 /// The item used to store the successful and erroneous callbacks in store.
 pub const CALLBACK_COUNTER: Item<CallbackCounter> = Item::new("callback_counter");

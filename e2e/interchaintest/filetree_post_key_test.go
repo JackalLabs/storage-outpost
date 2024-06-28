@@ -120,6 +120,8 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 
 		s.Require().NoError(err)
 
+		// NOTE: sometimes fails, I think it's because the state change on canined wasn't committed before we queried below?
+
 		// Query a PubKey
 		pubRes, pubErr := testsuite.PubKey(ctx, s.ChainB, s.Contract.IcaAddress)
 		s.Require().NoError(pubErr)

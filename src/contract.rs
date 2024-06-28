@@ -7,7 +7,7 @@ use crate::ibc::types::stargate::channel::new_ica_channel_open_init_cosmos_msg;
 use crate::types::keys::{self, CONTRACT_NAME, CONTRACT_VERSION};
 use crate::types::msg::{OutpostFactoryExecuteMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::types::state::{
-    self, CallbackCounter, ChannelState, ContractState, CALLBACK_COUNTER, CHANNEL_STATE, STATE,
+    self, CallbackCounter, ChannelState, ContractState, CALLBACK_COUNTER, CHANNEL_STATE, STATE, CHANNEL_OPEN_INIT_OPTIONS, ALLOW_CHANNEL_OPEN_INIT
 };
 use crate::types::ContractError;
 use crate::types::filetree::{MsgPostKey, MsgPostFile};
@@ -61,6 +61,13 @@ pub fn instantiate(
     // Initialize the callback counter.
     CALLBACK_COUNTER.save(deps.storage, &CallbackCounter::default())?;
 
+    if let Some(ref options) = msg.channel_open_init_options {
+        CHANNEL_OPEN_INIT_OPTIONS.save(deps.storage, options)?;
+    }
+    // WARNING
+    // TODO: how to ensure that only outpost owner can do this?
+    ALLOW_CHANNEL_OPEN_INIT.save(deps.storage, &true)?;
+
     // If channel open init options are provided, open the channel.
     if let Some(channel_open_init_options) = msg.channel_open_init_options {
         let ica_channel_open_init_msg = new_ica_channel_open_init_cosmos_msg(
@@ -69,6 +76,7 @@ pub fn instantiate(
             channel_open_init_options.counterparty_port_id,
             channel_open_init_options.counterparty_connection_id,
             channel_open_init_options.tx_encoding,
+            channel_open_init_options.channel_ordering,
         );
 
     // Only call the factory contract back and execute 'MapuserOutpost' if instructed to do so--i.e., callback object exists
@@ -107,7 +115,9 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::CreateChannel(options) => execute::create_channel(deps, env, info, options),
+        ExecuteMsg::CreateChannel {
+            channel_open_init_options,
+        } => execute::create_channel(deps, env, info, channel_open_init_options),
         ExecuteMsg::CreateTransferChannel(options) => execute::create_transfer_channel(deps, env, info, options),
         ExecuteMsg::SendCosmosMsgs {
             messages,
@@ -172,30 +182,47 @@ mod execute {
 
     use super::*;
 
-    /// Submits a stargate MsgChannelOpenInit to the chain.
+    /// Submits a stargate `MsgChannelOpenInit` to the chain.
+    /// Can only be called by the contract owner or a whitelisted address.
+    /// Only the contract owner can include the channel open init options.
+    
     pub fn create_channel(
         deps: DepsMut,
         env: Env,
         info: MessageInfo,
-        options: ChannelOpenInitOptions,
+        options: Option<ChannelOpenInitOptions>,
     ) -> Result<Response, ContractError> {
         cw_ownable::assert_owner(deps.storage, &info.sender)?;
-        let mut contract_state = STATE.load(deps.storage)?;
-        contract_state.verify_admin(info.sender)?;
 
-        contract_state.enable_channel_open_init();
-        STATE.save(deps.storage, &contract_state)?;
+        // TODO: make this more readable and less confusing?
+        // TODO: get rid of 'state::' usage
+        let options = if let Some(new_options) = options {
+            state::CHANNEL_OPEN_INIT_OPTIONS.save(deps.storage, &new_options)?;
+            new_options
+        } else {
+            state::CHANNEL_OPEN_INIT_OPTIONS
+                .may_load(deps.storage)?
+                .ok_or(ContractError::NoChannelInitOptions)?
+        };
+
+        // WARNING
+        // TODO: ponder - I think that 'assert_owner' ensures that only the only can call create_channel and update
+        // 'ALLOW_CHANNEL_OPEN INIT'. It's also updated during instantiation and the owner is set there 
+        state::ALLOW_CHANNEL_OPEN_INIT.save(deps.storage, &true)?;
 
         let ica_channel_open_init_msg = new_ica_channel_open_init_cosmos_msg(
             env.contract.address.to_string(),
             options.connection_id,
             options.counterparty_port_id,
             options.counterparty_connection_id,
-            options.tx_encoding,
+            options.tx_encoding, // This is kind of redundant because only proto3 is supported now 
+            options.channel_ordering,
         );
 
         Ok(Response::new().add_message(ica_channel_open_init_msg))
     }
+
+    // TODO: add a 'close channel' function? why would the user ever close the channel?...
 
     /// Submits a stargate MsgChannelOpenInit to the chain for the transfer module
     pub fn create_transfer_channel(

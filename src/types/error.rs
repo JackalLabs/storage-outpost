@@ -86,4 +86,10 @@ pub enum ContractError {
 
     #[error("No owner found")]
     NoOwner {},
+
+    #[error("no channel init options are provided to the contract")]
+    NoChannelInitOptions,
+
+    #[error("invalid interchain account address")]
+    InvalidIcaAddress,
 }
