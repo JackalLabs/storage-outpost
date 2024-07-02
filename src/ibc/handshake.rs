@@ -6,14 +6,23 @@ use cosmwasm_std::{
     IbcChannelConnectMsg, IbcChannelOpenMsg, IbcChannelOpenResponse, IbcOrder,
 };
 
-use super::types::{keys::HOST_PORT_ID, metadata::IcaMetadata};
+use super::types::{keys, metadata};
 use crate::types::{
-    state::{ChannelState, CHANNEL_STATE, STATE},
+    state::{ChannelState, CHANNEL_STATE, STATE, ALLOW_CHANNEL_OPEN_INIT},
     ContractError,
 };
 
 /// Handles the `OpenInit` and `OpenTry` parts of the IBC handshake.
 /// In this application, we only handle `OpenInit` messages since we are the ICA controller
+///
+/// # Errors
+///
+/// This function returns an error if:
+///
+/// - The channel is already open.
+/// - `allow_channel_open_init` is disabled.
+/// - The host port is invalid.
+/// - Version metadata is invalid.
 #[entry_point]
 pub fn ibc_channel_open(
     deps: DepsMut,
@@ -57,6 +66,10 @@ pub fn ibc_channel_close(
 }
 
 mod ibc_channel_open {
+    use metadata::IcaMetadata;
+
+    use crate::types::state::ALLOW_CHANNEL_OPEN_INIT;
+
     use super::*;
 
     /// Handles the `OpenInit` part of the IBC handshake.
@@ -64,26 +77,24 @@ mod ibc_channel_open {
         deps: DepsMut,
         channel: IbcChannel,
     ) -> Result<IbcChannelOpenResponse, ContractError> {
-        // Check if open init is allowed, and then disable further open init
-        let mut contract_state = STATE.load(deps.storage)?;
-
-        contract_state.verify_open_init_allowed()?;
-        contract_state.disable_channel_open_init();
-        STATE.save(deps.storage, &contract_state)?;
-
-        // Validate the channel ordering
-        if channel.order != IbcOrder::Ordered {
-            return Err(ContractError::InvalidChannelOrdering {});
+        if !ALLOW_CHANNEL_OPEN_INIT
+            .load(deps.storage)
+            .unwrap_or_default()
+        {
+            return Err(ContractError::ChannelOpenInitNotAllowed { })
         }
+
+        ALLOW_CHANNEL_OPEN_INIT.save(deps.storage, &false)?;
+
         // Validate the host port
-        if channel.counterparty_endpoint.port_id != HOST_PORT_ID {
-            return Err(ContractError::InvalidHostPort {});
+        if channel.counterparty_endpoint.port_id != keys::HOST_PORT_ID {
+            return Err(ContractError::InvalidHostPort{});
         }
 
         // serde::Deserialize the metadata
         let metadata: IcaMetadata = if channel.version.is_empty() {
             // if empty, use create new metadata.
-            IcaMetadata::from_channel(deps.as_ref(), &channel)
+            IcaMetadata::from_channel(deps.as_ref(), &channel)?
         } else {
             serde_json_wasm::from_str(&channel.version).map_err(|_| {
                 ContractError::UnknownDataType(
@@ -98,14 +109,7 @@ mod ibc_channel_open {
             // this contract can only store one active channel
             // if the channel is already open, return an error
             if channel_state.is_open() {
-                return Err(ContractError::ActiveChannelAlreadySet {});
-            }
-            let app_version = channel_state.channel.version;
-            if !metadata.is_previous_version_equal(&app_version) {
-                return Err(ContractError::InvalidVersion {
-                    expected: app_version,
-                    actual: metadata.to_string(),
-                });
+                return Err(ContractError::ActiveChannelAlreadySet{});
             }
         }
         // Channel state need not be saved here, as it is tracked by wasmd during the handshake
@@ -113,6 +117,7 @@ mod ibc_channel_open {
         Ok(IbcChannelOpenResponse::Some(Ibc3ChannelOpenResponse {
             version: metadata.to_string(),
         }))
+
     }
 
     /// Handles the `OpenAck` part of the IBC handshake.
@@ -124,7 +129,7 @@ mod ibc_channel_open {
         // portID cannot be host chain portID
         // this is not possible since it is wasm.CONTRACT_ADDRESS
         // but we check it anyway since this is a recreation of the go code
-        if channel.endpoint.port_id == HOST_PORT_ID {
+        if channel.endpoint.port_id == keys::HOST_PORT_ID {
             return Err(ContractError::InvalidControllerPort {});
         }
 
