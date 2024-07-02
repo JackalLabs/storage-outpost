@@ -105,6 +105,7 @@ dependencies = [
 name = "basic-migration-v2"
 version = "0.1.0"
 dependencies = [
+ "basic-migration-v1",
  "cosmwasm-schema",
  "cosmwasm-std",
  "cw-multi-test",

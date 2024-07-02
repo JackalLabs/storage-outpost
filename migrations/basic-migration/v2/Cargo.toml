@@ -53,8 +53,11 @@ schemars = "0.8.10"
 serde = { version = "1.0.145", default-features = false, features = ["derive"] }
 serde-json-wasm = "0.5.1"
 #thiserror = { version = "1.0.31" }
-#cw-multi-test = "0.16.5"
+cw-multi-test = "0.16.5"
 #imp = "0.1.0"
+
+# WARNING: This should be a dev dependency. Not making it one right now while I'm working.
+basic_migration_v1 = { version = "0.1.0", path = "../v1", package = "basic-migration-v1" }
 
 [dev-dependencies]
 cw-multi-test = "0.16.5"
