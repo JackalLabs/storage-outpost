@@ -26,6 +26,17 @@ type MigrationTestSuite struct {
 	FaucetJKLHostAddress  string
 }
 
+type OutpostTestSuite struct {
+	mysuite.TestSuite
+
+	OutpostContractCodeId int64
+
+	IcaAddress            string
+	Contract              *types.IcaContract
+	IcaHostAddress        string
+	NumOfOutpostContracts uint32
+}
+
 var genesisAllowICH = map[string]interface{}{
 
 	"interchainaccounts": map[string]interface{}{

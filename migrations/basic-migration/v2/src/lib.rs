@@ -4,6 +4,7 @@ use cosmwasm_std::{DepsMut, StdResult, WasmMsg};
 use cw_storage_plus::Item;
 use msg::{ValueResp, ExecuteMsg};
 use state::DATA_AFTER_MIGRATION;
+use storage_outpost::outpost_helpers;
 
 pub mod msg;
 mod state;
@@ -33,8 +34,7 @@ pub fn query(deps: Deps, _env: Env, _msg: msg::QueryMsg) -> StdResult<Binary> {
 #[entry_point]
 pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> StdResult<Response> { 
     match msg {
-        ExecuteMsg::PingPong(ping_pong_msg) => execute::ping_pong(deps, env, info, ping_pong_msg),
-        ExecuteMsg::PongPing(pong_ping_msg) => execute::pong_ping(deps, env, info, pong_ping_msg)
+        ExecuteMsg::SetOutpost(set_outpost_msg) => execute::set_outpost(deps, env, info, set_outpost_msg),
     }
 }
 
@@ -63,27 +63,30 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: Empty) -> StdResult<Response> {
 }
 
 mod execute {
-    use cosmwasm_std::{to_json_binary, Binary, Env, MessageInfo, Response};
+    use cosmwasm_std::{to_json_binary, Binary, Env, MessageInfo, Querier, QuerierWrapper, Response};
     use cosmwasm_std::{DepsMut, StdResult, WasmMsg};
+    use storage_outpost::outpost_helpers;
     use crate::msg::ExecuteMsg;
-    use crate::msg::options::{PingPongMsg, PongPingMsg};
+    use crate::msg::options::{SetOutpostMsg};
+    use crate::state::STORAGE_OUTPOST_CONTRACT;
 
-    pub fn ping_pong(deps: DepsMut, _env: Env, _info: MessageInfo, msg: PingPongMsg) -> StdResult<Response> { 
-        let pong_ping_message = ExecuteMsg::PongPing({
-            PongPingMsg {}
-        });
+    pub fn set_outpost(
+        deps: DepsMut, 
+        _env: Env,
+        _info: MessageInfo, 
+        msg: SetOutpostMsg
+    ) -> StdResult<Response> {
+        let outpost_addr = msg.addr;
+        let outpost = outpost_helpers::StorageOutpostContract::new(outpost_addr);
+        STORAGE_OUTPOST_CONTRACT.save(deps.storage, &outpost)?;
 
-        let pong_msg = WasmMsg::Execute {
-            contract_addr: msg.addr.to_string(),
-            msg: to_json_binary(&pong_ping_message).unwrap(),
-            funds: vec![],
-        };
-
-        Ok(Response::new().add_message(pong_msg))
-    }
-
-    pub fn pong_ping(deps: DepsMut, _env: Env, _info: MessageInfo, msg: PongPingMsg) -> StdResult<Response> {
-        Ok(Response::new().add_attribute("pong_key", "pong_value"))
+        // Some test business, move into its own func
+        /*
+        let raw_querier = Querier::raw_query(&self, bin_request)
+        let querier_wrapper = QuerierWrapper::new();
+        outpost.query_channel(querier)
+        */
+        Ok(Response::new())
     }
 }
 
@@ -95,7 +98,6 @@ mod test {
     use cosmwasm_std::{Addr, Empty};
     use cw_multi_test::{App, Contract, ContractWrapper, Executor};
 
-    use crate::msg::options::PingPongMsg;
     use crate::msg::{ExecuteMsg, QueryMsg, ValueResp};
     use crate::state::DATA_AFTER_MIGRATION;
     use crate::{execute, instantiate, migrate, query};
@@ -105,7 +107,7 @@ mod test {
     fn v1() -> Box<dyn Contract<Empty>> {
         let contract = ContractWrapper::new(basic_migration_v1::execute, basic_migration_v1::instantiate, basic_migration_v1::query);
         Box::new(contract)
-    }
+    }                                                                                                                
 
     // Create a version of the v2 contract wrapped in a ContractWrapper so we can run tests on it
     fn v2() -> Box<dyn Contract<Empty>> {
@@ -189,7 +191,7 @@ mod test {
     
         let v2_code = app.store_code(v2());
     
-        let contract_1 = app
+        let contract = app
         .instantiate_contract(
             v2_code,
             sender.clone(),
@@ -198,32 +200,20 @@ mod test {
             "contract 1",
             Some(admin.to_string())
         ).unwrap();
-    
-        let contract_2 = app
-        .instantiate_contract(
-            v2_code,
-            sender.clone(),
-            &Empty {},
-            &[],
-            "contract 2",
-            Some(admin.to_string())
-        ).unwrap();
+        
+        let contract_clone = contract.clone();
 
-        let ping_pong_msg = ExecuteMsg::PingPong (
-            options::PingPongMsg {
-                addr : contract_2
+        let set_outpost_msg = ExecuteMsg::SetOutpost (
+            options::SetOutpostMsg {
+                addr : contract_clone
             });
         
         let con2exe_result = app.execute_contract(
             sender,
-            contract_1,
-            &ping_pong_msg,
+            contract,
+            &set_outpost_msg,
             &[]);
 
-        let con2exe = con2exe_result.unwrap();
-        let con2exe_wasm_attrib = &con2exe.events[2].attributes[1];
-        
-        assert_eq!("pong_key".to_string(), con2exe_wasm_attrib.key);
-        assert_eq!("pong_value".to_string(), con2exe_wasm_attrib.value);
+        let _con2exe = con2exe_result.unwrap();
     }
 }

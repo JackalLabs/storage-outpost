@@ -8,8 +8,7 @@ pub enum QueryMsg {
 
 #[cw_serde]
 pub enum ExecuteMsg {
-    PingPong(options::PingPongMsg),
-    PongPing(options::PongPingMsg)
+    SetOutpost(options::SetOutpostMsg),
 }
 
 /*
@@ -26,10 +25,7 @@ pub mod options {
     use cosmwasm_std::Addr;
 
     #[cw_serde]
-    pub struct PingPongMsg {
+    pub struct SetOutpostMsg {
         pub addr: Addr
     }
-
-    #[cw_serde]
-    pub struct PongPingMsg {}
 }
