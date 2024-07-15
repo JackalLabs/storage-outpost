@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"testing"
@@ -107,8 +108,22 @@ func (s *MigrationTestSuite) TestBasicMigration() {
 		int_form, _ := strconv.ParseUint(v2_codeId, 10, 64)
 		s.Require().Equal(v2_contract_info_resp.CodeID, int_form)
 
+		// Create a QueryMsg
+		type QueryMsg struct {
+			Data struct{} `json:"data,omitempty"`
+		}
+
+		// Instantiate a QueryMsg to get the outposts channel state
+		basicQuery := QueryMsg{
+			Data: struct{}{},
+		}
+
+		basicQueryBytes, err := json.Marshal(basicQuery)
+		s.Require().NoError(err)
+		basicQueryStr := string(basicQueryBytes)
+
 		// Check to see if you can still query and if it returns the right value
-		err = s.ChainA.QueryContract(ctx, contractAddr, "{\"data\":{}}", &resp)
+		err = s.ChainA.QueryContract(ctx, contractAddr, basicQueryStr, &resp)
 		s.Require().NoError(err)
 		s.Assert().Equal("Data saved in v1!", resp.Data.Value)
 	})

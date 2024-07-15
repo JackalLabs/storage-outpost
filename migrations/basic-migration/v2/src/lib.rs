@@ -1,3 +1,4 @@
+use crate::msg::QueryMsg;
 use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Empty, Env, MessageInfo, Response};
 
 use cosmwasm_std::{DepsMut, StdResult, WasmMsg};
@@ -24,10 +25,15 @@ pub fn instantiate(
 
 // Immediately return the state of "DATA_AFTER_MIGRATION"
 #[entry_point]
-pub fn query(deps: Deps, _env: Env, _msg: msg::QueryMsg) -> StdResult<Binary> {
-    let data_saved: String = DATA_AFTER_MIGRATION.load(deps.storage)?;
-    let resp: ValueResp = ValueResp {value : data_saved};
-    to_json_binary(&resp)
+pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
+    match msg {
+        QueryMsg::Data {  } => {
+            let data_saved: String = DATA_AFTER_MIGRATION.load(deps.storage)?;
+            let resp: ValueResp = ValueResp {value : data_saved};
+            to_json_binary(&resp)
+        },
+        QueryMsg::QueryOutpostChannel(query_outpost_msg) => query::query_outpost_channel(deps, env, query_outpost_msg)
+    }
 }
 
 // Immediately return ok response to satisfy ContractWrapper and allow testing
@@ -65,9 +71,11 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: Empty) -> StdResult<Response> {
 mod execute {
     use cosmwasm_std::{to_json_binary, Binary, Env, MessageInfo, Querier, QuerierWrapper, Response};
     use cosmwasm_std::{DepsMut, StdResult, WasmMsg};
+    use serde::Serialize;
+    use storage_outpost::ibc::types::stargate::channel;
     use storage_outpost::outpost_helpers;
     use crate::msg::ExecuteMsg;
-    use crate::msg::options::{SetOutpostMsg};
+    use crate::msg::options::{QueryChannelMsg, SetOutpostMsg};
     use crate::state::STORAGE_OUTPOST_CONTRACT;
 
     pub fn set_outpost(
@@ -79,21 +87,40 @@ mod execute {
         let outpost_addr = msg.addr;
         let outpost = outpost_helpers::StorageOutpostContract::new(outpost_addr);
         STORAGE_OUTPOST_CONTRACT.save(deps.storage, &outpost)?;
-
-        // Some test business, move into its own func
-        /*
-        let raw_querier = Querier::raw_query(&self, bin_request)
-        let querier_wrapper = QuerierWrapper::new();
-        outpost.query_channel(querier)
-        */
         Ok(Response::new())
+    }
+}
+
+mod query {
+    use cosmwasm_std::{to_json_binary, Binary, Deps, Env, MessageInfo, Querier, QuerierWrapper, Response};
+    use cosmwasm_std::{DepsMut, StdResult, WasmMsg};
+    use serde::Serialize;
+    use storage_outpost::ibc::types::stargate::channel;
+    use storage_outpost::outpost_helpers;
+    use crate::msg::ExecuteMsg;
+    use crate::msg::options::{QueryChannelMsg, SetOutpostMsg};
+    use crate::state::STORAGE_OUTPOST_CONTRACT;
+
+    pub fn query_outpost_channel(
+        deps: Deps,
+        _env: Env,
+        _msg: QueryChannelMsg
+    ) -> StdResult<Binary> {
+        let outpost = STORAGE_OUTPOST_CONTRACT.load(deps.storage)?;
+        let query_channel_result = outpost.query_channel(deps.querier);
+        match query_channel_result {
+            Ok(channel_state) => {
+                to_json_binary(&channel_state)
+            },
+            Err(err) => Err(err),
+        }
     }
 }
 
 /* 
     WARNING: Remove this in production!
     Test the v2 contract to make sure we're properly initing the contract and to do migration
-*/
+
 mod test {
     use cosmwasm_std::{Addr, Empty};
     use cw_multi_test::{App, Contract, ContractWrapper, Executor};
@@ -217,3 +244,4 @@ mod test {
         let _con2exe = con2exe_result.unwrap();
     }
 }
+*/

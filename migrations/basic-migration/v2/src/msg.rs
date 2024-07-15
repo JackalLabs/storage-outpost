@@ -2,8 +2,9 @@ use cosmwasm_schema::cw_serde;
 
 // Type you SEND to the query entrypoint
 #[cw_serde]
-pub enum QueryMsg { 
-    Data {}
+pub enum QueryMsg {
+    Data {},
+    QueryOutpostChannel(options::QueryChannelMsg)
 }
 
 #[cw_serde]
@@ -28,4 +29,7 @@ pub mod options {
     pub struct SetOutpostMsg {
         pub addr: Addr
     }
+
+    #[cw_serde]
+    pub struct QueryChannelMsg {}
 }

@@ -110,23 +110,94 @@ func (s *OutpostTestSuite) TestOutpostCall() {
 			Addr string `json:"addr"`
 		}
 
+		// QueryChannelMsg corresponds to the Rust struct QueryChannelMsg
+		type QueryChannelMsg struct{}
+
 		// ExecuteMsg is a wrapper for the different execute messages
 		type ExecuteMsg struct {
 			SetOutpost *SetOutpostMsg `json:"set_outpost,omitempty"`
 		}
 
 		// Instantiate a SetOutpostMsg on the outpost address
-		set_outpost_msg := ExecuteMsg{&SetOutpostMsg{
-			Addr: outpostAddr,
-		}}
+		setOutpostMsg := ExecuteMsg{
+			SetOutpost: &SetOutpostMsg{
+				Addr: outpostAddr,
+			},
+		}
 
-		// Serialize the set_outpost_msg type to JSON bytes, then a string
-		set_outpost_bytes, err := json.Marshal(set_outpost_msg)
-		set_outpost_str := string(set_outpost_bytes)
+		// Serialize the setOutpostMsg to JSON bytes, then a string
+		setOutpostBytes, err := json.Marshal(setOutpostMsg)
 		s.Require().NoError(err)
+		setOutpostStr := string(setOutpostBytes)
 
 		// Set the v2 basic-migration contract to store the address of the storage outpost
-		_, err = s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), contractAddr, set_outpost_str)
+		_, err = s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), contractAddr, setOutpostStr)
 		s.Require().NoError(err)
+
+		// Create a QueryMsg
+		type QueryMsg struct {
+			QueryOutpost *QueryChannelMsg `json:"query_outpost_channel,omitempty"`
+		}
+
+		// Instantiate a QueryMsg to get the outposts channel state
+		outpostChannelMsg := QueryMsg{
+			QueryOutpost: &QueryChannelMsg{},
+		}
+
+		// Serialize the query for the channel state
+		queryChannelBytes, err := json.Marshal(outpostChannelMsg)
+		s.Require().NoError(err)
+		queryChannelStr := string(queryChannelBytes)
+
+		type Endpoint struct {
+			PortID    string `json:"port_id"`
+			ChannelID string `json:"channel_id"`
+		}
+
+		type CounterPartyEndpoint struct {
+			PortID    string `json:"port_id"`
+			ChannelID string `json:"channel_id"`
+		}
+
+		type Channel struct {
+			Endpoint             Endpoint             `json:"endpoint"`
+			CounterpartyEndpoint CounterPartyEndpoint `json:"counterparty_endpoint"`
+			Order                string               `json:"order"`
+			Version              string               `json:"version"`
+		}
+
+		type Data struct {
+			Channel       Channel `json:"channel"`
+			ConnectionID  string  `json:"connection_id"`
+			ChannelStatus string  `json:"channel_status"`
+		}
+
+		type Response struct {
+			Data Data `json:"data"`
+		}
+
+		resp := Response{
+			Data: Data{
+				Channel: Channel{
+					Endpoint: Endpoint{
+						PortID:    "Before",
+						ChannelID: "Before",
+					},
+					CounterpartyEndpoint: CounterPartyEndpoint{
+						PortID:    "Before",
+						ChannelID: "Before",
+					},
+					Order:   "Before",
+					Version: "Before",
+				},
+				ConnectionID:  "Before",
+				ChannelStatus: "Before",
+			},
+		}
+
+		// Use the v2 basic-migration contract to query the storage_outpost for its channel state
+		err = s.ChainA.QueryContract(ctx, contractAddr, queryChannelStr, &resp)
+		s.Require().NoError(err)
+		s.Require().Equal(resp.Data.ChannelStatus, "STATE_OPEN")
 	})
 }
