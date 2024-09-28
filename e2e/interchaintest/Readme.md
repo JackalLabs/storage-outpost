@@ -18,7 +18,10 @@ go test -v . -run TestWithContractTestSuite -testify.m TestIcaContractExecutionT
 
 go test -v . -run TestWithContractTestSuite -testify.m TestIcaContractExecutionTestWithMigration  
 
+go test -v . -run TestWithContractTestSuite -testify.m TestPostFile -timeout 12h
+
 go test -v . -run TestWithFactoryClientTestSuite -testify.m TestOutpostFactoryClient -timeout 12h
+
 
 ```
 
