@@ -12,6 +12,10 @@ A full suite of e2e tests will be developed for these contracts, which includes 
 This contract is used to create a unique instance of `storage-outpost` for the user. The created outpost will then call this contract back
 and map its own address as a value keyed by the user's address. 
 
+### `outpost-user`
+
+This contract is a demonstration of how any contract can call the outpost's API in the same transaction
+
 ## Building the Contracts
 
 Run the following command in the root directory of this repository:
@@ -23,5 +27,15 @@ docker run --rm -v "$(pwd)":/code \
   --mount type=volume,source="devcontract_cache_burner",target=/code/contracts/burner/target \
   --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
   cosmwasm/optimizer:0.15.1 /code/cross-contract/contracts/outpost-factory
+
+```
+
+### `outpost-user`
+
+```text
+docker run --rm -v "$(pwd)":/code \
+  --mount type=volume,source="devcontract_cache_burner",target=/code/contracts/burner/target \
+  --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+  cosmwasm/optimizer:0.15.1 /code/cross-contract/contracts/outpost-user
 
 ```
