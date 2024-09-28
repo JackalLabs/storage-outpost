@@ -44,6 +44,7 @@ func (s *ContractTestSuite) TestPostFile() {
 
 		merkleBytes := []byte{0x01, 0x02, 0x03, 0x04}
 		postFileMsg := &storagetypes.MsgPostFile{
+			Creator:       s.Contract.IcaAddress,
 			Merkle:        merkleBytes,
 			FileSize:      100000000,
 			ProofInterval: 60,
