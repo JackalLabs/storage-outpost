@@ -186,3 +186,25 @@ func newSendCosmosMsgsMsgFromProto(msgs []proto.Message, memo *string, timeout *
 
 	return string(jsonBytes)
 }
+
+// NewInstantiateMsgWithOutpostAddress creates a new InstantiateMsg with the outpost address
+// NOTE: The admin is set in the outer wasm.Instantiate protobuf msg, not the json msg
+func NewInstantiateMsgWithOutpostAddress(
+	storageOutpostAddress *string,
+) string {
+	type InstantiateMsg struct {
+		// The address of the outpost
+		StorageOutpostAddress *string `json:"storage_outpost_address,omitempty"`
+	}
+
+	instantiateMsg := InstantiateMsg{
+		StorageOutpostAddress: storageOutpostAddress,
+	}
+
+	jsonBytes, err := json.Marshal(instantiateMsg)
+	if err != nil {
+		panic(err)
+	}
+
+	return string(jsonBytes)
+}
