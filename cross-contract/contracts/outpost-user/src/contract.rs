@@ -28,7 +28,7 @@ pub fn instantiate(
 
     STATE.save(
         deps.storage,
-        &ContractState::new(msg.storage_outpost_code_id),
+        &ContractState::new(msg.storage_outpost_address),
     )?;
     Ok(Response::default())
 }
@@ -42,6 +42,7 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::SaveNote { note} => execute::save_note(deps, env, info, note),
+        ExecuteMsg::CallOutpost { msg } => execute::call_outpost(deps, env, info, msg),
     }
 }
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -54,7 +55,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
 mod execute {
     use cosmwasm_std::{Addr, BankMsg, Coin, CosmosMsg, Uint128, Event, to_json_binary};
     use storage_outpost::outpost_helpers::StorageOutpostContract;
-    use storage_outpost::types::msg::ExecuteMsg as IcaControllerExecuteMsg;
+    use storage_outpost::types::msg::ExecuteMsg as OutpostExecuteMsg;
     use storage_outpost::types::state::{CallbackCounter, ChannelState /*ChannelStatus*/};
     use storage_outpost::{
         outpost_helpers::StorageOutpostCode,
@@ -76,7 +77,31 @@ mod execute {
     // TODO: Save the note after posting the file 
 
     Ok(Response::new()) 
-}
+    }
+
+    pub fn call_outpost(
+        deps: DepsMut,
+        env: Env,
+        info: MessageInfo, //info.sender will be the outpost's address 
+        outpost_msg: OutpostExecuteMsg, 
+    ) -> Result<Response, ContractError> {
+
+        let state = STATE.load(deps.storage)?;
+        // WARNING: This function is called by the user, so we cannot error:unauthorized if info.sender != admin 
+
+        let storage_outpost_address = state.storage_outpost_address;
+
+        // Convert the bech32 string back to 'Addr' type before passing to the canine_bindings helper API
+        let error_msg: String = String::from("Bindings contract address is not a valid bech32 address. Conversion back to addr failed");
+        let outpost_contract = StorageOutpostContract::new(deps.api
+            .addr_validate(&storage_outpost_address)
+            .expect(&error_msg));
+
+        let outpost_msg = outpost_contract.call(outpost_msg)?;
+
+    // TODO: Save the note after posting the file 
+    Ok(Response::new().add_message(outpost_msg)) 
+    }
 }
 
 mod query {
