@@ -19,14 +19,14 @@ mod contract {
     #[cw_serde]
     pub struct ContractState {
         /// The code ID of the storage-outpost contract.
-        pub storage_outpost_code_id: u64,
+        pub storage_outpost_address: String,
     }
 
     impl ContractState {
         /// Creates a new ContractState.
-        pub fn new(storage_outpost_code_id: u64) -> Self {
+        pub fn new(storage_outpost_address: String) -> Self {
             Self {
-                storage_outpost_code_id,
+                storage_outpost_address,
             }
         }
     }
