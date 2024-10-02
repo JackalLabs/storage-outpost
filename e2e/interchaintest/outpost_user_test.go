@@ -74,12 +74,16 @@ func (s *ContractTestSuite) TestOutpostUser() {
 		)
 
 		// NOTE: Double check this before calling it
-		callOutpostMsg := outpostuser.ExecuteMsg_CallOutpost{
+		innerOutpostMsg := outpostuser.ExecuteMsg_CallOutpost{
 			Msg: &sendStargateMsg,
 		}
 
+		outpostUserMsg := outpostuser.ExecuteMsg{
+			CallOutpost: &innerOutpostMsg,
+		}
+
 		// TODO: Below needs fixing
-		badRes, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostUserContract, callOutpostMsg.ToString(), "--gas", "500000")
+		badRes, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostUserContract, outpostUserMsg.ToString(), "--gas", "500000")
 		s.Require().NoError(err)
 		fmt.Println(badRes)
 
