@@ -82,7 +82,12 @@ func (s *ContractTestSuite) TestOutpostUser() {
 			CallOutpost: &innerOutpostMsg,
 		}
 
-		// TODO: Below needs fixing
+		// WARNING NOTE: Only the owner of the outpost can call it.
+		// The below execution doesn't work because cross contract calls are made with the calling contract's address as the sender
+		// Unfortunately, UserA is set as the outpost owner because UserA instantiated it
+		// Seems there's no way around this but to have the outpost user contract also instantiate the outpost
+
+		// We know 'instantiate2' works on canine-chain, so perhaps we can use that and avoid having to use a callback
 		badRes, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostUserContract, outpostUserMsg.ToString(), "--gas", "500000")
 		s.Require().NoError(err)
 		fmt.Println(badRes)
