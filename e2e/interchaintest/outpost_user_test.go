@@ -79,7 +79,7 @@ func (s *ContractTestSuite) TestOutpostUser() {
 		}
 
 		// TODO: Below needs fixing
-		badRes, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostUserContract, callOutpostMsg.ToString(), "--gas", "500000", "--amount", "200000000uwasm")
+		badRes, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostUserContract, callOutpostMsg.ToString(), "--gas", "500000")
 		s.Require().NoError(err)
 		fmt.Println(badRes)
 
