@@ -11,6 +11,7 @@ import (
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 
 	storagetypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/storagetypes"
+	outpostuser "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types/outpostuser"
 
 	testtypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 )
@@ -31,6 +32,7 @@ func (s *ContractTestSuite) TestOutpostUser() {
 	wasmd, canined := s.ChainA, s.ChainB
 	fmt.Println(wasmd)
 	wasmdUser := s.UserA
+	fmt.Println(wasmdUser)
 
 	logger.LogInfo(canined.FullNodes)
 
@@ -70,9 +72,16 @@ func (s *ContractTestSuite) TestOutpostUser() {
 		sendStargateMsg := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
 			[]proto.Message{postFileMsg}, nil, nil, typeURL,
 		)
-		// TODO: Confirm owner and admin
-		error := s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg)
-		s.Require().NoError(error)
+
+		// NOTE: Double check this before calling it
+		callOutpostMsg := outpostuser.ExecuteMsg_CallOutpost{
+			Msg: &sendStargateMsg,
+		}
+
+		// TODO: Below needs fixing
+		badRes, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostUserContract, callOutpostMsg.ToString(), "--gas", "500000", "--amount", "200000000uwasm")
+		s.Require().NoError(err)
+		fmt.Println(badRes)
 
 	},
 	)
