@@ -20,6 +20,12 @@ pub enum ExecuteMsg {
 
     SaveNote {
         note: String, 
+    },
+
+    // Save the outpost's address to state
+    // This is useful for contracts that are already on mainnet and need to migrate to enable calling the outpost
+    SaveOutpost {
+        address: String, 
     }
 
 }

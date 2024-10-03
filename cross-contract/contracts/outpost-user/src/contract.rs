@@ -43,6 +43,8 @@ pub fn execute(
     match msg {
         ExecuteMsg::SaveNote { note} => execute::save_note(deps, env, info, note),
         ExecuteMsg::CallOutpost { msg } => execute::call_outpost(deps, env, info, msg),
+        ExecuteMsg::SaveOutpost { address } => execute::save_outpost(deps, env, info, address),
+
     }
 }
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -101,6 +103,27 @@ mod execute {
 
     // TODO: Save the note after posting the file 
     Ok(Response::new().add_message(outpost_msg)) 
+    }
+
+    pub fn save_outpost(
+        deps: DepsMut,
+        env: Env,
+        info: MessageInfo, //info.sender will be the outpost's address 
+        address: String, 
+    ) -> Result<Response, ContractError> {
+
+        let mut state = STATE.load(deps.storage)?;
+        // WARNING: This function is called by the user, so we cannot error:unauthorized if info.sender != admin 
+
+        state.storage_outpost_address = address;
+
+        // Save the updated state back to storage
+        STATE.save(deps.storage, &state)?;
+
+        // Return a success response
+        Ok(Response::new()
+        .add_attribute("action", "update_outpost_address")
+        .add_attribute("new_outpost_address", state.storage_outpost_address))
     }
 }
 
