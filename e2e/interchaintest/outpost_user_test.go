@@ -82,6 +82,18 @@ func (s *ContractTestSuite) TestOutpostUser() {
 
 	s.Run(fmt.Sprintf("TestOutpostUserSuccess-%s", encoding), func() {
 
+		saveOutpostMsg := outpostuser.ExecuteMsg_SaveOutpost{
+			Address: s.Contract.Address,
+		}
+
+		outpostUserMsg0 := outpostuser.ExecuteMsg{
+			SaveOutpost: &saveOutpostMsg,
+		}
+
+		res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostUserContract, outpostUserMsg0.ToString(), "--gas", "500000")
+		fmt.Println(res)
+		s.Require().NoError(err)
+
 		merkleBytes := []byte{0x01, 0x02, 0x03, 0x04}
 		postFileMsg := &storagetypes.MsgPostFile{
 			Creator:       s.Contract.IcaAddress,
