@@ -9,6 +9,7 @@ import (
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
+	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 
 	storagetypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/storagetypes"
@@ -54,7 +55,7 @@ func (s *ContractTestSuite) TestOutpostUser() {
 	instantiateMsg := testtypes.NewInstantiateMsgWithOutpostAddress(&s.Contract.Address)
 
 	outpostUserContract, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), codeId, instantiateMsg, false, "--gas", "500000", "--admin", s.UserA.KeyName())
-	logger.LogInfo(outpostUserContract)
+	logger.LogInfo(fmt.Sprintf("outpost user address is: %s\n", outpostUserContract))
 	s.Require().NoError(err)
 
 	// The 'Setup Function above' sets up relays, channels, and inits an outpost contract.
@@ -71,6 +72,13 @@ func (s *ContractTestSuite) TestOutpostUser() {
 
 	// Update test suite with new outpost address
 	s.Contract.Address = outpostAddr
+
+	logger.LogInfo(fmt.Sprintf("The outpost address is: %s\n", outpostAddr))
+
+	// Query the outpost owner
+	outpostOwner, ownerErr := testsuite.GetOutpostOwner(ctx, s.ChainA, outpostAddr)
+	s.Require().NoError(ownerErr)
+	logger.LogInfo(fmt.Sprintf("The outpost owner is: %s\n", outpostOwner))
 
 	s.Run(fmt.Sprintf("TestOutpostUserSuccess-%s", encoding), func() {
 
