@@ -7,6 +7,7 @@ import (
 
 	"github.com/cosmos/gogoproto/proto"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
+	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
@@ -79,6 +80,23 @@ func (s *ContractTestSuite) TestOutpostUser() {
 	outpostOwner, ownerErr := testsuite.GetOutpostOwner(ctx, s.ChainA, outpostAddr)
 	s.Require().NoError(ownerErr)
 	logger.LogInfo(fmt.Sprintf("The outpost owner is: %s\n", outpostOwner))
+
+	// Wait for the new channel to get set up
+	err = testutil.WaitForBlocks(ctx, 5, s.ChainA, s.ChainB)
+	s.Require().NoError(err)
+
+	contractState, err := s.Contract.QueryContractState(ctx)
+	s.Require().NoError(err)
+
+	logger.LogInfo(fmt.Sprintf("The outpost state is: %v\n", contractState))
+	logger.LogInfo(fmt.Sprintf("The outpost jkl (ica) address is: %s\n", contractState.IcaInfo.IcaAddress))
+
+	// NOTE: note sure if Jackal Outpost needs the ownership feature
+	// ownershipResponse, err := s.Contract.QueryOwnership(ctx)
+	// s.Require().NoError(err)
+
+	s.IcaAddress = contractState.IcaInfo.IcaAddress
+	s.Contract.SetIcaAddress(s.IcaAddress)
 
 	s.Run(fmt.Sprintf("TestOutpostUserSuccess-%s", encoding), func() {
 
