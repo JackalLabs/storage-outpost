@@ -67,6 +67,43 @@ func NewInstantiateMsgWithChannelInitOptions(
 	return string(jsonBytes)
 }
 
+// InitOutpostWithOwner creates a new InstantiateMsg with channel init options and an owner for the outpost
+func InitOutpostWithOwner(
+	admin *string, connectionId string, counterpartyConnectionId string,
+	counterpartyPortId *string, txEncoding *string, owner *string,
+) string {
+	type InstantiateMsg struct {
+		// The owner of the outpost
+		Owner *string `json:"owner,omitempty"`
+		// The address of the admin of the ICA application.
+		// If not specified, the sender is the admin.
+		Admin *string `json:"admin,omitempty"`
+		// The options to initialize the IBC channel upon contract instantiation.
+		// If not specified, the IBC channel is not initialized, and the relayer must.
+		ChannelOpenInitOptions *ChannelOpenInitOptions `json:"channel_open_init_options,omitempty"`
+	}
+
+	channelOpenInitOptions := ChannelOpenInitOptions{
+		ConnectionId:             connectionId,
+		CounterpartyConnectionId: counterpartyConnectionId,
+		CounterpartyPortId:       counterpartyPortId,
+		TxEncoding:               txEncoding,
+	}
+
+	instantiateMsg := InstantiateMsg{
+		Owner:                  owner,
+		Admin:                  admin,
+		ChannelOpenInitOptions: &channelOpenInitOptions,
+	}
+
+	jsonBytes, err := json.Marshal(instantiateMsg)
+	if err != nil {
+		panic(err)
+	}
+
+	return string(jsonBytes)
+}
+
 func newEmptyCreateChannelMsg() string {
 	return `{ "create_channel": {} }`
 }

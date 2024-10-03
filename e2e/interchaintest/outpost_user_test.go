@@ -9,6 +9,7 @@ import (
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
+	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 
 	storagetypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/storagetypes"
 	outpostuser "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types/outpostuser"
@@ -24,6 +25,8 @@ func (s *ContractTestSuite) TestOutpostUser() {
 	ctx := context.Background()
 
 	logger.InitLogger()
+
+	// Need to instantiate it with the address of the outpost user as the owner
 
 	encoding := icatypes.EncodingProtobuf
 	// This starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
@@ -47,11 +50,27 @@ func (s *ContractTestSuite) TestOutpostUser() {
 	codeId, err := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/outpost_user.wasm")
 	s.Require().NoError(err)
 
+	// TODO: Can't init outpost user with outpost address - chicken and egg situation
 	instantiateMsg := testtypes.NewInstantiateMsgWithOutpostAddress(&s.Contract.Address)
 
 	outpostUserContract, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), codeId, instantiateMsg, false, "--gas", "500000", "--admin", s.UserA.KeyName())
 	logger.LogInfo(outpostUserContract)
 	s.Require().NoError(err)
+
+	// The 'Setup Function above' sets up relays, channels, and inits an outpost contract.
+	// We don't want to change the above function because other tests rely on it
+	// For this purposes of this test, we will init a brand new outpost with the address of 'outpost user' as the owner
+	admin := s.UserA.FormattedAddress()
+
+	// Instantiate the contract with channel:
+	outpostInstantiateMsg := types.InitOutpostWithOwner(&admin, s.ChainAConnID, s.ChainBConnID, nil, &encoding, &outpostUserContract)
+
+	// We know that wasm module of outpost has code ID 1
+	outpostAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), "1", outpostInstantiateMsg, false, "--gas", "500000", "--admin", s.UserA.KeyName())
+	s.Require().NoError(err)
+
+	// Update test suite with new outpost address
+	s.Contract.Address = outpostAddr
 
 	s.Run(fmt.Sprintf("TestOutpostUserSuccess-%s", encoding), func() {
 
