@@ -151,6 +151,7 @@ func (s *ContractTestSuite) TestOutpostUser() {
 		// badRes, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostUserContract, outpostUserMsg.ToString(), "--gas", "500000")
 		// s.Require().NoError(err)
 		// fmt.Println(badRes)
+
 		fmt.Println("*******NOW BROADCASTING***************")
 		outpostUserMsgBz, err := json.Marshal(outpostUserMsg)
 		s.Require().NoError(err)
@@ -162,7 +163,7 @@ func (s *ContractTestSuite) TestOutpostUser() {
 			Msg:      outpostUserMsgBz,
 		}
 		resp, err := cosmos.BroadcastTx(ctx, b, s.UserA, executeMsg)
-		fmt.Println(resp)
+		fmt.Println(resp.TxHash)
 
 	},
 	)
