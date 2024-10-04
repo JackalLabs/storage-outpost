@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -17,6 +18,7 @@ import (
 	outpostuser "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types/outpostuser"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	testtypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 )
 
@@ -146,11 +148,21 @@ func (s *ContractTestSuite) TestOutpostUser() {
 		// Seems there's no way around this but to have the outpost user contract also instantiate the outpost
 
 		// We know 'instantiate2' works on canine-chain, so perhaps we can use that and avoid having to use a callback
-		badRes, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostUserContract, outpostUserMsg.ToString(), "--gas", "500000")
+		// badRes, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostUserContract, outpostUserMsg.ToString(), "--gas", "500000")
+		// s.Require().NoError(err)
+		// fmt.Println(badRes)
+		fmt.Println("*******NOW BROADCASTING***************")
+		outpostUserMsgBz, err := json.Marshal(outpostUserMsg)
 		s.Require().NoError(err)
-		fmt.Println(badRes)
 
 		b := cosmos.NewBroadcaster(s.T(), s.ChainA)
+		executeMsg := &wasmtypes.MsgExecuteContract{
+			Sender:   s.UserA.FormattedAddress(),
+			Contract: outpostUserContract,
+			Msg:      outpostUserMsgBz,
+		}
+		resp, err := cosmos.BroadcastTx(ctx, b, s.UserA, executeMsg)
+		fmt.Println(resp)
 
 	},
 	)
