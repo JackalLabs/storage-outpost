@@ -171,6 +171,21 @@ func (s *ContractTestSuite) TestOutpostUser() {
 		resp, err := cosmos.BroadcastTx(ctx, b, s.UserA, executeMsg)
 		s.Require().NoError(err)
 
+		/*
+					NOTE:
+
+					We're getting this classic error:
+
+					*******NOW BROADCASTING***************
+			=== NAME  TestWithContractTestSuite/TestOutpostUser/TestOutpostUserSuccess-proto3
+			    outpost_user_test.go:172:
+			                Error Trace:    /Users/biphan/jackal/storage-outpost/e2e/interchaintest/outpost_user_test.go:172
+			                                                        /Users/biphan/go/pkg/mod/github.com/stretchr/testify@v1.8.4/suite/suite.go:112
+			                Error:          Received unexpected error:
+			                                invalid Bech32 prefix; expected cosmos, got wasm
+			                Test:           TestWithContractTestSuite/TestOutpostUser/TestOutpostUserSuccess-proto3
+		*/
+
 		fmt.Println(resp.TxHash)
 
 	},
