@@ -1,12 +1,12 @@
-INFO: 2024/10/04 13:10:47 The sender of instantiate is wasmd-localwasm-1-lsr
-INFO: 2024/10/04 13:10:58 [0x14001472100]
-INFO: 2024/10/04 13:11:56 outpost user address is: wasm1qg5ega6dykkxc307y25pecuufrjkxkaggkkxh7nad0vhyhtuhw3sq29c3m
+INFO: 2024/10/04 13:18:06 The sender of instantiate is wasmd-localwasm-1-wps
+INFO: 2024/10/04 13:18:18 [0x140015ba200]
+INFO: 2024/10/04 13:19:16 outpost user address is: wasm1qg5ega6dykkxc307y25pecuufrjkxkaggkkxh7nad0vhyhtuhw3sq29c3m
 
-INFO: 2024/10/04 13:12:01 The outpost address is: wasm1yyca08xqdgvjz0psg56z67ejh9xms6l436u8y58m82npdqqhmmtqas0cl7
+INFO: 2024/10/04 13:19:20 The outpost address is: wasm1yyca08xqdgvjz0psg56z67ejh9xms6l436u8y58m82npdqqhmmtqas0cl7
 
-INFO: 2024/10/04 13:12:01 The outpost owner is: data:"\"wasm1qg5ega6dykkxc307y25pecuufrjkxkaggkkxh7nad0vhyhtuhw3sq29c3m\"" 
+INFO: 2024/10/04 13:19:20 The outpost owner is: data:"\"wasm1qg5ega6dykkxc307y25pecuufrjkxkaggkkxh7nad0vhyhtuhw3sq29c3m\"" 
 
-INFO: 2024/10/04 13:12:12 The outpost state is: &{{jkl1p0cx2mfdrt8yulzt2zlx2uz8ccr32w4hfsach6ueze4tn4ndv5ps8gceve channel-1} true}
+INFO: 2024/10/04 13:19:32 The outpost state is: &{{jkl18r9t5744cxkxk49yqtnz08k8ehvusa6yt7p4j5mln0p7k9wldlfq0ahdge channel-1} true}
 
-INFO: 2024/10/04 13:12:12 The outpost jkl (ica) address is: jkl1p0cx2mfdrt8yulzt2zlx2uz8ccr32w4hfsach6ueze4tn4ndv5ps8gceve
+INFO: 2024/10/04 13:19:32 The outpost jkl (ica) address is: jkl18r9t5744cxkxk49yqtnz08k8ehvusa6yt7p4j5mln0p7k9wldlfq0ahdge
 

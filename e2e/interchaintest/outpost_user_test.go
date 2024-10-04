@@ -152,6 +152,12 @@ func (s *ContractTestSuite) TestOutpostUser() {
 		// s.Require().NoError(err)
 		// fmt.Println(badRes)
 
+		// We try to use this broadcaster immediately at the same time as the above execute, but the above execute may not have been committed
+		// yet
+		// let's wait a few blocks
+		err = testutil.WaitForBlocks(ctx, 5, s.ChainA, s.ChainB)
+		s.Require().NoError(err)
+
 		fmt.Println("*******NOW BROADCASTING***************")
 		outpostUserMsgBz, err := json.Marshal(outpostUserMsg)
 		s.Require().NoError(err)
