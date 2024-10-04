@@ -169,6 +169,8 @@ func (s *ContractTestSuite) TestOutpostUser() {
 			Msg:      outpostUserMsgBz,
 		}
 		resp, err := cosmos.BroadcastTx(ctx, b, s.UserA, executeMsg)
+		s.Require().NoError(err)
+
 		fmt.Println(resp.TxHash)
 
 	},
