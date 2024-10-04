@@ -15,6 +15,7 @@ import (
 
 	storagetypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/storagetypes"
 	outpostuser "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types/outpostuser"
+	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 
 	testtypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 )
@@ -148,6 +149,8 @@ func (s *ContractTestSuite) TestOutpostUser() {
 		badRes, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostUserContract, outpostUserMsg.ToString(), "--gas", "500000")
 		s.Require().NoError(err)
 		fmt.Println(badRes)
+
+		b := cosmos.NewBroadcaster(s.T(), s.ChainA)
 
 	},
 	)
