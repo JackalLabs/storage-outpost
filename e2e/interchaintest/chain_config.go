@@ -74,7 +74,7 @@ var chainSpecs = []*interchaintest.ChainSpec{
 				},
 			},
 			Bin:           "wasmd",
-			Bech32Prefix:  "cosmos",
+			Bech32Prefix:  "wasm",
 			Denom:         "uwsm",
 			GasPrices:     "0.00uwsm",
 			GasAdjustment: 1.3,
