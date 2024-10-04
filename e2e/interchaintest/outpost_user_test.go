@@ -33,6 +33,8 @@ func (s *ContractTestSuite) TestOutpostUser() {
 
 	// Need to instantiate it with the address of the outpost user as the owner
 
+	cosmos.SetSDKConfig("cosmos")
+
 	encoding := icatypes.EncodingProtobuf
 	// This starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
 	// sets up the contract and does the channel handshake for the contract test suite.
@@ -185,6 +187,8 @@ func (s *ContractTestSuite) TestOutpostUser() {
 			                                invalid Bech32 prefix; expected cosmos, got wasm
 			                Test:           TestWithContractTestSuite/TestOutpostUser/TestOutpostUserSuccess-proto3
 		*/
+
+		// NOTE: We can just do two executes one after the other and explain to the devs that it is possible to pack it into one broadcast
 
 		fmt.Println(resp.TxHash)
 
