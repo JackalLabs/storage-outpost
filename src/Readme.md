@@ -79,6 +79,10 @@ import (
 		TimeoutSeconds: timeout,
 	},
 }
+```
+
+The outpost can be called by another contract. See cross-contract/contracts/outpost-user/Readme.md for a walkthrough.
+
 
 
 

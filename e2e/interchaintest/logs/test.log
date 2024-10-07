@@ -1,3 +1,12 @@
-INFO: 2024/10/04 19:40:25 The sender of instantiate is wasmd-localwasm-1-urr
-INFO: 2024/10/04 19:40:37 [0x140016ac000]
-INFO: 2024/10/04 19:41:15 /
+INFO: 2024/10/07 16:39:33 The sender of instantiate is wasmd-localwasm-1-bdi
+INFO: 2024/10/07 16:39:45 [0x14000aee100]
+INFO: 2024/10/07 16:40:43 outpost user address is: wasm1qg5ega6dykkxc307y25pecuufrjkxkaggkkxh7nad0vhyhtuhw3sq29c3m
+
+INFO: 2024/10/07 16:40:47 The outpost address is: wasm1yyca08xqdgvjz0psg56z67ejh9xms6l436u8y58m82npdqqhmmtqas0cl7
+
+INFO: 2024/10/07 16:40:47 The outpost owner is: data:"\"wasm1qg5ega6dykkxc307y25pecuufrjkxkaggkkxh7nad0vhyhtuhw3sq29c3m\"" 
+
+INFO: 2024/10/07 16:40:59 The outpost state is: &{{jkl1nw7pclgz3req0xrz6jte2h69e52lfaunpwwjtc2wl2kktcc5f3ps7lgwxd channel-1} true}
+
+INFO: 2024/10/07 16:40:59 The outpost jkl (ica) address is: jkl1nw7pclgz3req0xrz6jte2h69e52lfaunpwwjtc2wl2kktcc5f3ps7lgwxd
+

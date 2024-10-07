@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -16,9 +15,7 @@ import (
 
 	storagetypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/storagetypes"
 	outpostuser "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types/outpostuser"
-	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	testtypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 )
 
@@ -148,28 +145,28 @@ func (s *ContractTestSuite) TestOutpostUser() {
 		// Seems there's no way around this but to have the outpost user contract also instantiate the outpost
 
 		// We know 'instantiate2' works on canine-chain, so perhaps we can use that and avoid having to use a callback
-		// badRes, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostUserContract, outpostUserMsg.ToString(), "--gas", "500000")
-		// s.Require().NoError(err)
-		// fmt.Println(badRes)
+		badRes, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostUserContract, outpostUserMsg.ToString(), "--gas", "500000")
+		s.Require().NoError(err)
+		fmt.Println(badRes)
 
 		// We try to use this broadcaster immediately at the same time as the above execute, but the above execute may not have been committed
 		// yet
 		// let's wait a few blocks
-		err = testutil.WaitForBlocks(ctx, 5, s.ChainA, s.ChainB)
-		s.Require().NoError(err)
+		// err = testutil.WaitForBlocks(ctx, 5, s.ChainA, s.ChainB)
+		// s.Require().NoError(err)
 
-		fmt.Println("*******NOW BROADCASTING***************")
-		outpostUserMsgBz, err := json.Marshal(outpostUserMsg)
-		s.Require().NoError(err)
+		// fmt.Println("*******NOW BROADCASTING***************")
+		// outpostUserMsgBz, err := json.Marshal(outpostUserMsg)
+		// s.Require().NoError(err)
 
-		b := cosmos.NewBroadcaster(s.T(), s.ChainA)
-		executeMsg := &wasmtypes.MsgExecuteContract{
-			Sender:   s.UserA.FormattedAddress(),
-			Contract: outpostUserContract,
-			Msg:      outpostUserMsgBz,
-		}
-		resp, err := cosmos.BroadcastTx(ctx, b, s.UserA, executeMsg)
-		s.Require().NoError(err)
+		// b := cosmos.NewBroadcaster(s.T(), s.ChainA)
+		// executeMsg := &wasmtypes.MsgExecuteContract{
+		// 	Sender:   s.UserA.FormattedAddress(),
+		// 	Contract: outpostUserContract,
+		// 	Msg:      outpostUserMsgBz,
+		// }
+		// resp, err := cosmos.BroadcastTx(ctx, b, s.UserA, executeMsg)
+		// s.Require().NoError(err)
 
 		/*
 					NOTE:
@@ -186,7 +183,7 @@ func (s *ContractTestSuite) TestOutpostUser() {
 			                Test:           TestWithContractTestSuite/TestOutpostUser/TestOutpostUserSuccess-proto3
 		*/
 
-		fmt.Println(resp.TxHash)
+		// fmt.Println(resp.TxHash)
 
 	},
 	)
