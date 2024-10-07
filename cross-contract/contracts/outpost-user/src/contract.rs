@@ -65,20 +65,29 @@ mod execute {
     };
     use storage_outpost::types::callback::Callback;
 
-    use crate::state::{self};
+    use crate::state::{self, FILE_NOTE};
 
     use super::*;
 
     pub fn save_note(
         deps: DepsMut,
         env: Env,
-        info: MessageInfo, //info.sender will be the outpost's address 
-        outpost_owner: String, 
+        info: MessageInfo, 
+        note: String, 
     ) -> Result<Response, ContractError> {
 
-    // TODO: Save the note after posting the file 
+    // Use the sender's address as the key to store the note
+    let caller_addr = info.sender.as_str();
+    
+    // Update the FILE_NOTE map with the note
+    FILE_NOTE.save(deps.storage, caller_addr, &note)?;
 
-    Ok(Response::new()) 
+    // Emit an event to confirm the note has been saved
+    let response = Response::new()
+        .add_attribute("action", "save_note")
+        .add_attribute("note", note);
+
+    Ok(response)
     }
 
     pub fn call_outpost(
