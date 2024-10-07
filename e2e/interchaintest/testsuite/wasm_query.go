@@ -91,7 +91,7 @@ func GetOutpostOwner(ctx context.Context, chain *cosmos.CosmosChain, factoryCont
 	return queryClient.SmartContractState(ctx, params)
 }
 
-func GetNotes(ctx context.Context, chain *cosmos.CosmosChain, outpostUserAddress string) (*wasmtypes.QuerySmartContractStateResponse, error) {
+func GetNote(ctx context.Context, chain *cosmos.CosmosChain, userAddress, outpostUserAddress string) (*wasmtypes.QuerySmartContractStateResponse, error) {
 	grpcConn, err := grpc.Dial(
 		chain.GetHostGRPCAddress(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -108,7 +108,7 @@ func GetNotes(ctx context.Context, chain *cosmos.CosmosChain, outpostUserAddress
 	// }
 
 	queryData := outposttypes.QueryMsg{
-		GetAllNotes: &struct{}{},
+		GetNote: &outposttypes.GetNoteRequest{Address: userAddress},
 	}
 
 	queryDataBytes, err := json.Marshal(queryData)

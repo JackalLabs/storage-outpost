@@ -51,8 +51,8 @@ pub enum QueryMsg {
     /// GetContractState returns the contact's state.
     #[returns(crate::state::ContractState)]
     GetContractState {},
-    /// GetAllNotes returns all notes in FILE_NOTE.
-    #[returns(Vec<(String, String)>)]
-    GetAllNotes {},
+    /// GetNote returns a single note based on the user's address.
+    #[returns(Option<String>)]
+    GetNote { address: String },
 
 }

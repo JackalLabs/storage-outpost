@@ -36,10 +36,15 @@ type ExecuteMsg struct {
 
 // QueryMsg is the message to query cw-ica-controller
 type QueryMsg struct {
-	GetChannel       *struct{} `json:"get_channel,omitempty"`
-	GetContractState *struct{} `json:"get_contract_state,omitempty"`
-	Ownership        *struct{} `json:"ownership,omitempty"`
-	GetAllNotes      *struct{} `json:"get_all_notes,omitempty"`
+	GetChannel       *struct{}       `json:"get_channel,omitempty"`
+	GetContractState *struct{}       `json:"get_contract_state,omitempty"`
+	Ownership        *struct{}       `json:"ownership,omitempty"`
+	GetNote          *GetNoteRequest `json:"get_note,omitempty"`
+}
+
+// GetNoteRequest is the struct for the GetNote query
+type GetNoteRequest struct {
+	Address string `json:"address"`
 }
 
 // MigrateMsg is the message to migrate cw-ica-controller

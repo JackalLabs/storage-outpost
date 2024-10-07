@@ -51,7 +51,8 @@ pub fn execute(
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::GetContractState {} => to_json_binary(&query::state(deps)?),
-        QueryMsg::GetAllNotes {} => to_json_binary(&query::query_all_notes(deps)?),
+        QueryMsg::GetNote { address } => to_json_binary(&query::query_note_by_address(deps, address)?),
+
 
     }
 }
@@ -150,18 +151,8 @@ mod query {
         STATE.load(deps.storage)
     }
 
-    pub fn query_all_notes(deps: Deps) -> StdResult<Binary> {
-        // Collect all entries in FILE_NOTE as a Vec of (key, value) pairs
-        let notes: StdResult<Vec<(String, String)>> = FILE_NOTE
-            .range(deps.storage, None, None, cosmwasm_std::Order::Ascending)
-            .map(|item| {
-                let (key, value) = item?;
-                Ok((key.to_string(), value))
-            })
-            .collect();
-    
-        // Convert the Vec of notes to a Binary format for the response
-        to_json_binary(&notes?)
+    pub fn query_note_by_address(deps: Deps, address: String) -> StdResult<String> {
+        FILE_NOTE.load(deps.storage, &address)
     }
 }
 

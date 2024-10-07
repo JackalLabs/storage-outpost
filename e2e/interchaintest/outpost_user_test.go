@@ -165,7 +165,7 @@ func (s *ContractTestSuite) TestOutpostUser() {
 		// We recommend building this out on testnet.
 
 		// Query a PubKey
-		pubRes, pubErr := testsuite.GetNotes(ctx, s.ChainA, outpostUserContract)
+		pubRes, pubErr := testsuite.GetNote(ctx, s.ChainA, s.UserA.FormattedAddress(), outpostUserContract)
 		logger.LogInfo(pubRes)
 		s.Require().NoError(pubErr)
 
