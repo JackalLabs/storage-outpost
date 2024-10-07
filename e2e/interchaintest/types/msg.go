@@ -39,6 +39,7 @@ type QueryMsg struct {
 	GetChannel       *struct{} `json:"get_channel,omitempty"`
 	GetContractState *struct{} `json:"get_contract_state,omitempty"`
 	Ownership        *struct{} `json:"ownership,omitempty"`
+	GetAllNotes      *struct{} `json:"get_all_notes,omitempty"`
 }
 
 // MigrateMsg is the message to migrate cw-ica-controller

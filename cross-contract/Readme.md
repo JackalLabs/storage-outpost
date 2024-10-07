@@ -39,3 +39,6 @@ docker run --rm -v "$(pwd)":/code \
   cosmwasm/optimizer:0.15.1 /code/cross-contract/contracts/outpost-user
 
 ```
+
+
+

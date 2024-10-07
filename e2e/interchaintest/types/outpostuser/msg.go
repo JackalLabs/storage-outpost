@@ -14,6 +14,7 @@ type InstantiateMsg struct {
 type ExecuteMsg struct {
 	CallOutpost *ExecuteMsg_CallOutpost `json:"call_outpost,omitempty"`
 	SaveOutpost *ExecuteMsg_SaveOutpost `json:"save_outpost,omitempty"`
+	SaveNote    *ExecuteMsg_SaveNote    `json:"save_note,omitempty"`
 }
 
 type ExecuteMsg_CallOutpost struct {
@@ -22,6 +23,10 @@ type ExecuteMsg_CallOutpost struct {
 
 type ExecuteMsg_SaveOutpost struct {
 	Address string `json:"address"`
+}
+
+type ExecuteMsg_SaveNote struct {
+	Note string `json:"note"`
 }
 
 // ToString returns a string representation of the message

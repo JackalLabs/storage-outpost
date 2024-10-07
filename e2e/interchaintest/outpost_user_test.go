@@ -145,45 +145,29 @@ func (s *ContractTestSuite) TestOutpostUser() {
 		// Seems there's no way around this but to have the outpost user contract also instantiate the outpost
 
 		// We know 'instantiate2' works on canine-chain, so perhaps we can use that and avoid having to use a callback
-		badRes, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostUserContract, outpostUserMsg.ToString(), "--gas", "500000")
+		Res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostUserContract, outpostUserMsg.ToString(), "--gas", "500000")
 		s.Require().NoError(err)
-		fmt.Println(badRes)
+		fmt.Println(Res)
 
-		// We try to use this broadcaster immediately at the same time as the above execute, but the above execute may not have been committed
-		// yet
-		// let's wait a few blocks
-		// err = testutil.WaitForBlocks(ctx, 5, s.ChainA, s.ChainB)
-		// s.Require().NoError(err)
+		saveNoteMsg := outpostuser.ExecuteMsg{
+			SaveNote: &outpostuser.ExecuteMsg_SaveNote{
+				Note: postFileMsg.Note,
+			},
+		}
 
-		// fmt.Println("*******NOW BROADCASTING***************")
-		// outpostUserMsgBz, err := json.Marshal(outpostUserMsg)
-		// s.Require().NoError(err)
+		Res1, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostUserContract, saveNoteMsg.ToString(), "--gas", "500000")
+		s.Require().NoError(err)
+		fmt.Println(Res1)
 
-		// b := cosmos.NewBroadcaster(s.T(), s.ChainA)
-		// executeMsg := &wasmtypes.MsgExecuteContract{
-		// 	Sender:   s.UserA.FormattedAddress(),
-		// 	Contract: outpostUserContract,
-		// 	Msg:      outpostUserMsgBz,
-		// }
-		// resp, err := cosmos.BroadcastTx(ctx, b, s.UserA, executeMsg)
-		// s.Require().NoError(err)
+		// NOTE: The interchaintest package does not have good support for broadcasting multiple messages at the same time--specifically for chains
+		// that don't have the 'cosmos' prefix.
+		// We guarantee that multiple execute messages can be broadcast in the same transaction with the cosmos-sdk.
+		// We recommend building this out on testnet.
 
-		/*
-					NOTE:
-
-					We're getting this classic error:
-
-					*******NOW BROADCASTING***************
-			=== NAME  TestWithContractTestSuite/TestOutpostUser/TestOutpostUserSuccess-proto3
-			    outpost_user_test.go:172:
-			                Error Trace:    /Users/biphan/jackal/storage-outpost/e2e/interchaintest/outpost_user_test.go:172
-			                                                        /Users/biphan/go/pkg/mod/github.com/stretchr/testify@v1.8.4/suite/suite.go:112
-			                Error:          Received unexpected error:
-			                                invalid Bech32 prefix; expected cosmos, got wasm
-			                Test:           TestWithContractTestSuite/TestOutpostUser/TestOutpostUserSuccess-proto3
-		*/
-
-		// fmt.Println(resp.TxHash)
+		// Query a PubKey
+		pubRes, pubErr := testsuite.GetNotes(ctx, s.ChainA, outpostUserContract)
+		logger.LogInfo(pubRes)
+		s.Require().NoError(pubErr)
 
 	},
 	)

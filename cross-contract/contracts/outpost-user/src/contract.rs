@@ -5,7 +5,7 @@ use cosmwasm_std::{to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Resp
 
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::{ContractState, STATE};
+use crate::state::{ContractState, STATE, FILE_NOTE};
 
 /*
 // version info for migration info
@@ -51,6 +51,8 @@ pub fn execute(
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::GetContractState {} => to_json_binary(&query::state(deps)?),
+        QueryMsg::GetAllNotes {} => to_json_binary(&query::query_all_notes(deps)?),
+
     }
 }
 
@@ -85,8 +87,8 @@ mod execute {
     // Emit an event to confirm the note has been saved
     let response = Response::new()
         .add_attribute("action", "save_note")
-        .add_attribute("note", note);
-
+        .add_attribute("note", note)
+        .add_attribute("sender", caller_addr);
     Ok(response)
     }
 
@@ -137,6 +139,8 @@ mod execute {
 }
 
 mod query {
+    use cosmwasm_std::to_binary;
+
     use crate::state;
 
     use super::*;
@@ -144,6 +148,20 @@ mod query {
     /// Returns the saved contract state.
     pub fn state(deps: Deps) -> StdResult<ContractState> {
         STATE.load(deps.storage)
+    }
+
+    pub fn query_all_notes(deps: Deps) -> StdResult<Binary> {
+        // Collect all entries in FILE_NOTE as a Vec of (key, value) pairs
+        let notes: StdResult<Vec<(String, String)>> = FILE_NOTE
+            .range(deps.storage, None, None, cosmwasm_std::Order::Ascending)
+            .map(|item| {
+                let (key, value) = item?;
+                Ok((key.to_string(), value))
+            })
+            .collect();
+    
+        // Convert the Vec of notes to a Binary format for the response
+        to_json_binary(&notes?)
     }
 }
 
