@@ -45,6 +45,7 @@ pub fn execute(
             channel_open_init_options,
         } => execute::create_outpost(deps, env, info, channel_open_init_options),
         ExecuteMsg::MapUserOutpost { outpost_owner} => execute::map_user_outpost(deps, env, info, outpost_owner),
+        ExecuteMsg::MigrateOutpost { outpost_owner, new_outpost_code_id } => execute::migrate_outpost(deps, env, info, outpost_owner, new_outpost_code_id),
     }
 }
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -59,12 +60,14 @@ mod execute {
     use cosmwasm_std::{Addr, BankMsg, Coin, CosmosMsg, Uint128, Event, to_json_binary};
     use storage_outpost::outpost_helpers::StorageOutpostContract;
     use storage_outpost::types::msg::ExecuteMsg as IcaControllerExecuteMsg;
+    use storage_outpost::types::msg::MigrateMsg;
     use storage_outpost::types::state::{CallbackCounter, ChannelState /*ChannelStatus*/};
     use storage_outpost::{
         outpost_helpers::StorageOutpostCode,
         types::msg::options::ChannelOpenInitOptions,
     };
     use storage_outpost::types::callback::Callback;
+    use serde_json_wasm::from_str;
 
     use crate::state::{self, USER_ADDR_TO_OUTPOST_ADDR, LOCK};
 
@@ -167,6 +170,42 @@ mod execute {
     // mem pool
 
     Ok(Response::new().add_event(event)) // this data is not propagated back up to the tx resp of the 'create_outpost' call
+    }
+
+    pub fn migrate_outpost(
+        deps: DepsMut,
+        env: Env,
+        info: MessageInfo,
+        outpost_owner: String,
+        new_outpost_code_id: String,
+    ) -> Result<Response, ContractError> {
+        let state = STATE.load(deps.storage)?;
+        // WARNING: This function is called by the user, so we cannot error:unauthorized if info.sender != admin 
+
+        // Find the owner's outpost address
+        let outpost_address = USER_ADDR_TO_OUTPOST_ADDR.load(deps.storage, &outpost_owner)?;
+
+        let error_msg: String = String::from("Outpost contract address is not a valid bech32 address. Conversion back to addr failed");
+
+        // Call the outpost's helper API 
+        let storage_outpost_code = StorageOutpostContract::new(deps.api.addr_validate(&outpost_address).expect(&error_msg));
+
+        // // The outpost's migrate entry point is just '{}'
+        let migrate_msg = MigrateMsg {};
+
+        let cast_err: String = String::from("Could not cast new outpost code to u64");
+        let new_outpost_code_id_u64 = new_outpost_code_id.parse::<u64>().expect(&cast_err);
+
+        let cosmos_msg = storage_outpost_code.migrate(
+            migrate_msg,
+            new_outpost_code_id_u64,
+        )?;
+
+        let mut event = Event::new("Migration: success");
+
+        // TODO: Save the new code ID of the outpost after migration
+
+        Ok(Response::new().add_message(cosmos_msg).add_event(event)) 
     }
 }
 

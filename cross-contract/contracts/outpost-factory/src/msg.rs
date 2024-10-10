@@ -17,6 +17,11 @@ pub enum ExecuteMsg {
     // to execute the below function and map the user's address to their owned outpost
     MapUserOutpost {
         outpost_owner: String, // this function is called for a specific purpose of updating a map so nothing is optional
+    },
+    // Let's perform a migration with a cross contract call to see how it goes
+    MigrateOutpost {
+        outpost_owner: String, // this function is called for a specific purpose of updating a map so nothing is optional
+        new_outpost_code_id: String,
     }
 }
 

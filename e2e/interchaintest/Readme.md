@@ -10,6 +10,8 @@ The testing commands are:
 ```
 go test -v . -run TestWithFactoryTestSuite -testify.m TestFactoryCreateOutpost -timeout 12h
 
+go test -v . -run TestWithFactoryTestSuite -testify.m TestMasterMigration -timeout 12h
+
 go test -v . -run TestWithContractTestSuite -testify.m TestIcaContractExecutionTestWithFiletree -timeout 12h
 
 go test -v . -run TestWithContractTestSuite -testify.m TestIcaContractExecutionTestWithOwnership -timeout 12h
