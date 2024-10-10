@@ -102,7 +102,7 @@ mod execute {
         let instantiate_msg = storage_outpost::types::msg::InstantiateMsg {
             // NOTE: The user that executes this function is both the owner and the admin of the outpost they create
             owner: Some(info.sender.to_string()), 
-            admin: Some(info.sender.to_string()), 
+            admin: Some(env.contract.address.to_string()), // Factory address is now admin of outpost
             channel_open_init_options: Some(channel_open_init_options),
             callback: Some(callback),
         };

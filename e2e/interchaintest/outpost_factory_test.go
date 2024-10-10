@@ -7,6 +7,7 @@ import (
 	"log"
 	"strconv"
 	"testing"
+	"time"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
@@ -78,7 +79,7 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 
 	res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(createOutpostMsg), "--gas", "500000")
 	s.Require().NoError(err)
-	logger.LogEvents(res.Events)
+	// logger.LogEvents(res.Events)
 	// Confirm that UserA is the admin of the created outpost
 	// For now, Jackal Labs does not want to be the admin of all users' created outposts--this violates ethos.
 	outpostAddressFromEvent := logger.ParseOutpostAddressFromEvent(res.Events)
@@ -192,7 +193,7 @@ func (s *FactoryTestSuite) TestFactoryCreateOutpost() {
 	// sets up the contract and does the channel handshake for the contract test suite.
 	s.SetupFactoryTestSuite(ctx, icatypes.EncodingProtobuf) // NOTE: canined's ibc-go is outdated and does not support proto3json
 
-	// time.Sleep(time.Duration(10) * time.Hour)
+	time.Sleep(time.Duration(10) * time.Hour)
 
 }
 
