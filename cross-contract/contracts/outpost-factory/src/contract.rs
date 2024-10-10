@@ -116,7 +116,7 @@ mod execute {
         let cosmos_msg = storage_outpost_code_id.instantiate(
             instantiate_msg,
             label,
-            Some(info.sender.to_string()),
+            Some(env.contract.address.to_string()), // Factory address is now admin of outpost
         )?;
 
         // Idea: this owner contract can instantiate multiple outpost (ica) contracts. The CONTRACT_ADDR_TO_ICA_ID mapping
