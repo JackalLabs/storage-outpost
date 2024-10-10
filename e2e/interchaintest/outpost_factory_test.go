@@ -80,12 +80,11 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(createOutpostMsg), "--gas", "500000")
 	s.Require().NoError(err)
 	// logger.LogEvents(res.Events)
-	// Confirm that UserA is the admin of the created outpost
-	// For now, Jackal Labs does not want to be the admin of all users' created outposts--this violates ethos.
+	// Confirm that UserA's outpost is administered by the factory
 	outpostAddressFromEvent := logger.ParseOutpostAddressFromEvent(res.Events)
 	outpostContractInfoRes, outpostInfoErr := testsuite.GetContractInfo(ctx, s.ChainA, outpostAddressFromEvent)
 	s.Require().NoError(outpostInfoErr)
-	s.Require().Equal(outpostContractInfoRes.Admin, s.UserA.FormattedAddress())
+	s.Require().Equal(outpostContractInfoRes.Admin, outpostfactoryContractAddr)
 	logger.LogInfo(fmt.Sprintf("outpostContractInfo is: %s", outpostContractInfoRes))
 
 	// Confirm UserA is the owner of the outpost they just made
@@ -125,6 +124,7 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 			OutpostOwner: s.UserA.FormattedAddress(),
 		},
 	}
+
 	// This failed because UserA already used their lock when creating the outpost
 	_, mapOutpostError := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(mapOutpostMsg), "--gas", "500000")
 	expectedErrorMsg := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
@@ -146,11 +146,11 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	makeOutpostA2Res, makeOutpostA2Error := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostfactoryContractAddr, toString(createOutpostMsg), "--gas", "500000")
 	s.Require().NoError(makeOutpostA2Error)
 
-	// Confirm that A2 is the admin of their created outpost
+	// Confirm that A2's outpost is administered by the factory
 	outpostAddressA2FromEvent := logger.ParseOutpostAddressFromEvent(makeOutpostA2Res.Events)
 	outpostContractInfoA2Res, outpostInfoA2Err := testsuite.GetContractInfo(ctx, s.ChainA, outpostAddressA2FromEvent)
 	s.Require().NoError(outpostInfoA2Err)
-	s.Require().Equal(outpostContractInfoA2Res.Admin, s.UserA2.FormattedAddress())
+	s.Require().Equal(outpostContractInfoA2Res.Admin, outpostfactoryContractAddr)
 
 	// Confirm that A2's address<>outpostAddress mapping was done correctly
 	outpostAddressA2FromMap, addressA2Err := testsuite.GetOutpostAddressFromFactoryMap(ctx, s.ChainA, outpostfactoryContractAddr, s.UserA2.FormattedAddress())
