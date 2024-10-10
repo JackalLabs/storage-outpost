@@ -1,39 +1,24 @@
-# End to End Tests
+# E2E Storage Outpost Test
 
-The e2e tests are built using the [interchaintest](https://github.com/strangelove-ventures/interchaintest) library by Strangelove. It runs multiple docker container validators, and lets you test IBC enabled smart contracts.
+This is a complete end to end test suite which demonstrates the storage outpost being deployed on wasmd (a demo chain) to send 
+canine-chain msg types across the relayer to canined (The Jackal Chain).
 
-## Running the tests locally
+TODO: better description 
 
-All contract tests are located in `interchaintest/contract_test.go` file. Currently, there are four tests in this file:
+The testing commands are:
 
-- `TestIcaContractChannelHandshake`
-- `TestIcaContractExecutionProto3JsonEncoding`
-- `TestIcaContractExecutionProtobufEncoding`
-- `TestIcaContractTimeoutPacket`
+```
+go test -v . -run TestWithFactoryTestSuite -testify.m TestFactoryCreateOutpost -timeout 12h
 
-(These three tests used to be one monolithic test, but they were split into three in order to run them in parallel in the CI.)
+go test -v . -run TestWithContractTestSuite -testify.m TestIcaContractExecutionTestWithFiletree -timeout 12h
 
-To run the tests locally, run the following commands from this directory:
+go test -v . -run TestWithContractTestSuite -testify.m TestIcaContractExecutionTestWithOwnership -timeout 12h
 
-```text
-cd interchaintest/
-go test -v . -run TestWithContractTestSuite -testify.m $TEST_NAME
+go test -v . -run TestWithContractTestSuite -testify.m TestIcaContractExecutionTestWithBuyStorage -timeout 12h
+
+go test -v . -run TestWithContractTestSuite -testify.m TestIcaContractExecutionTestWithMigration  
+
+go test -v . -run TestWithFactoryClientTestSuite -testify.m TestOutpostFactoryClient -timeout 12h
+
 ```
 
-where `$TEST_NAME` is one of the four tests listed above.
-
-Before running the tests, you must have built the optimized contract in the `/artifacts` directory. To do this, run the following command from the root of the repository:
-
-```text
-cargo run-script optimize
-```
-
-## In the CI
-
-The tests are run in the github CI after every push to the `main` branch. See the [github actions workflow](https://github.com/srdtrk/cw-ica-controller/blob/main/.github/workflows/e2e.yml) for more details.
-
-For some unknown reason, the timeout test sometimes fails in the CI (I'd say about 20-25% of the time). In this case, feel free to rerun the CI job.
-
-## About the tests
-
-The tests are currently run on wasmd `v0.40.2` and ibc-go `v7.3.0`'s simd which implements json encoding feature for the interchain accounts module.

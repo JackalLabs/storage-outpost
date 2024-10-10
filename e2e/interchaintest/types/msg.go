@@ -12,6 +12,17 @@ type InstantiateMsg struct {
 	// The contract address that the channel and packet lifecycle callbacks are sent to.
 	// If not specified, then no callbacks are sent.
 	SendCallbacksTo *string `json:"send_callbacks_to,omitempty"`
+	// The callback information to be used
+	Callback *Callback `json:"callback,omitempty"`
+}
+
+type Callback struct {
+	// The address of the contract that we will call back
+	Contract string `json:"contract,omitempty"`
+	// The msg we will make the above contract execute
+	Msg Binary `json:"msg,omitempty"`
+	/// The owner of the outpost
+	OutpostOwner string `json:"outpost_owner,omitempty"`
 }
 
 // ExecuteMsg is the message to execute cw-ica-controller
@@ -31,7 +42,12 @@ type QueryMsg struct {
 }
 
 // MigrateMsg is the message to migrate cw-ica-controller
-type MigrateMsg = struct{}
+type MigrateMsg struct {
+	// ContractAddr string `json:"contract_addr"`
+	// NewCodeID    string `json:"new_code_id"`
+	// // base64 encoded bytes
+	// Msg string `json:"msg"`
+}
 
 // `CreateChannel` makes the contract submit a stargate MsgChannelOpenInit to the chain.
 // This is a wrapper around [`options::ChannelOpenInitOptions`] and thus requires the
@@ -101,6 +117,11 @@ func (m *QueryMsg) ToString() string {
 	return toString(m)
 }
 
+// ToString returns a string representation of the message
+func (m *MigrateMsg) ToString() string {
+	return toString(m)
+}
+
 func toString(v any) string {
 	jsonBz, err := json.Marshal(v)
 	if err != nil {
@@ -109,3 +130,10 @@ func toString(v any) string {
 
 	return string(jsonBz)
 }
+
+/*
+Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.
+
+This is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>. See also <https://github.com/CosmWasm/cosmwasm/blob/main/docs/MESSAGE_TYPES.md>.
+*/
+type Binary string

@@ -27,6 +27,9 @@ pub enum ContractError {
     #[error("semver parse error: {0}")]
     SemverError(#[from] semver::Error),
 
+    #[error("{0}")]
+    OwnershipError(#[from] cw_ownable::OwnershipError),
+
     #[error("unauthorized")]
     Unauthorized {},
 
@@ -54,6 +57,12 @@ pub enum ContractError {
     #[error("invalid account address")]
     InvalidAddress {},
 
+    // don't need this anymore because callbacks should be optionl
+    // but we will leave here as a placeholder for future errors that
+    // are related to our callback pattern
+    #[error("No callback address provided")]
+    NoCallback {},
+
     #[error("unsupported transaction type {0}")]
     UnsupportedTxType(String),
 
@@ -71,4 +80,10 @@ pub enum ContractError {
 
     #[error("ica information is not set")]
     IcaInfoNotSet {},
+
+    #[error("unsupported packet encoding: {0}")]
+    UnsupportedPacketEncoding(String),
+
+    #[error("No owner found")]
+    NoOwner {},
 }
