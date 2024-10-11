@@ -33,10 +33,17 @@ pub struct InstantiateMsg {
 /// #[cw_ownable::cw_ownable_execute] - might need this?
 #[cw_serde]
 pub enum ExecuteMsg {
-    /// CreateChannel makes the contract submit a stargate MsgChannelOpenInit to the chain.
+    /// `CreateChannel` makes the contract submit a stargate MsgChannelOpenInit to the chain.
     /// This is a wrapper around [`options::ChannelOpenInitOptions`] and thus requires the
-    /// same fields.
-    CreateChannel(options::ChannelOpenInitOptions),
+    /// same fields. If not specified, then the options specified in the contract instantiation
+    /// are used.
+    CreateChannel {
+        /// The options to initialize the IBC channel.
+        /// If not specified, the options specified in the last channel creation are used.
+        /// Must be `None` if the sender is not the owner.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        channel_open_init_options: Option<options::ChannelOpenInitOptions>,
+    },
 
     /// CreateTransferChannel makes the contract submit a stargate MsgChannelOpenInit to the chain.
     /// This works the same as above but opens a channel for the transfer module specifically.
@@ -124,7 +131,6 @@ pub enum QueryMsg {
     /// GetCallbackCounter returns the callback counter.
     #[returns(crate::types::state::CallbackCounter)]
     GetCallbackCounter {},
-    
 }
 
 /// The message to migrate this contract.
@@ -133,6 +139,7 @@ pub struct MigrateMsg {}
 
 /// Option types for other messages.
 pub mod options {
+    use cosmwasm_std::IbcOrder;
     use super::*;
     use crate::ibc::types::{keys::HOST_PORT_ID, metadata::TxEncoding};
 
@@ -148,6 +155,10 @@ pub mod options {
         pub counterparty_port_id: Option<String>,
         /// TxEncoding is the encoding used for the ICA txs. If not specified, [TxEncoding::Protobuf] is used.
         pub tx_encoding: Option<TxEncoding>,
+        /// The order of the channel. If not specified, [`IbcOrder::Ordered`] is used.
+        /// [`IbcOrder::Unordered`] is only supported if the counterparty chain is using `ibc-go`
+        /// v8.1.0 or later.
+        pub channel_ordering: Option<IbcOrder>,
     }
 
     impl ChannelOpenInitOptions {

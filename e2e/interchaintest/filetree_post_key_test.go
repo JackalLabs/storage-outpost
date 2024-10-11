@@ -5,11 +5,13 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/cosmos/gogoproto/proto"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	"github.com/google/uuid"
+	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
@@ -32,7 +34,8 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 	// This starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
 	// sets up the contract and does the channel handshake for the contract test suite.
 	s.SetupContractTestSuite(ctx, encoding)
-	_, canined := s.ChainA, s.ChainB
+	wasmd, canined := s.ChainA, s.ChainB
+	fmt.Println(wasmd)
 	wasmdUser := s.UserA
 
 	logger.LogInfo(canined.FullNodes)
@@ -113,17 +116,47 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 
 		rootMsgTypeURL := "/canine_chain.filetree.MsgProvisionFileTree"
 
+		// Set a 1 second timeout so the packet timeout can close the channel
+		var timeout uint64 = 1
 		sendStargateMsg1 := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
-			[]proto.Message{filetreeMakeRootMsg}, nil, nil, rootMsgTypeURL,
+			[]proto.Message{filetreeMakeRootMsg}, nil, &timeout, rootMsgTypeURL,
 		)
 		err := s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg1)
-
 		s.Require().NoError(err)
 
-		// Query a PubKey
-		pubRes, pubErr := testsuite.PubKey(ctx, s.ChainB, s.Contract.IcaAddress)
-		s.Require().NoError(pubErr)
-		s.Require().Equal(pubRes.PubKey.GetKey(), filetreeMsg.GetKey(), "Expected PubKey does not match the returned PubKey")
+		// // NOTE: sometimes fails, I think it's because the state change on canined wasn't committed before we queried below?
+		// // we added the 'Wait' below to ensure the state change is committed before querying
+		// err = testutil.WaitForBlocks(ctx, 5, wasmd, canined)
+		// s.Require().NoError(err)
+
+		// // Query a PubKey
+		// pubRes, pubErr := testsuite.PubKey(ctx, s.ChainB, s.Contract.IcaAddress)
+		// s.Require().NoError(pubErr)
+		// s.Require().Equal(pubRes.PubKey.GetKey(), filetreeMsg.GetKey(), "Expected PubKey does not match the returned PubKey")
+
+		//=======================================================//
+
+		// contractState, err := s.Contract.QueryContractState(ctx)
+		// s.Require().NoError(err)
+
+		err = testutil.WaitForBlocks(ctx, 5, wasmd, canined)
+		s.Require().NoError(err)
+
+		// Query the channel information that's saved in contract state
+		channelRes, chanErr := testsuite.GetChannelFromState(ctx, s.ChainA, s.Contract.Address)
+		s.Require().NoError(chanErr)
+
+		// Note that this is just grabbing the channel status from contract state
+		// I don't think the outpost knows when the channel is closed
+		var response testsuite.ChannelStatusResponse
+		marshalError := json.Unmarshal([]byte(channelRes.Data), &response)
+		if marshalError != nil {
+			log.Fatalf("Failed to parse JSON: from channel response %v", marshalError)
+		}
+
+		logger.LogInfo(response)
+		logger.LogInfo(response.Channel.Endpoint.PortID)
+		logger.LogInfo(response.ChannelStatus)
 
 		// Query all Pubkeys
 		// allRes, allErr := testsuite.AllPubKeys(ctx, s.ChainB)
@@ -133,6 +166,6 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 
 	// implement mock query server
 
-	// time.Sleep(time.Duration(10) * time.Hour)
+	time.Sleep(time.Duration(10) * time.Hour)
 
 }

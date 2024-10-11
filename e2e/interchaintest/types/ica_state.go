@@ -21,8 +21,8 @@ type IcaContractCallbackCounter struct {
 
 // ContractChannelState is used to represent the channel state in the contract's storage
 type IcaContractChannelState struct {
-	Channel       CwIbcChannel `json:"channel"`
-	ChannelStatus string       `json:"channel_status"`
+	Channel       CwIbcChannel  `json:"channel"`
+	ChannelStatus ChannelStatus `json:"channel_status"`
 }
 
 // IsOpen returns true if the channel is open
