@@ -11,6 +11,7 @@ import (
 	"github.com/cosmos/gogoproto/proto"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	"github.com/google/uuid"
+	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
@@ -137,6 +138,9 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 
 		// contractState, err := s.Contract.QueryContractState(ctx)
 		// s.Require().NoError(err)
+
+		err = testutil.WaitForBlocks(ctx, 10, wasmd, canined)
+		s.Require().NoError(err)
 
 		// Query the channel information that's saved in contract state
 		channelRes, chanErr := testsuite.GetChannelFromState(ctx, s.ChainA, s.Contract.Address)
