@@ -139,7 +139,7 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 		// contractState, err := s.Contract.QueryContractState(ctx)
 		// s.Require().NoError(err)
 
-		err = testutil.WaitForBlocks(ctx, 10, wasmd, canined)
+		err = testutil.WaitForBlocks(ctx, 5, wasmd, canined)
 		s.Require().NoError(err)
 
 		// Query the channel information that's saved in contract state

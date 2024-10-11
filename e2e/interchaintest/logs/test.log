@@ -1,6 +1,3 @@
-INFO: 2024/10/11 13:07:00 The sender of instantiate is wasmd-localwasm-1-ugh
-INFO: 2024/10/11 13:07:11 [0x14001314800]
-INFO: 2024/10/11 13:07:50 /
-INFO: 2024/10/11 13:08:22 {{{wasm.wasm14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s0phg4d channel-0} {icahost channel-0} ORDER_ORDERED {"version":"ics27-1","controller_connection_id":"connection-0","host_connection_id":"connection-0","address":"jkl1jh556xdayp8kpuzmesd9w7xkmcfyegltmykrkmsn7uzmmzmtqq3qzmwuc3","encoding":"proto3","tx_type":"sdk_multi_msg"} connection-0} STATE_CLOSED}
-INFO: 2024/10/11 13:08:22 wasm.wasm14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s0phg4d
-INFO: 2024/10/11 13:08:22 STATE_CLOSED
+INFO: 2024/10/11 13:14:50 The sender of instantiate is wasmd-localwasm-1-jgc
+INFO: 2024/10/11 13:15:02 [0x140013baa00]
+INFO: 2024/10/11 13:15:39 /
