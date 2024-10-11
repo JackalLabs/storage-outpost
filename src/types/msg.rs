@@ -125,6 +125,9 @@ pub enum QueryMsg {
     /// GetChannel returns the IBC channel info.
     #[returns(crate::types::state::ChannelState)]
     GetChannel {},
+    /// GetChannelStatus uses the CosmWasm API to query the current channel status
+    #[returns(crate::types::state::ChannelState)] // Not sure what it returns at the moment
+    GetChannelStatus {},
     /// GetContractState returns the contact's state.
     #[returns(crate::types::state::ContractState)]
     GetContractState {},

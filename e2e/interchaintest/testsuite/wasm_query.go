@@ -90,3 +90,35 @@ func GetOutpostOwner(ctx context.Context, chain *cosmos.CosmosChain, factoryCont
 	}
 	return queryClient.SmartContractState(ctx, params)
 }
+
+func GetChannelFromState(ctx context.Context, chain *cosmos.CosmosChain, outpostAddress string) (*wasmtypes.QuerySmartContractStateResponse, error) {
+	grpcConn, err := grpc.Dial(
+		chain.GetHostGRPCAddress(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer grpcConn.Close()
+	queryClient := wasmtypes.NewQueryClient(grpcConn)
+
+	// // TODO: replace with query msg type in types/outpostfactory/msg.go
+	// queryData := map[string]interface{}{
+	// 	"ownership": map[string]string{},
+	// }
+
+	queryData := outposttypes.QueryMsg{
+		GetChannel: &struct{}{},
+	}
+
+	queryDataBytes, err := json.Marshal(queryData)
+	if err != nil {
+		return nil, err
+	}
+
+	params := &wasmtypes.QuerySmartContractStateRequest{
+		Address:   outpostAddress,
+		QueryData: queryDataBytes,
+	}
+	return queryClient.SmartContractState(ctx, params)
+}

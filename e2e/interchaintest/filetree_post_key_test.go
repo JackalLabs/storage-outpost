@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/cosmos/gogoproto/proto"
@@ -130,6 +131,45 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 		s.Require().NoError(pubErr)
 		s.Require().Equal(pubRes.PubKey.GetKey(), filetreeMsg.GetKey(), "Expected PubKey does not match the returned PubKey")
 
+		//=======================================================//
+
+		// TODO: This is not closing the channel - Even waiting for blocks isn't closing
+		// Ask Reece how to close the channel in the e2e environment
+
+		relayError := s.Relayer.StopRelayer(ctx, s.ExecRep)
+		s.Require().NoError(relayError)
+
+		err = testutil.WaitForBlocks(ctx, 5, wasmd, canined)
+		s.Require().NoError(err)
+
+		// Does the outpost recognise when the channel is closed?
+		// NOTE: Need to make the packet timeout an optional param that outpost will take in order to test this
+		contractState, err := s.Contract.QueryContractState(ctx)
+		s.Require().NoError(err)
+
+		// Flush to make sure the channel is closed in simd:
+		err = s.Relayer.Flush(ctx, s.ExecRep, s.PathName, contractState.IcaInfo.ChannelID)
+		s.Require().NoError(err)
+
+		err = testutil.WaitForBlocks(ctx, 5, wasmd, canined)
+		s.Require().NoError(err)
+
+		// Query the channel information that's saved in contract state
+		channelRes, chanErr := testsuite.GetChannelFromState(ctx, s.ChainA, s.Contract.Address)
+		s.Require().NoError(chanErr)
+
+		// Note that this is just grabbing the channel status from contract state
+		// I don't think the outpost knows when the channel is closed
+		var response testsuite.ChannelStatusResponse
+		marshalError := json.Unmarshal([]byte(channelRes.Data), &response)
+		if marshalError != nil {
+			log.Fatalf("Failed to parse JSON: from channel response %v", marshalError)
+		}
+
+		logger.LogInfo(response)
+		logger.LogInfo(response.Channel.Endpoint.PortID)
+		logger.LogInfo(response.ChannelStatus)
+
 		// Query all Pubkeys
 		// allRes, allErr := testsuite.AllPubKeys(ctx, s.ChainB)
 		// s.Require().NoError(allErr)
@@ -138,6 +178,6 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 
 	// implement mock query server
 
-	// time.Sleep(time.Duration(10) * time.Hour)
+	time.Sleep(time.Duration(10) * time.Hour)
 
 }
