@@ -115,8 +115,10 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 
 		rootMsgTypeURL := "/canine_chain.filetree.MsgProvisionFileTree"
 
+		// Set a 1 second timeout so the packet timeout can close the channel
+		var timeout uint64 = 1
 		sendStargateMsg1 := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
-			[]proto.Message{filetreeMakeRootMsg}, nil, nil, rootMsgTypeURL,
+			[]proto.Message{filetreeMakeRootMsg}, nil, &timeout, rootMsgTypeURL,
 		)
 		err := s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg1)
 		s.Require().NoError(err)
@@ -132,9 +134,6 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 		s.Require().Equal(pubRes.PubKey.GetKey(), filetreeMsg.GetKey(), "Expected PubKey does not match the returned PubKey")
 
 		//=======================================================//
-
-		// TODO: This is not closing the channel - Even waiting for blocks isn't closing
-		// Ask Reece how to close the channel in the e2e environment
 
 		relayError := s.Relayer.StopRelayer(ctx, s.ExecRep)
 		s.Require().NoError(relayError)
