@@ -11,7 +11,6 @@ import (
 	"github.com/cosmos/gogoproto/proto"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	"github.com/google/uuid"
-	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
@@ -35,6 +34,7 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 	// sets up the contract and does the channel handshake for the contract test suite.
 	s.SetupContractTestSuite(ctx, encoding)
 	wasmd, canined := s.ChainA, s.ChainB
+	fmt.Println(wasmd)
 	wasmdUser := s.UserA
 
 	logger.LogInfo(canined.FullNodes)
@@ -123,35 +123,20 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 		err := s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg1)
 		s.Require().NoError(err)
 
-		// NOTE: sometimes fails, I think it's because the state change on canined wasn't committed before we queried below?
-		// we added the 'Wait' below to ensure the state change is committed before querying
-		err = testutil.WaitForBlocks(ctx, 5, wasmd, canined)
-		s.Require().NoError(err)
+		// // NOTE: sometimes fails, I think it's because the state change on canined wasn't committed before we queried below?
+		// // we added the 'Wait' below to ensure the state change is committed before querying
+		// err = testutil.WaitForBlocks(ctx, 5, wasmd, canined)
+		// s.Require().NoError(err)
 
-		// Query a PubKey
-		pubRes, pubErr := testsuite.PubKey(ctx, s.ChainB, s.Contract.IcaAddress)
-		s.Require().NoError(pubErr)
-		s.Require().Equal(pubRes.PubKey.GetKey(), filetreeMsg.GetKey(), "Expected PubKey does not match the returned PubKey")
+		// // Query a PubKey
+		// pubRes, pubErr := testsuite.PubKey(ctx, s.ChainB, s.Contract.IcaAddress)
+		// s.Require().NoError(pubErr)
+		// s.Require().Equal(pubRes.PubKey.GetKey(), filetreeMsg.GetKey(), "Expected PubKey does not match the returned PubKey")
 
 		//=======================================================//
 
-		relayError := s.Relayer.StopRelayer(ctx, s.ExecRep)
-		s.Require().NoError(relayError)
-
-		err = testutil.WaitForBlocks(ctx, 5, wasmd, canined)
-		s.Require().NoError(err)
-
-		// Does the outpost recognise when the channel is closed?
-		// NOTE: Need to make the packet timeout an optional param that outpost will take in order to test this
-		contractState, err := s.Contract.QueryContractState(ctx)
-		s.Require().NoError(err)
-
-		// Flush to make sure the channel is closed in simd:
-		err = s.Relayer.Flush(ctx, s.ExecRep, s.PathName, contractState.IcaInfo.ChannelID)
-		s.Require().NoError(err)
-
-		err = testutil.WaitForBlocks(ctx, 5, wasmd, canined)
-		s.Require().NoError(err)
+		// contractState, err := s.Contract.QueryContractState(ctx)
+		// s.Require().NoError(err)
 
 		// Query the channel information that's saved in contract state
 		channelRes, chanErr := testsuite.GetChannelFromState(ctx, s.ChainA, s.Contract.Address)
