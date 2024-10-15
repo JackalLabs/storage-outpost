@@ -22,6 +22,7 @@ import (
 type FactoryTestSuite struct {
 	mysuite.TestSuite
 
+	FactoryAddress        string
 	OutpostContractCodeId int64
 
 	Contract              *types.IcaContract
