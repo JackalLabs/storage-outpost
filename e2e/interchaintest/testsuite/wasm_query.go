@@ -42,6 +42,34 @@ func GetOutpostAddressFromFactoryMap(ctx context.Context, chain *cosmos.CosmosCh
 	return queryClient.SmartContractState(ctx, params)
 }
 
+// Get the entire factory map
+func GetFactoryMap(ctx context.Context, chain *cosmos.CosmosChain, factoryContractAddress string) (*wasmtypes.QuerySmartContractStateResponse, error) {
+	grpcConn, err := grpc.Dial(
+		chain.GetHostGRPCAddress(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer grpcConn.Close()
+	queryClient := wasmtypes.NewQueryClient(grpcConn)
+
+	queryData := map[string]interface{}{
+		"get_all_user_outpost_addresses": struct{}{},
+	}
+
+	queryDataBytes, err := json.Marshal(queryData)
+	if err != nil {
+		return nil, err
+	}
+
+	params := &wasmtypes.QuerySmartContractStateRequest{
+		Address:   factoryContractAddress,
+		QueryData: queryDataBytes,
+	}
+	return queryClient.SmartContractState(ctx, params)
+}
+
 func GetContractInfo(ctx context.Context, chain *cosmos.CosmosChain, contractAddress string) (*wasmtypes.QueryContractInfoResponse, error) {
 	grpcConn, err := grpc.Dial(
 		chain.GetHostGRPCAddress(),

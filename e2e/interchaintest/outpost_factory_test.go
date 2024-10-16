@@ -177,6 +177,22 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	expectedErrorMsg3 := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
 	s.Require().EqualError(maliciousErr, expectedErrorMsg3)
 
+	factoryMapRes, mapErr := testsuite.GetFactoryMap(ctx, s.ChainA, outpostfactoryContractAddr)
+	s.Require().NoError(mapErr)
+	logger.LogInfo(fmt.Sprintf("factory map is: %s", factoryMapRes))
+
+	type UserOutpostMapping [][]string
+	// Parse the JSON response into the UserOutpostMapping type
+	var userOutpostMappings UserOutpostMapping
+	parseError := json.Unmarshal(factoryMapRes.Data, &userOutpostMappings)
+	s.Require().NoError(parseError)
+
+	for i, mapping := range userOutpostMappings {
+		// Join each sub-array (mapping) into a readable string
+		mappingStr := fmt.Sprintf("Mapping %d: %v", i, mapping)
+		logger.LogInfo(mappingStr)
+	}
+
 	// TODO: Confirm that outpost made actually works to store pubkey
 
 }
