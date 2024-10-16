@@ -53,6 +53,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::GetContractState {} => to_json_binary(&query::state(deps)?),
         QueryMsg::GetUserOutpostAddress { user_address } => to_json_binary(&query::user_outpost_address(deps, user_address)?),
+        QueryMsg::GetAllUserOutpostAddresses {  } => to_json_binary(&query::get_all_user_outpost_addresses(deps)?),
     }
 }
 
@@ -222,6 +223,24 @@ mod query {
     /// Returns the outpost address this user owns
     pub fn user_outpost_address(deps: Deps, user_address: String) -> StdResult<String> {
         USER_ADDR_TO_OUTPOST_ADDR.load(deps.storage, &user_address)
+    }
+
+    // Get every key value pair from the 'USER_ADDR_TO_OUTPOST_ADDR' map
+    pub fn get_all_user_outpost_addresses(deps: Deps) -> StdResult<Vec<(String, String)>> {
+        // Create a vector to store all entries
+        let mut all_entries = Vec::new();
+    
+        // Use the prefix_range function to iterate over all key-value pairs in the map
+        let pairs = USER_ADDR_TO_OUTPOST_ADDR
+            .range(deps.storage, None, None, cosmwasm_std::Order::Ascending);
+    
+        // Collect each key-value pair
+        for pair in pairs {
+            let (key, value) = pair?;
+            all_entries.push((key.to_string(), value));
+        }
+    
+        Ok(all_entries)
     }
 }
 

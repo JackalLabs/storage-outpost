@@ -35,4 +35,7 @@ pub enum QueryMsg {
     /// GetUserOutpostAddress returns the outpost address owned by the given user address
     #[returns(String)]
     GetUserOutpostAddress { user_address: String},
+    /// GetAllUserOutpostAddresses returns all user-to-outpost mappings.
+    #[returns(Vec<(String, String)>)]
+    GetAllUserOutpostAddresses {},
 }
