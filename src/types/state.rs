@@ -30,6 +30,10 @@ pub const ALLOW_CHANNEL_CLOSE_INIT: Item<bool> = Item::new("allow_channel_close_
 /// The item used to store the successful and erroneous callbacks in store.
 pub const CALLBACK_COUNTER: Item<CallbackCounter> = Item::new("callback_counter");
 
+/// Migration data that shows the migration succeeded
+pub const MIGRATION_DATA: Item<String> = Item::new("migration-data");
+
+
 mod contract {
     use crate::ibc::types::metadata::TxEncoding;
 

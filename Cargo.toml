@@ -1,6 +1,6 @@
 [package]
 name = "storage-outpost"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Bi Phan <bi@jackallabs.io>", "Serdar Turkmenafsar <IBC Protocol>"]
 edition = "2021"
 

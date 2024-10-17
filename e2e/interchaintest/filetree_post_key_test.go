@@ -128,6 +128,21 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 		s.Require().NoError(pubErr)
 		s.Require().Equal(pubRes.PubKey.GetKey(), filetreeMsg.GetKey(), "Expected PubKey does not match the returned PubKey")
 
+		postMigrateMsg := testtypes.ExecuteMsg{
+			SetDataAfterMigration: &testtypes.ExecuteMsg_SetDataAfterMigration{
+				Data: "migration successful",
+			},
+		}
+
+		// Make sure migration data can be saved following a migration
+		err = s.Contract.Execute(ctx, wasmdUser.KeyName(), postMigrateMsg)
+		s.Require().NoError(err)
+
+		// Query a PubKey
+		migrationRes, migrateErr := testsuite.GetMigrationData(ctx, s.ChainA, s.Contract.Address)
+		s.Require().NoError(migrateErr)
+		logger.LogInfo(migrationRes.Data)
+
 		// Query all Pubkeys
 		// allRes, allErr := testsuite.AllPubKeys(ctx, s.ChainB)
 		// s.Require().NoError(allErr)
@@ -135,6 +150,6 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 	)
 	// implement mock query server
 
-	// time.Sleep(time.Duration(10) * time.Hour)
+	time.Sleep(time.Duration(10) * time.Hour)
 
 }

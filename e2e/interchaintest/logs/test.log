@@ -1,3 +1,4 @@
-INFO: 2024/10/17 18:29:41 The sender of instantiate is wasmd-localwasm-1-dxr
-INFO: 2024/10/17 18:29:52 [0x140016b8100]
-INFO: 2024/10/17 18:30:31 /
+INFO: 2024/10/17 19:04:57 The sender of instantiate is wasmd-localwasm-1-hbq
+INFO: 2024/10/17 19:05:09 [0x14001615200]
+INFO: 2024/10/17 19:05:48 /
+INFO: 2024/10/17 19:06:13 data:"\"migration successful\"" 

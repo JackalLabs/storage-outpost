@@ -61,6 +61,12 @@ pub enum ExecuteMsg {
         #[serde(skip_serializing_if = "Option::is_none")]
         timeout_seconds: Option<u64>,
     },
+
+    /// Save some arbitrary data to confirm migration success
+    SetDataAfterMigration {
+        /// Arbitary string
+        data: String, 
+    },
 }
 
 /// The outpost factory depends on the outpost, which causes a cyclic dependency if the outpost called
@@ -95,7 +101,9 @@ pub enum QueryMsg {
     /// GetCallbackCounter returns the callback counter.
     #[returns(crate::types::state::CallbackCounter)]
     GetCallbackCounter {},
-    
+    /// Return the migration data
+    #[returns(String)]
+    GetMigrationData {},
 }
 
 /// The message to migrate this contract.

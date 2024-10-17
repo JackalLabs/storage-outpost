@@ -7,7 +7,8 @@ use crate::ibc::types::stargate::channel::new_ica_channel_open_init_cosmos_msg;
 use crate::types::keys::{self, CONTRACT_NAME, CONTRACT_VERSION};
 use crate::types::msg::{OutpostFactoryExecuteMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::types::state::{
-    self, CallbackCounter, ChannelState, ContractState, CALLBACK_COUNTER, CHANNEL_STATE, STATE, CHANNEL_OPEN_INIT_OPTIONS, ALLOW_CHANNEL_OPEN_INIT
+    self, CallbackCounter, ChannelState, ContractState, CALLBACK_COUNTER, CHANNEL_STATE, STATE, CHANNEL_OPEN_INIT_OPTIONS, ALLOW_CHANNEL_OPEN_INIT,
+    MIGRATION_DATA,
 };
 use crate::types::ContractError;
 use crate::types::filetree::{MsgPostKey, MsgPostFile};
@@ -125,6 +126,7 @@ pub fn execute(
         } => {
             execute::send_cosmos_msgs(deps, env, info, messages, packet_memo, timeout_seconds)
         },
+        ExecuteMsg::SetDataAfterMigration { data } => execute::save_data_after_migration(deps, env, info, data),
     }
 }
 
@@ -137,6 +139,8 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::GetChannel {} => to_json_binary(&query::channel(deps)?),
         QueryMsg::GetCallbackCounter {} => to_json_binary(&query::callback_counter(deps)?),
         QueryMsg::Ownership {} => to_json_binary(&query::get_owner(deps)?),
+        QueryMsg::GetMigrationData {} => to_json_binary(&query::migration_data(deps)?),
+
     }
 }
 
@@ -236,6 +240,18 @@ mod execute {
         let send_packet_msg = ica_packet.to_ibc_msg(&env, ica_info.channel_id, timeout_seconds)?;
 
         Ok(Response::default().add_message(send_packet_msg))
+    }
+
+    pub fn save_data_after_migration(
+        deps: DepsMut,
+        env: Env,
+        info: MessageInfo,
+        data: String,
+    ) -> Result<Response, ContractError> {
+
+        let _ = state::MIGRATION_DATA.save(deps.storage, &data);
+
+        Ok(Response::new().add_attribute("method", "save_data_after_migration"))
 
     }
 }
@@ -273,6 +289,11 @@ mod query {
         } else {
             Err(StdError::generic_err("No owner found"))
         }
+    }
+
+    /// Returns the migration data
+    pub fn migration_data(deps: Deps) -> StdResult<String> {
+        MIGRATION_DATA.load(deps.storage)
     }
 }
 
