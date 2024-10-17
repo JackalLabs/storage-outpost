@@ -126,13 +126,6 @@ pub fn execute(
         } => {
             execute::send_cosmos_msgs(deps, env, info, messages, packet_memo, timeout_seconds)
         },
-        ExecuteMsg::SendCosmosMsgsCli {
-            packet_memo,
-            timeout_seconds,
-            path,
-        } => {
-            execute::send_cosmos_msgs_cli(deps, env, info, packet_memo, timeout_seconds, &path)
-        },
         ExecuteMsg::SendTransferMsg { 
             packet_memo, 
             timeout_seconds,
@@ -277,79 +270,6 @@ mod execute {
 
         Ok(Response::default().add_message(send_packet_msg))
 
-    }
-
-    // TODO: add explanation for why this function is useful to us
-
-    /// Sends an array of [`CosmosMsg`] to the ICA host.
-    #[allow(clippy::needless_pass_by_value)]
-    pub fn send_cosmos_msgs_cli(
-        deps: DepsMut,
-        env: Env,
-        info: MessageInfo,
-        packet_memo: Option<String>,
-        timeout_seconds: Option<u64>,
-        path: &str,
-    ) -> Result<Response, ContractError> {
-
-        cw_ownable::assert_owner(deps.storage, &info.sender)?;
-        let contract_state = STATE.load(deps.storage)?;
-        let ica_info = contract_state.get_ica_info()?;
-
-        // TODO: Create Vec<CosmosMsg>
-        // This isn't the final implementation of the function, we're just prototyping to see what works 
-
-        // TODO: port this type  into src/types 
-        // and pack it into a CosmosMsg
-
-        let (parent_hash, child_hash) = merkle_helper(path);
-
-        // Declare an instance of msg_post_file
-        let msg_post_file = MsgPostFile {
-            // TODO: implement proper borrowing and don't use clone. Poor memory manamgement leads to high transaction gas cost
-            creator: ica_info.ica_address.clone(), 
-            account: hash_and_hex(&ica_info.ica_address),
-            hash_parent: parent_hash,
-            hash_child: child_hash,
-            contents: format!("placeholder - {}", path),
-            viewers: format!("placeholder - {}", path),
-            editors: format!("placeholder - {}", path),
-            tracking_number: format!("placeholder - {}", path),
-        };
-
-        // Let's marshal post key to bytes and pack it into stargate API 
-        let encoded = msg_post_file.encode_to_vec();
-
-        // WARNING: This is first attempt, there's a good chance we did something wrong when converting post key to bytes
-        let cosmos_msg: CosmosMsg<Empty> = CosmosMsg::Stargate { 
-            type_url: String::from("/canine_chain.filetree.MsgPostFile"), 
-            value: cosmwasm_std::Binary(encoded.to_vec()) 
-        };
-
-        let mut messages = Vec::<CosmosMsg>::new();
-        messages.insert(0, cosmos_msg);
-
-        let ica_packet = IcaPacketData::from_cosmos_msgs(
-            messages,
-            &ica_info.encoding,
-            packet_memo,
-            &ica_info.ica_address,
-        )?;
-        let send_packet_msg = ica_packet.to_ibc_msg(&env, ica_info.channel_id, timeout_seconds)?;
-
-        // Make a logging event 
-        let mut event = Event::new("logging");
-
-        // Add some placeholder logs
-        event = event.add_attribute("creator", msg_post_file.creator);
-        event = event.add_attribute("account", msg_post_file.account);
-        event = event.add_attribute("hash_parent", msg_post_file.hash_parent);
-        event = event.add_attribute("hash_child", msg_post_file.hash_child);
-        event = event.add_attribute("editors", msg_post_file.editors);
-        event = event.add_attribute("tracking_number", msg_post_file.tracking_number);
-        event = event.add_attribute("contract executor", info.sender.to_string());
-
-        Ok(Response::default().add_message(send_packet_msg).add_event(event))
     }
 
     /// Sends an IBC Transfer 

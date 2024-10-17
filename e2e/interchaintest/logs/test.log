@@ -1,5 +1,3 @@
-INFO: 2024/10/16 17:17:52 contract Info is: address:"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" contract_info:<code_id:2 creator:"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag" admin:"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag" label:"wasm-contract" created:<block_height:54 > ibc_port_id:"wasm.wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" > 
-INFO: 2024/10/16 17:17:56 outpostContractInfo is: address:"wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay" contract_info:<code_id:1 creator:"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" admin:"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" label:"storage_outpost-owned by: wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag" created:<block_height:56 > ibc_port_id:"wasm.wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay" > 
-INFO: 2024/10/16 17:18:35 factory map is: data:"[[\"wasm125gw73kajruy5e9xcnpjx60nh6md4gjfvr6ees\",\"wasm1yyca08xqdgvjz0psg56z67ejh9xms6l436u8y58m82npdqqhmmtqas0cl7\"],[\"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag\",\"wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay\"]]" 
-INFO: 2024/10/16 17:18:35 Mapping 0: [wasm125gw73kajruy5e9xcnpjx60nh6md4gjfvr6ees wasm1yyca08xqdgvjz0psg56z67ejh9xms6l436u8y58m82npdqqhmmtqas0cl7]
-INFO: 2024/10/16 17:18:35 Mapping 1: [wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay]
+INFO: 2024/10/17 12:48:34 The sender of instantiate is wasmd-localwasm-1-hze
+INFO: 2024/10/17 12:48:45 [0x1400169a200]
+INFO: 2024/10/17 12:49:24 /
