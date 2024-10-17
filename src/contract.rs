@@ -118,7 +118,6 @@ pub fn execute(
         ExecuteMsg::CreateChannel {
             channel_open_init_options,
         } => execute::create_channel(deps, env, info, channel_open_init_options),
-        ExecuteMsg::CreateTransferChannel(options) => execute::create_transfer_channel(deps, env, info, options),
         ExecuteMsg::SendCosmosMsgs {
             messages,
             packet_memo,
@@ -126,13 +125,6 @@ pub fn execute(
         } => {
             execute::send_cosmos_msgs(deps, env, info, messages, packet_memo, timeout_seconds)
         },
-        ExecuteMsg::SendTransferMsg { 
-            packet_memo, 
-            timeout_seconds,
-            recipient,
-        } => {
-            execute::send_transfer_msg(deps, env, info, packet_memo, timeout_seconds, recipient)
-        }
     }
 }
 
@@ -215,31 +207,6 @@ mod execute {
         Ok(Response::new().add_message(ica_channel_open_init_msg))
     }
 
-    // TODO: add a 'close channel' function? why would the user ever close the channel?...
-
-    /// Submits a stargate MsgChannelOpenInit to the chain for the transfer module
-    pub fn create_transfer_channel(
-        deps: DepsMut,
-        env: Env,
-        info: MessageInfo,
-        options: ChannelOpenInitOptions,
-    ) -> Result<Response, ContractError> {
-        let mut contract_state = STATE.load(deps.storage)?;
-        contract_state.verify_admin(info.sender)?;
-
-        contract_state.enable_channel_open_init();
-        STATE.save(deps.storage, &contract_state)?;
-
-        let transfer_channel_open_init_msg = channel::new_transfer_channel_open_init_cosmos_msg(
-            env.contract.address.to_string(),
-            options.connection_id,
-            options.counterparty_port_id,
-            options.counterparty_connection_id,
-        );
-
-        Ok(Response::new().add_message(transfer_channel_open_init_msg))
-    }
-
     /// Sends an array of [`CosmosMsg`] to the ICA host.
     #[allow(clippy::needless_pass_by_value)]
     pub fn send_cosmos_msgs(
@@ -270,44 +237,6 @@ mod execute {
 
         Ok(Response::default().add_message(send_packet_msg))
 
-    }
-
-    /// Sends an IBC Transfer 
-    #[allow(clippy::needless_pass_by_value)]
-    pub fn send_transfer_msg(
-        deps: DepsMut,
-        env: Env,
-        info: MessageInfo,
-        packet_memo: Option<String>,
-        timeout_seconds: Option<u64>,
-        recipient: String
-    ) -> Result<Response, ContractError> {
-
-        let contract_state = STATE.load(deps.storage)?;
-        let ica_info = contract_state.get_ica_info()?;
-
-        // let jackakl_host_address = "jkl1jvnz5jcymt3357k63vemme6vfmagvc07clvmwu0csapvvelvsm8q40cwxz".to_string();
-
-        let timeout_block = IbcTimeoutBlock {
-            revision: 10,
-            height: 1000000,
-        };
-
-        // WARNING: This moves tokens that the CONTRACT owns over to the jkl address on canine-chain, NOT tokens
-        // that the admin owns
-
-        // TODO: Need to fund the contract address with tokens before calling this.
-        // UX is: One Click to fund contract address, and another click to send the transfer msg?
-        // Or can you bundle both messages in the web client's 'signAndBroadcast'? 
-
-        // let cosmos_bank_msg: CosmosMsg<Empty> = CosmosMsg::Bank(BankMsg::Send { to_address: (), amount: () })
-        let cosmos_msg: CosmosMsg<Empty> = CosmosMsg::Ibc(IbcMsg::Transfer { 
-            channel_id: "channel-1".to_string(),
-            to_address: recipient,
-            amount: coin(6000, "stake"),
-            timeout: IbcTimeout::with_block(timeout_block) });
-
-        Ok(Response::default().add_message(cosmos_msg))
     }
 }
 
