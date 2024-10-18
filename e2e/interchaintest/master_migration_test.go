@@ -107,7 +107,7 @@ func (s *FactoryTestSuite) TestMasterMigration() {
 	s.SetupMigrationTestSuite(ctx, icatypes.EncodingProtobuf) // NOTE: canined's ibc-go is outdated and does not support proto3json
 
 	// Store v2 of the outpost
-	newOutpostCodeId, err := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/v2/storage_outpost_v2.wasm")
+	newOutpostCodeId, err := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/v2/outpost_v2.wasm")
 	s.Require().NoError(err)
 	fmt.Println(newOutpostCodeId)
 	logger.LogInfo(fmt.Sprintf("new outpost code id is: %s", newOutpostCodeId))
