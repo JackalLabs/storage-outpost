@@ -132,6 +132,24 @@ func (s *FactoryTestSuite) TestMasterMigration() {
 	s.Require().NoError(err)
 	s.Require().Equal(newOutpostCodeIdUint, outpostInfoRes.ContractInfo.CodeID)
 
+	// Now that the outpost is pointing at v2, it should be able to save some arbitrary data to confirm a successful migration
+
+	postMigrateMsg := types.ExecuteMsg{
+		SetDataAfterMigration: &types.ExecuteMsg_SetDataAfterMigration{
+			Data: "migration successful",
+		},
+	}
+
+	err = s.Contract.Execute(ctx, s.UserA.KeyName(), postMigrateMsg)
+	s.Require().NoError(err)
+
+	// Query for the migration data
+	migrationRes, migrateErr := testsuite.GetMigrationData(ctx, s.ChainA, s.Contract.Address)
+	s.Require().NoError(migrateErr)
+	logger.LogInfo(migrationRes)
+
+	// TODO: make sure you can still post a key
+
 	fmt.Println("END OF TEST")
 
 	time.Sleep(time.Duration(10) * time.Hour)

@@ -150,3 +150,30 @@ func GetNote(ctx context.Context, chain *cosmos.CosmosChain, userAddress, outpos
 	}
 	return queryClient.SmartContractState(ctx, params)
 }
+
+func GetMigrationData(ctx context.Context, chain *cosmos.CosmosChain, outpostAddress string) (*wasmtypes.QuerySmartContractStateResponse, error) {
+	grpcConn, err := grpc.Dial(
+		chain.GetHostGRPCAddress(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer grpcConn.Close()
+	queryClient := wasmtypes.NewQueryClient(grpcConn)
+
+	queryData := outposttypes.QueryMsg{
+		GetMigrationData: &struct{}{},
+	}
+
+	queryDataBytes, err := json.Marshal(queryData)
+	if err != nil {
+		return nil, err
+	}
+
+	params := &wasmtypes.QuerySmartContractStateRequest{
+		Address:   outpostAddress,
+		QueryData: queryDataBytes,
+	}
+	return queryClient.SmartContractState(ctx, params)
+}
