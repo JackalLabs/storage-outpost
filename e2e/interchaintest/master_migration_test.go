@@ -8,11 +8,15 @@ import (
 	"strconv"
 	"time"
 
+	filetreetypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/filetreetypes"
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
+	testtypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 	outpostfactory "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types/outpostfactory"
+	"github.com/cosmos/gogoproto/proto"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
+	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 )
 
 // SetupMigrationTestSuite starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
@@ -97,6 +101,40 @@ func (s *FactoryTestSuite) SetupMigrationTestSuite(ctx context.Context, encoding
 
 	// TODO: Confirm that outpost still works to post a key
 
+	wasmd, canined := s.ChainA, s.ChainB
+	err = testutil.WaitForBlocks(ctx, 10, wasmd, canined)
+	s.Require().NoError(err)
+
+	contractState, err := s.Contract.QueryContractState(ctx)
+	s.Require().NoError(err)
+
+	// NOTE: note sure if Jackal Outpost needs the ownership feature
+	// ownershipResponse, err := s.Contract.QueryOwnership(ctx)
+	// s.Require().NoError(err)
+
+	s.Contract.IcaAddress = contractState.IcaInfo.IcaAddress
+	s.Contract.SetIcaAddress(s.Contract.IcaAddress)
+
+	filetreeMsg := &filetreetypes.MsgPostKey{
+		Creator: s.Contract.IcaAddress,
+		Key:     "Key before migration",
+	}
+	typeURL := "/canine_chain.filetree.MsgPostKey"
+
+	sendStargateMsg := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
+		[]proto.Message{filetreeMsg}, nil, nil, typeURL,
+	)
+	error := s.Contract.Execute(ctx, s.UserA.KeyName(), sendStargateMsg)
+	s.Require().NoError(error)
+
+	err = testutil.WaitForBlocks(ctx, 5, wasmd, canined)
+	s.Require().NoError(err)
+
+	// Query a PubKey
+	pubRes, pubErr := testsuite.PubKey(ctx, s.ChainB, s.Contract.IcaAddress)
+	s.Require().NoError(pubErr)
+	s.Require().Equal(pubRes.PubKey.GetKey(), filetreeMsg.GetKey(), "Expected PubKey does not match the returned PubKey")
+
 }
 
 func (s *FactoryTestSuite) TestMasterMigration() {
@@ -148,7 +186,29 @@ func (s *FactoryTestSuite) TestMasterMigration() {
 	s.Require().NoError(migrateErr)
 	logger.LogInfo(migrationRes)
 
-	// TODO: make sure you can still post a key
+	wasmd, canined := s.ChainA, s.ChainB
+	err = testutil.WaitForBlocks(ctx, 5, wasmd, canined)
+	s.Require().NoError(err)
+
+	filetreeMsg := &filetreetypes.MsgPostKey{
+		Creator: s.Contract.IcaAddress,
+		Key:     "Key after migration",
+	}
+	typeURL := "/canine_chain.filetree.MsgPostKey"
+
+	sendStargateMsg := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
+		[]proto.Message{filetreeMsg}, nil, nil, typeURL,
+	)
+	error := s.Contract.Execute(ctx, s.UserA.KeyName(), sendStargateMsg)
+	s.Require().NoError(error)
+
+	err = testutil.WaitForBlocks(ctx, 5, wasmd, canined)
+	s.Require().NoError(err)
+
+	// Query a PubKey
+	pubRes, pubErr := testsuite.PubKey(ctx, s.ChainB, s.Contract.IcaAddress)
+	s.Require().NoError(pubErr)
+	s.Require().Equal(pubRes.PubKey.GetKey(), filetreeMsg.GetKey(), "Expected PubKey does not match the returned PubKey")
 
 	fmt.Println("END OF TEST")
 
