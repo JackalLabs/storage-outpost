@@ -39,8 +39,8 @@ pub fn instantiate(
     let owner = msg.owner.unwrap_or_else(|| info.sender.to_string());
     cw_ownable::initialize_owner(deps.storage, deps.api, Some(&owner))?;
 
-    // TODO: consider deleting this, I'm not sure verifying the admin here is needed because the admin is
-    // set when wasm.Instantiate is called and the caller set their address as admin in wasm's InstantiateMsg  
+    // NOTE: This doesn't actually have much effect because admin is set when the factory makes a cross contract instantiate
+    // call, but we'll leave this anyway.
     let admin = if let Some(admin) = msg.admin {
         deps.api.addr_validate(&admin)?
     } else {
