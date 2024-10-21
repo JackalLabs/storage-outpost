@@ -39,19 +39,19 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	logger.InitLogger()
 
 	// Upload the outpost's wasm module on Wasmd
-	codeId, err := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/storage_outpost.wasm")
+	outpostCodeId, err := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/storage_outpost.wasm")
 	s.Require().NoError(err)
 
 	// codeId is string and needs to be converted to uint64
-	s.OutpostContractCodeId, err = strconv.ParseInt(codeId, 10, 64)
+	s.OutpostContractCodeId, err = strconv.ParseInt(outpostCodeId, 10, 64)
 	s.Require().NoError(err)
 
-	codeId, err = s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/outpost_factory.wasm")
+	factoryCodeId, err := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/outpost_factory.wasm")
 	s.Require().NoError(err)
 
 	instantiateMsg := outpostfactory.InstantiateMsg{StorageOutpostCodeId: int(s.OutpostContractCodeId)}
 	// this is the outpost factory
-	outpostfactoryContractAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), codeId, toString(instantiateMsg), false, "--gas", "500000", "--admin", s.UserA.KeyName())
+	outpostfactoryContractAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), factoryCodeId, toString(instantiateMsg), false, "--gas", "500000", "--admin", s.UserA.KeyName())
 	s.Require().NoError(err)
 
 	// Confirm that UserA is the admin of the outpost factory
@@ -59,11 +59,9 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	factoryContractInfoRes, infoErr := testsuite.GetContractInfo(ctx, s.ChainA, outpostfactoryContractAddr)
 	s.Require().NoError(infoErr)
 	s.Require().Equal(factoryContractInfoRes.Admin, s.UserA.FormattedAddress())
-	logger.LogInfo(fmt.Sprintf("contract Info is: %s", factoryContractInfoRes))
+	logger.LogInfo(fmt.Sprintf("Factory contract Info is: %s\n", factoryContractInfoRes))
+	logger.LogInfo(fmt.Sprintf("Admin of factory is: %s\n", factoryContractInfoRes.Admin))
 
-	// TODO: wrapping the encoding with 'TxEncoding' is not needed anymore because 'Proto3Json'
-	// is not the recommended encoding type for the ICA channel
-	// we should just use an optional string
 	proto3Encoding := outpostfactory.TxEncoding(encoding)
 
 	// Create UserA's outpost
@@ -80,13 +78,14 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 
 	res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(createOutpostMsg), "--gas", "500000")
 	s.Require().NoError(err)
-	// logger.LogEvents(res.Events)
+
 	// Confirm that UserA's outpost is administered by the factory
 	outpostAddressFromEvent := logger.ParseOutpostAddressFromEvent(res.Events)
 	outpostContractInfoRes, outpostInfoErr := testsuite.GetContractInfo(ctx, s.ChainA, outpostAddressFromEvent)
 	s.Require().NoError(outpostInfoErr)
 	s.Require().Equal(outpostContractInfoRes.Admin, outpostfactoryContractAddr)
-	logger.LogInfo(fmt.Sprintf("outpostContractInfo is: %s", outpostContractInfoRes))
+	logger.LogInfo(fmt.Sprintf("outpostContractInfo is: %s\n", outpostContractInfoRes))
+	logger.LogInfo(fmt.Sprintf("Admin of user A's outpost is: %s\n", outpostContractInfoRes.Admin))
 
 	// Confirm UserA is the owner of the outpost they just made
 	ownerQueryRes, ownerError := testsuite.GetOutpostOwner(ctx, s.ChainA, outpostAddressFromEvent)
@@ -96,6 +95,7 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 		log.Fatalf("Error parsing response data: %v", err)
 	}
 	s.Require().Equal(s.UserA.FormattedAddress(), outpostOwner)
+	logger.LogInfo(fmt.Sprintf("Owner of user A's outpost is: %s\n", outpostOwner))
 
 	// We know that the outpost we just made emitted an event showing its address
 	// We can now query the mapping inside of 'outpost factory' to confirm that we mapped the correct address
@@ -107,6 +107,7 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 		log.Fatalf("Error parsing response data: %v", err)
 	}
 	s.Require().Equal(outpostAddressFromEvent, mappedOutpostAddress)
+	logger.LogInfo(fmt.Sprintf("Mapped outpost address is: %s\n", mappedOutpostAddress))
 
 	// is UserA allowed to just create another outpost again? They shouldn't be able to
 	_, creationErr := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(createOutpostMsg), "--gas", "500000")
@@ -204,8 +205,6 @@ func TestWithFactoryTestSuite(t *testing.T) {
 func (s *FactoryTestSuite) TestFactoryCreateOutpost() {
 	ctx := context.Background()
 
-	//TODO: Accidentally put the entire testing logic inside a function called 'SetupFactoryTestSuite'
-	//rename it accordingly
 	// This starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
 	// sets up the contract and does the channel handshake for the contract test suite.
 	s.SetupFactoryTestSuite(ctx, icatypes.EncodingProtobuf) // NOTE: canined's ibc-go is outdated and does not support proto3json
