@@ -177,3 +177,31 @@ func GetMigrationData(ctx context.Context, chain *cosmos.CosmosChain, outpostAdd
 	}
 	return queryClient.SmartContractState(ctx, params)
 }
+
+// Query for internal contract state
+func GetContractState(ctx context.Context, chain *cosmos.CosmosChain, contractAddress string) (*wasmtypes.QuerySmartContractStateResponse, error) {
+	grpcConn, err := grpc.Dial(
+		chain.GetHostGRPCAddress(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer grpcConn.Close()
+	queryClient := wasmtypes.NewQueryClient(grpcConn)
+
+	queryData := outposttypes.QueryMsg{
+		GetContractState: &struct{}{},
+	}
+
+	queryDataBytes, err := json.Marshal(queryData)
+	if err != nil {
+		return nil, err
+	}
+
+	params := &wasmtypes.QuerySmartContractStateRequest{
+		Address:   contractAddress,
+		QueryData: queryDataBytes,
+	}
+	return queryClient.SmartContractState(ctx, params)
+}

@@ -87,6 +87,12 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	logger.LogInfo(fmt.Sprintf("outpostContractInfo is: %s\n", outpostContractInfoRes))
 	logger.LogInfo(fmt.Sprintf("Admin of user A's outpost is: %s\n", outpostContractInfoRes.Admin))
 
+	// Retrieve the internal state of the contract
+	// NOTE: This is NOT the same as contract info query defined by the wasm module
+	contractStateQueryRes, err := testsuite.GetContractState(ctx, s.ChainA, outpostAddressFromEvent)
+	s.Require().NoError(err)
+	logger.LogInfo(fmt.Sprintf("outpostContractState is: %s\n", contractStateQueryRes))
+
 	// Confirm UserA is the owner of the outpost they just made
 	ownerQueryRes, ownerError := testsuite.GetOutpostOwner(ctx, s.ChainA, outpostAddressFromEvent)
 	s.Require().NoError(ownerError)
