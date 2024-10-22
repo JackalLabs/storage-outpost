@@ -57,7 +57,8 @@ pub fn instantiate(
     // Save the admin. Ica address is determined during handshake.
     STATE.save(deps.storage, &ContractState::new(admin))?;
 
-    // TODO: consider deleting CALLBACK_COUNTER
+    // NOTE: The callback counter is used for troubleshooting the callback mechanism--i.e., did it fail?
+    // Not needed so far but leaving it in for future use
     // Initialize the callback counter.
     CALLBACK_COUNTER.save(deps.storage, &CallbackCounter::default())?;
 
