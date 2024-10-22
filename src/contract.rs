@@ -51,8 +51,11 @@ pub fn instantiate(
     event = event.add_attribute("info.sender", info.sender.clone());
     event = event.add_attribute("outpost_address", env.contract.address.to_string());
 
-    // TODO: consider deleting admin from 'ContractState'
-    // This is not the same thing as saving the admin properly to ContractInfo struct defined in wasmd types 
+    // NOTE: saving admin to ContractState doesn't have much effect, but we'll leave it as is because the outpost
+    // factory lists itself as admin in storage_outpost.InstantiateMsg 
+
+    // The below is not the same thing as saving the admin properly to ContractInfo struct defined in wasmd types
+    // wasmd's instantiate msg has an admin field which serves as the absolute admin for migration purposes
 
     // Save the admin. Ica address is determined during handshake.
     STATE.save(deps.storage, &ContractState::new(admin))?;
