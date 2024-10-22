@@ -14,6 +14,8 @@ go test -v . -run TestWithFactoryTestSuite -testify.m TestMasterMigration -timeo
 
 go test -v . -run TestWithContractTestSuite -testify.m TestIcaContractExecutionTestWithFiletree -timeout 12h
 
+go test -v . -run TestWithContractTestSuite -testify.m TestReOpenOrderedChannel -timeout 12h
+
 go test -v . -run TestWithContractTestSuite -testify.m TestIcaContractExecutionTestWithOwnership -timeout 12h
 
 go test -v . -run TestWithContractTestSuite -testify.m TestIcaContractExecutionTestWithBuyStorage -timeout 12h

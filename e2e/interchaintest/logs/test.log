@@ -1,17 +1,6 @@
-INFO: 2024/10/21 15:31:56 Factory contract Info is: address:"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" contract_info:<code_id:2 creator:"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag" admin:"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag" label:"wasm-contract" created:<block_height:53 > ibc_port_id:"wasm.wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" > 
-
-INFO: 2024/10/21 15:31:56 Admin of factory is: wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag
-
-INFO: 2024/10/21 15:32:00 outpostContractInfo is: address:"wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay" contract_info:<code_id:1 creator:"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" admin:"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" label:"storage_outpost-owned by: wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag" created:<block_height:55 > ibc_port_id:"wasm.wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay" > 
-
-INFO: 2024/10/21 15:32:00 Admin of user A's outpost is: wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8
-
-INFO: 2024/10/21 15:32:00 outpostContractState is: data:"{\"admin\":\"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8\",\"allow_channel_open_init\":true}" 
-
-INFO: 2024/10/21 15:32:00 Owner of user A's outpost is: wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag
-
-INFO: 2024/10/21 15:32:00 Mapped outpost address is: wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay
-
-INFO: 2024/10/21 15:32:39 factory map is: data:"[[\"wasm125gw73kajruy5e9xcnpjx60nh6md4gjfvr6ees\",\"wasm1yyca08xqdgvjz0psg56z67ejh9xms6l436u8y58m82npdqqhmmtqas0cl7\"],[\"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag\",\"wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay\"]]" 
-INFO: 2024/10/21 15:32:39 Mapping 0: [wasm125gw73kajruy5e9xcnpjx60nh6md4gjfvr6ees wasm1yyca08xqdgvjz0psg56z67ejh9xms6l436u8y58m82npdqqhmmtqas0cl7]
-INFO: 2024/10/21 15:32:39 Mapping 1: [wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay]
+INFO: 2024/10/22 13:59:08 The sender of instantiate is wasmd-localwasm-1-abm
+INFO: 2024/10/22 13:59:19 [0x1400135e000]
+INFO: 2024/10/22 14:00:33 <nil>
+INFO: 2024/10/22 14:01:06 [{STATE_CLOSED ORDER_ORDERED {wasm.wasm14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s0phg4d channel-0} [connection-0] {"version":"ics27-1","controller_connection_id":"connection-0","host_connection_id":"connection-0","address":"jkl1zh4wgjy33shq4p0hrga7ayn5nzv9pmtcca9h3p4eplnnn7h7xtxqhmfyrd","encoding":"proto3","tx_type":"sdk_multi_msg"} icahost channel-0} {STATE_OPEN ORDER_ORDERED {wasm.wasm14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s0phg4d channel-1} [connection-0] {"version":"ics27-1","controller_connection_id":"connection-0","host_connection_id":"connection-0","address":"jkl1zh4wgjy33shq4p0hrga7ayn5nzv9pmtcca9h3p4eplnnn7h7xtxqhmfyrd","encoding":"proto3","tx_type":"sdk_multi_msg"} icahost channel-1}]
+INFO: 2024/10/22 14:01:06 <nil>
+INFO: 2024/10/22 14:01:07 channel-1

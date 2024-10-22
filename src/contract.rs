@@ -179,8 +179,6 @@ mod execute {
     ) -> Result<Response, ContractError> {
         cw_ownable::assert_owner(deps.storage, &info.sender)?;
 
-        // TODO: make this more readable and less confusing?
-        // TODO: get rid of 'state::' usage
         let options = if let Some(new_options) = options {
             state::CHANNEL_OPEN_INIT_OPTIONS.save(deps.storage, &new_options)?;
             new_options
@@ -190,9 +188,6 @@ mod execute {
                 .ok_or(ContractError::NoChannelInitOptions)?
         };
 
-        // WARNING
-        // TODO: ponder - I think that 'assert_owner' ensures that only the only can call create_channel and update
-        // 'ALLOW_CHANNEL_OPEN INIT'. It's also updated during instantiation and the owner is set there 
         state::ALLOW_CHANNEL_OPEN_INIT.save(deps.storage, &true)?;
 
         let ica_channel_open_init_msg = new_ica_channel_open_init_cosmos_msg(
