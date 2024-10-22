@@ -7,7 +7,7 @@ use crate::ibc::types::stargate::channel::new_ica_channel_open_init_cosmos_msg;
 use crate::types::keys::{self, CONTRACT_NAME, CONTRACT_VERSION};
 use crate::types::msg::{OutpostFactoryExecuteMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::types::state::{
-    self, CallbackCounter, ChannelState, ContractState, CALLBACK_COUNTER, CHANNEL_STATE, STATE,
+    self, CallbackCounter, ChannelState, ContractState, CALLBACK_COUNTER, CHANNEL_STATE, STATE, CHANNEL_OPEN_INIT_OPTIONS, ALLOW_CHANNEL_OPEN_INIT
 };
 use crate::types::ContractError;
 use crate::types::filetree::{MsgPostKey, MsgPostFile};
@@ -39,8 +39,8 @@ pub fn instantiate(
     let owner = msg.owner.unwrap_or_else(|| info.sender.to_string());
     cw_ownable::initialize_owner(deps.storage, deps.api, Some(&owner))?;
 
-    // TODO: consider deleting this, I'm not sure verifying the admin here is needed because the admin is
-    // set when wasm.Instantiate is called and the caller set their address as admin in wasm's InstantiateMsg  
+    // NOTE: This doesn't actually have much effect because admin is set when the factory makes a cross contract instantiate
+    // call, but we'll leave this anyway.
     let admin = if let Some(admin) = msg.admin {
         deps.api.addr_validate(&admin)?
     } else {
@@ -51,15 +51,26 @@ pub fn instantiate(
     event = event.add_attribute("info.sender", info.sender.clone());
     event = event.add_attribute("outpost_address", env.contract.address.to_string());
 
-    // TODO: consider deleting admin from 'ContractState'
-    // This is not the same thing as saving the admin properly to ContractInfo struct defined in wasmd types 
+    // NOTE: saving admin to ContractState doesn't have much effect, but we'll leave it as is because the outpost
+    // factory lists itself as admin in storage_outpost.InstantiateMsg 
+
+    // The below is not the same thing as saving the admin properly to ContractInfo struct defined in wasmd types
+    // wasmd's instantiate msg has an admin field which serves as the absolute admin for migration purposes
 
     // Save the admin. Ica address is determined during handshake.
     STATE.save(deps.storage, &ContractState::new(admin))?;
 
-    // TODO: consider deleting CALLBACK_COUNTER
+    // NOTE: The callback counter is used for troubleshooting the callback mechanism--i.e., did it fail?
+    // Not needed so far but leaving it in for future use
     // Initialize the callback counter.
     CALLBACK_COUNTER.save(deps.storage, &CallbackCounter::default())?;
+
+    if let Some(ref options) = msg.channel_open_init_options {
+        CHANNEL_OPEN_INIT_OPTIONS.save(deps.storage, options)?;
+    }
+    // WARNING
+    // TODO: how to ensure that only outpost owner can do this?
+    ALLOW_CHANNEL_OPEN_INIT.save(deps.storage, &true)?;
 
     // If channel open init options are provided, open the channel.
     if let Some(channel_open_init_options) = msg.channel_open_init_options {
@@ -69,6 +80,7 @@ pub fn instantiate(
             channel_open_init_options.counterparty_port_id,
             channel_open_init_options.counterparty_connection_id,
             channel_open_init_options.tx_encoding,
+            channel_open_init_options.channel_ordering,
         );
 
     // Only call the factory contract back and execute 'MapuserOutpost' if instructed to do so--i.e., callback object exists
@@ -107,8 +119,9 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::CreateChannel(options) => execute::create_channel(deps, env, info, options),
-        ExecuteMsg::CreateTransferChannel(options) => execute::create_transfer_channel(deps, env, info, options),
+        ExecuteMsg::CreateChannel {
+            channel_open_init_options,
+        } => execute::create_channel(deps, env, info, channel_open_init_options),
         ExecuteMsg::SendCosmosMsgs {
             messages,
             packet_memo,
@@ -116,20 +129,6 @@ pub fn execute(
         } => {
             execute::send_cosmos_msgs(deps, env, info, messages, packet_memo, timeout_seconds)
         },
-        ExecuteMsg::SendCosmosMsgsCli {
-            packet_memo,
-            timeout_seconds,
-            path,
-        } => {
-            execute::send_cosmos_msgs_cli(deps, env, info, packet_memo, timeout_seconds, &path)
-        },
-        ExecuteMsg::SendTransferMsg { 
-            packet_memo, 
-            timeout_seconds,
-            recipient,
-        } => {
-            execute::send_transfer_msg(deps, env, info, packet_memo, timeout_seconds, recipient)
-        }
     }
 }
 
@@ -172,52 +171,39 @@ mod execute {
 
     use super::*;
 
-    /// Submits a stargate MsgChannelOpenInit to the chain.
+    /// Submits a stargate `MsgChannelOpenInit` to the chain.
+    /// Can only be called by the contract owner or a whitelisted address.
+    /// Only the contract owner can include the channel open init options.
+    
     pub fn create_channel(
         deps: DepsMut,
         env: Env,
         info: MessageInfo,
-        options: ChannelOpenInitOptions,
+        options: Option<ChannelOpenInitOptions>,
     ) -> Result<Response, ContractError> {
         cw_ownable::assert_owner(deps.storage, &info.sender)?;
-        let mut contract_state = STATE.load(deps.storage)?;
-        contract_state.verify_admin(info.sender)?;
 
-        contract_state.enable_channel_open_init();
-        STATE.save(deps.storage, &contract_state)?;
+        let options = if let Some(new_options) = options {
+            state::CHANNEL_OPEN_INIT_OPTIONS.save(deps.storage, &new_options)?;
+            new_options
+        } else {
+            state::CHANNEL_OPEN_INIT_OPTIONS
+                .may_load(deps.storage)?
+                .ok_or(ContractError::NoChannelInitOptions)?
+        };
+
+        state::ALLOW_CHANNEL_OPEN_INIT.save(deps.storage, &true)?;
 
         let ica_channel_open_init_msg = new_ica_channel_open_init_cosmos_msg(
             env.contract.address.to_string(),
             options.connection_id,
             options.counterparty_port_id,
             options.counterparty_connection_id,
-            options.tx_encoding,
+            options.tx_encoding, // This is kind of redundant because only proto3 is supported now 
+            options.channel_ordering,
         );
 
         Ok(Response::new().add_message(ica_channel_open_init_msg))
-    }
-
-    /// Submits a stargate MsgChannelOpenInit to the chain for the transfer module
-    pub fn create_transfer_channel(
-        deps: DepsMut,
-        env: Env,
-        info: MessageInfo,
-        options: ChannelOpenInitOptions,
-    ) -> Result<Response, ContractError> {
-        let mut contract_state = STATE.load(deps.storage)?;
-        contract_state.verify_admin(info.sender)?;
-
-        contract_state.enable_channel_open_init();
-        STATE.save(deps.storage, &contract_state)?;
-
-        let transfer_channel_open_init_msg = channel::new_transfer_channel_open_init_cosmos_msg(
-            env.contract.address.to_string(),
-            options.connection_id,
-            options.counterparty_port_id,
-            options.counterparty_connection_id,
-        );
-
-        Ok(Response::new().add_message(transfer_channel_open_init_msg))
     }
 
     /// Sends an array of [`CosmosMsg`] to the ICA host.
@@ -229,6 +215,7 @@ mod execute {
         messages: Vec<CosmosMsg>,
         packet_memo: Option<String>,
         timeout_seconds: Option<u64>,
+        // Optional Size_of_data - v0.1.1 release?
     ) -> Result<Response, ContractError> {
 
         // NOTE: Ownership of the root Files{} object for filetree is also checked in canine-chain
@@ -249,117 +236,6 @@ mod execute {
 
         Ok(Response::default().add_message(send_packet_msg))
 
-    }
-
-    // TODO: add explanation for why this function is useful to us
-
-    /// Sends an array of [`CosmosMsg`] to the ICA host.
-    #[allow(clippy::needless_pass_by_value)]
-    pub fn send_cosmos_msgs_cli(
-        deps: DepsMut,
-        env: Env,
-        info: MessageInfo,
-        packet_memo: Option<String>,
-        timeout_seconds: Option<u64>,
-        path: &str,
-    ) -> Result<Response, ContractError> {
-
-        cw_ownable::assert_owner(deps.storage, &info.sender)?;
-        let contract_state = STATE.load(deps.storage)?;
-        let ica_info = contract_state.get_ica_info()?;
-
-        // TODO: Create Vec<CosmosMsg>
-        // This isn't the final implementation of the function, we're just prototyping to see what works 
-
-        // TODO: port this type  into src/types 
-        // and pack it into a CosmosMsg
-
-        let (parent_hash, child_hash) = merkle_helper(path);
-
-        // Declare an instance of msg_post_file
-        let msg_post_file = MsgPostFile {
-            // TODO: implement proper borrowing and don't use clone. Poor memory manamgement leads to high transaction gas cost
-            creator: ica_info.ica_address.clone(), 
-            account: hash_and_hex(&ica_info.ica_address),
-            hash_parent: parent_hash,
-            hash_child: child_hash,
-            contents: format!("placeholder - {}", path),
-            viewers: format!("placeholder - {}", path),
-            editors: format!("placeholder - {}", path),
-            tracking_number: format!("placeholder - {}", path),
-        };
-
-        // Let's marshal post key to bytes and pack it into stargate API 
-        let encoded = msg_post_file.encode_to_vec();
-
-        // WARNING: This is first attempt, there's a good chance we did something wrong when converting post key to bytes
-        let cosmos_msg: CosmosMsg<Empty> = CosmosMsg::Stargate { 
-            type_url: String::from("/canine_chain.filetree.MsgPostFile"), 
-            value: cosmwasm_std::Binary(encoded.to_vec()) 
-        };
-
-        let mut messages = Vec::<CosmosMsg>::new();
-        messages.insert(0, cosmos_msg);
-
-        let ica_packet = IcaPacketData::from_cosmos_msgs(
-            messages,
-            &ica_info.encoding,
-            packet_memo,
-            &ica_info.ica_address,
-        )?;
-        let send_packet_msg = ica_packet.to_ibc_msg(&env, ica_info.channel_id, timeout_seconds)?;
-
-        // Make a logging event 
-        let mut event = Event::new("logging");
-
-        // Add some placeholder logs
-        event = event.add_attribute("creator", msg_post_file.creator);
-        event = event.add_attribute("account", msg_post_file.account);
-        event = event.add_attribute("hash_parent", msg_post_file.hash_parent);
-        event = event.add_attribute("hash_child", msg_post_file.hash_child);
-        event = event.add_attribute("editors", msg_post_file.editors);
-        event = event.add_attribute("tracking_number", msg_post_file.tracking_number);
-        event = event.add_attribute("contract executor", info.sender.to_string());
-
-        Ok(Response::default().add_message(send_packet_msg).add_event(event))
-    }
-
-    /// Sends an IBC Transfer 
-    #[allow(clippy::needless_pass_by_value)]
-    pub fn send_transfer_msg(
-        deps: DepsMut,
-        env: Env,
-        info: MessageInfo,
-        packet_memo: Option<String>,
-        timeout_seconds: Option<u64>,
-        recipient: String
-    ) -> Result<Response, ContractError> {
-
-        let contract_state = STATE.load(deps.storage)?;
-        let ica_info = contract_state.get_ica_info()?;
-
-        // let jackakl_host_address = "jkl1jvnz5jcymt3357k63vemme6vfmagvc07clvmwu0csapvvelvsm8q40cwxz".to_string();
-
-        let timeout_block = IbcTimeoutBlock {
-            revision: 10,
-            height: 1000000,
-        };
-
-        // WARNING: This moves tokens that the CONTRACT owns over to the jkl address on canine-chain, NOT tokens
-        // that the admin owns
-
-        // TODO: Need to fund the contract address with tokens before calling this.
-        // UX is: One Click to fund contract address, and another click to send the transfer msg?
-        // Or can you bundle both messages in the web client's 'signAndBroadcast'? 
-
-        // let cosmos_bank_msg: CosmosMsg<Empty> = CosmosMsg::Bank(BankMsg::Send { to_address: (), amount: () })
-        let cosmos_msg: CosmosMsg<Empty> = CosmosMsg::Ibc(IbcMsg::Transfer { 
-            channel_id: "channel-1".to_string(),
-            to_address: recipient,
-            amount: coin(6000, "stake"),
-            timeout: IbcTimeout::with_block(timeout_block) });
-
-        Ok(Response::default().add_message(cosmos_msg))
     }
 }
 
@@ -441,191 +317,3 @@ mod migrate {
         Ok(())
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::ibc::types::{metadata::TxEncoding, packet::IcaPacketData};
-    use crate::types::msg::options::ChannelOpenInitOptions;
-    use once_cell::sync::Lazy;
-    use simplelog::*;
-    use std::fs::File;
-    use std::sync::Mutex;
-
-    use super::*;
-    use cosmos_sdk_proto::cosmos::tx::v1beta1::Tx;
-    use cosmos_sdk_proto::tendermint::Protobuf;
-    use cosmos_sdk_proto::Any;
-    use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
-    use cosmos_sdk_proto::cosmos::base::v1beta1::Coin;
-    use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use cosmwasm_std::{Api, SubMsg, to_binary, StdError};
-
-
-
-    static INIT: Lazy<Mutex<()>>
-        = Lazy::new(|| Mutex::new(()));
-
-    pub fn initialize_logger() {
-        let _lock = INIT.lock().unwrap(); // Lock to ensure one-time initialization
-
-        let log_file = File::create("outpost.log").unwrap(); // Consider handling errors appropriately
-        let config = ConfigBuilder::new()
-            .set_time_format_str("%H:%M:%S")
-            .build();
-        let _ = WriteLogger::init(LevelFilter::Debug, config, log_file);
-    }
-
-    #[test]
-    fn test_instantiate() {
-        let mut deps = mock_dependencies();
-        let env = mock_env();
-        let info = mock_info("creator", &[]);
-
-        let msg = InstantiateMsg {
-            owner: None,
-            admin: None,
-            channel_open_init_options: None,
-        };
-
-        // Ensure the contract is instantiated successfully
-        let res = instantiate(deps.as_mut(), env, info.clone(), msg).unwrap();
-        assert_eq!(0, res.messages.len());
-
-        // Ensure the admin is saved correctly
-        let state = STATE.load(&deps.storage).unwrap();
-        assert_eq!(state.admin, info.sender);
-
-        // Ensure the callback counter is initialized correctly
-        let counter = CALLBACK_COUNTER.load(&deps.storage).unwrap();
-        assert_eq!(counter.success, 0);
-        assert_eq!(counter.error, 0);
-        assert_eq!(counter.timeout, 0);
-
-        // Ensure that the contract name and version are saved correctly
-        let contract_version = cw2::get_contract_version(&deps.storage).unwrap();
-        assert_eq!(contract_version.contract, CONTRACT_NAME);
-        assert_eq!(contract_version.version, CONTRACT_VERSION);
-    }
-
-    #[test]
-    fn test_execute_send_custom_proto_ica_messages() {
-        let mut deps = mock_dependencies();
-
-        let env = mock_env();
-        let info = mock_info("creator", &[]);
-
-        // Instantiate the contract
-        let _res = instantiate(
-            deps.as_mut(),
-            env.clone(),
-            info.clone(),
-            InstantiateMsg {
-                owner: None,
-                admin: None,
-                channel_open_init_options: None
-            },
-        )
-        .unwrap();
-
-        // NOTE: when is the ica info set automatically? 
-        STATE
-        .update(&mut deps.storage, |mut state| -> StdResult<ContractState> {
-            state.set_ica_info("ica_address", "channel-0", TxEncoding::Protobuf);
-            Ok(state)
-        })
-        .unwrap();
-
-        let contract_state = STATE.load(&deps.storage).unwrap();
-        contract_state.verify_admin(info.sender.clone()).unwrap();
-        let ica_info = contract_state.get_ica_info().unwrap();
-
-
-        let proto_message = MsgSend {
-            from_address: ica_info.ica_address,
-            to_address: "cosmos15ulrf36d4wdtrtqzkgaan9ylwuhs7k7qz753uk".to_string(),
-            amount: vec![Coin {
-                denom: "stake".to_string(),
-                amount: "100".to_string(),
-            }],
-        };
-
-        let ica_packet = IcaPacketData::from_proto_anys(
-            vec![Any::from_msg(&proto_message).unwrap()],
-            None,
-        );
-    }
-
-    // In this test, we aim to verify that the semver validation is performed correctly.
-    // And that the contract version in cw2 is updated correctly.
-    #[test]
-    fn test_migrate() {
-
-        initialize_logger(); // Call this at the beginning of each test
-
-        let mut deps = mock_dependencies();
-
-        let info = mock_info("creator", &[]);
-
-        let encoding = TxEncoding::Protobuf; 
-        
-        let channel_open_init_options = ChannelOpenInitOptions {
-            connection_id: "connection-0".to_string(),
-            counterparty_connection_id: "connection-0".to_string(),
-            counterparty_port_id: None,
-            tx_encoding: Some(encoding),
-            // channel_ordering: None, 
-            // *NOTE: leaving this out for now because canine-chain's ibc-go does not support unordered ica channels
-        };
-
-        // Instantiate the contract
-        let _res = instantiate(
-            deps.as_mut(),
-            mock_env(),
-            info,
-            InstantiateMsg {
-                admin: None,
-                channel_open_init_options: Some(channel_open_init_options),
-            },
-        )
-        .unwrap();
-
-        // We need to set the contract version manually to a lower version than the current version
-        cw2::set_contract_version(&mut deps.storage, keys::CONTRACT_NAME, "0.0.1").unwrap();
-
-        // Ensure that the contract version is updated correctly
-        let contract_version = cw2::get_contract_version(&deps.storage).unwrap();
-        assert_eq!(contract_version.contract, keys::CONTRACT_NAME);
-        assert_eq!(contract_version.version, "0.0.1");
-
-        log::info!("original contract version: {}", contract_version.version);
-
-        // Perform the migration
-        let _res = migrate(deps.as_mut(), mock_env(), MigrateMsg {}).unwrap();
-
-        let updated_contract_version = cw2::get_contract_version(&deps.storage).unwrap();
-        assert_eq!(updated_contract_version.contract, keys::CONTRACT_NAME);
-        assert_eq!(updated_contract_version.version, keys::CONTRACT_VERSION);
-        log::info!("updated contract version: {}", updated_contract_version.version);
-
-        // Ensure that the contract version cannot be downgraded
-        cw2::set_contract_version(&mut deps.storage, keys::CONTRACT_NAME, "100.0.0").unwrap();
-
-        let res = migrate(deps.as_mut(), mock_env(), MigrateMsg {});
-        assert_eq!(
-            res.unwrap_err().to_string(),
-            format!(
-                "invalid migration version: expected > 100.0.0, got {}",
-                keys::CONTRACT_VERSION
-            )
-        );
-
-    }
-}
-
-
-
-
-
-
-
-

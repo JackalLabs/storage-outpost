@@ -27,18 +27,26 @@ type Callback struct {
 
 // ExecuteMsg is the message to execute cw-ica-controller
 type ExecuteMsg struct {
-	CreateChannel         *ExecuteMsg_CreateChannel         `json:"create_channel,omitempty"`
+	SetDataAfterMigration *ExecuteMsg_SetDataAfterMigration `json:"set_data_after_migration,omitempty"`
 	CreateTransferChannel *ExecuteMsg_CreateTransferChannel `json:"create_transfer_channel,omitempty"`
 	SendCosmosMsgs        *ExecuteMsg_SendCosmosMsgs        `json:"send_cosmos_msgs,omitempty"`
 	SendCustomIcaMessages *ExecuteMsg_SendCustomIcaMessages `json:"send_custom_ica_messages,omitempty"`
 	UpdateCallbackAddress *ExecuteMsg_UpdateCallbackAddress `json:"update_callback_address,omitempty"`
+	CreateChannel         *ExecuteMsg_CreateChannel         `json:"create_channel,omitempty"`
 }
 
 // QueryMsg is the message to query cw-ica-controller
 type QueryMsg struct {
-	GetChannel       *struct{} `json:"get_channel,omitempty"`
-	GetContractState *struct{} `json:"get_contract_state,omitempty"`
-	Ownership        *struct{} `json:"ownership,omitempty"`
+	GetChannel       *struct{}       `json:"get_channel,omitempty"`
+	GetContractState *struct{}       `json:"get_contract_state,omitempty"`
+	GetMigrationData *struct{}       `json:"get_migration_data,omitempty"`
+	Ownership        *struct{}       `json:"ownership,omitempty"`
+	GetNote          *GetNoteRequest `json:"get_note,omitempty"`
+}
+
+// GetNoteRequest is the struct for the GetNote query
+type GetNoteRequest struct {
+	Address string `json:"address"`
 }
 
 // MigrateMsg is the message to migrate cw-ica-controller
@@ -57,6 +65,10 @@ type ExecuteMsg_CreateChannel struct {
 	// The options to initialize the IBC channel.
 	// If not specified, the options specified in the contract instantiation are used.
 	ChannelOpenInitOptions *ChannelOpenInitOptions `json:"channel_open_init_options,omitempty"`
+}
+
+type ExecuteMsg_SetDataAfterMigration struct {
+	Data string `json:"data,omitempty"`
 }
 
 // `CreateTransferChannel` is opening a transfer channel
@@ -137,3 +149,23 @@ Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It
 This is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>. See also <https://github.com/CosmWasm/cosmwasm/blob/main/docs/MESSAGE_TYPES.md>.
 */
 type Binary string
+
+// Status is the status of an IBC channel.
+type ChannelStatus string
+
+const (
+	// Uninitialized is the default state of the channel.
+	ChannelStatus_StateUninitializedUnspecified ChannelStatus = "STATE_UNINITIALIZED_UNSPECIFIED"
+	// Init is the state of the channel when it is created.
+	ChannelStatus_StateInit ChannelStatus = "STATE_INIT"
+	// TryOpen is the state of the channel when it is trying to open.
+	ChannelStatus_StateTryopen ChannelStatus = "STATE_TRYOPEN"
+	// Open is the state of the channel when it is open.
+	ChannelStatus_StateOpen ChannelStatus = "STATE_OPEN"
+	// Closed is the state of the channel when it is closed.
+	ChannelStatus_StateClosed ChannelStatus = "STATE_CLOSED"
+	// The channel has just accepted the upgrade handshake attempt and is flushing in-flight packets. Added in `ibc-go` v8.1.0.
+	ChannelStatus_StateFlushing ChannelStatus = "STATE_FLUSHING"
+	// The channel has just completed flushing any in-flight packets. Added in `ibc-go` v8.1.0.
+	ChannelStatus_StateFlushcomplete ChannelStatus = "STATE_FLUSHCOMPLETE"
+)

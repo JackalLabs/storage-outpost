@@ -10,6 +10,7 @@ import (
 	"github.com/cosmos/gogoproto/proto"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	"github.com/google/uuid"
+	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
@@ -32,7 +33,7 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 	// This starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
 	// sets up the contract and does the channel handshake for the contract test suite.
 	s.SetupContractTestSuite(ctx, encoding)
-	_, canined := s.ChainA, s.ChainB
+	wasmd, canined := s.ChainA, s.ChainB
 	wasmdUser := s.UserA
 
 	logger.LogInfo(canined.FullNodes)
@@ -46,8 +47,6 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 	s.Run(fmt.Sprintf("TestSendCustomIcaMesssagesSuccess-%s", encoding), func() {
 		filetreeMsg := &filetreetypes.MsgPostKey{
 			Creator: s.Contract.IcaAddress,
-			// we're just hard coding this temporarily for debugging purposes
-			// It's the correct jkl ICA address
 
 			// This will soon be the contract address
 			// This has to be the jkl address that's created by the controller (this contract)
@@ -56,7 +55,7 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 			Key: "Wow it really works <3",
 		}
 
-		// func NewAnyWithValue(v proto.Message) (*Any, error) {} inside ica_msg.go is not returning the type URL of the filetree msg
+		// NOTE: func NewAnyWithValue(v proto.Message) (*Any, error) {} inside ica_msg.go is not returning the type URL of the filetree msg
 
 		referencedTypeUrl := sdk.MsgTypeURL(filetreeMsg)
 
@@ -117,7 +116,11 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 			[]proto.Message{filetreeMakeRootMsg}, nil, nil, rootMsgTypeURL,
 		)
 		err := s.Contract.Execute(ctx, wasmdUser.KeyName(), sendStargateMsg1)
+		s.Require().NoError(err)
 
+		// NOTE: sometimes fails, I think it's because the state change on canined wasn't committed before we queried below?
+		// we added the 'Wait' below to ensure the state change is committed before querying
+		err = testutil.WaitForBlocks(ctx, 5, wasmd, canined)
 		s.Require().NoError(err)
 
 		// Query a PubKey
@@ -130,7 +133,6 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 		// s.Require().NoError(allErr)
 	},
 	)
-
 	// implement mock query server
 
 	// time.Sleep(time.Duration(10) * time.Hour)

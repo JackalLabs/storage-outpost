@@ -45,6 +45,7 @@ pub fn execute(
             channel_open_init_options,
         } => execute::create_outpost(deps, env, info, channel_open_init_options),
         ExecuteMsg::MapUserOutpost { outpost_owner} => execute::map_user_outpost(deps, env, info, outpost_owner),
+        ExecuteMsg::MigrateOutpost { outpost_owner, new_outpost_code_id } => execute::migrate_outpost(deps, env, info, outpost_owner, new_outpost_code_id),
     }
 }
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -52,6 +53,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::GetContractState {} => to_json_binary(&query::state(deps)?),
         QueryMsg::GetUserOutpostAddress { user_address } => to_json_binary(&query::user_outpost_address(deps, user_address)?),
+        QueryMsg::GetAllUserOutpostAddresses {  } => to_json_binary(&query::get_all_user_outpost_addresses(deps)?),
     }
 }
 
@@ -59,12 +61,14 @@ mod execute {
     use cosmwasm_std::{Addr, BankMsg, Coin, CosmosMsg, Uint128, Event, to_json_binary};
     use storage_outpost::outpost_helpers::StorageOutpostContract;
     use storage_outpost::types::msg::ExecuteMsg as IcaControllerExecuteMsg;
+    use storage_outpost::types::msg::MigrateMsg;
     use storage_outpost::types::state::{CallbackCounter, ChannelState /*ChannelStatus*/};
     use storage_outpost::{
         outpost_helpers::StorageOutpostCode,
         types::msg::options::ChannelOpenInitOptions,
     };
     use storage_outpost::types::callback::Callback;
+    use serde_json_wasm::from_str;
 
     use crate::state::{self, USER_ADDR_TO_OUTPOST_ADDR, LOCK};
 
@@ -102,7 +106,7 @@ mod execute {
         let instantiate_msg = storage_outpost::types::msg::InstantiateMsg {
             // NOTE: The user that executes this function is both the owner and the admin of the outpost they create
             owner: Some(info.sender.to_string()), 
-            admin: Some(info.sender.to_string()), 
+            admin: Some(env.contract.address.to_string()), // Factory address is now admin of outpost
             channel_open_init_options: Some(channel_open_init_options),
             callback: Some(callback),
         };
@@ -116,7 +120,7 @@ mod execute {
         let cosmos_msg = storage_outpost_code_id.instantiate(
             instantiate_msg,
             label,
-            Some(info.sender.to_string()),
+            Some(env.contract.address.to_string()), // Factory address is now admin of outpost
         )?;
 
         // Idea: this owner contract can instantiate multiple outpost (ica) contracts. The CONTRACT_ADDR_TO_ICA_ID mapping
@@ -168,6 +172,42 @@ mod execute {
 
     Ok(Response::new().add_event(event)) // this data is not propagated back up to the tx resp of the 'create_outpost' call
     }
+
+    pub fn migrate_outpost(
+        deps: DepsMut,
+        env: Env,
+        info: MessageInfo,
+        outpost_owner: String,
+        new_outpost_code_id: String,
+    ) -> Result<Response, ContractError> {
+        let state = STATE.load(deps.storage)?;
+        // WARNING: This function is called by the user, so we cannot error:unauthorized if info.sender != admin 
+
+        // Find the owner's outpost address
+        let outpost_address = USER_ADDR_TO_OUTPOST_ADDR.load(deps.storage, &outpost_owner)?;
+
+        let error_msg: String = String::from("Outpost contract address is not a valid bech32 address. Conversion back to addr failed");
+
+        // Call the outpost's helper API 
+        let storage_outpost_code = StorageOutpostContract::new(deps.api.addr_validate(&outpost_address).expect(&error_msg));
+
+        // // The outpost's migrate entry point is just '{}'
+        let migrate_msg = MigrateMsg {};
+
+        let cast_err: String = String::from("Could not cast new outpost code to u64");
+        let new_outpost_code_id_u64 = new_outpost_code_id.parse::<u64>().expect(&cast_err);
+
+        let cosmos_msg = storage_outpost_code.migrate(
+            migrate_msg,
+            new_outpost_code_id_u64,
+        )?;
+
+        let mut event = Event::new("Migration: success");
+
+        // TODO: Save the new code ID of the outpost after migration
+
+        Ok(Response::new().add_message(cosmos_msg).add_event(event)) 
+    }
 }
 
 mod query {
@@ -183,6 +223,24 @@ mod query {
     /// Returns the outpost address this user owns
     pub fn user_outpost_address(deps: Deps, user_address: String) -> StdResult<String> {
         USER_ADDR_TO_OUTPOST_ADDR.load(deps.storage, &user_address)
+    }
+
+    // Get every key value pair from the 'USER_ADDR_TO_OUTPOST_ADDR' map
+    pub fn get_all_user_outpost_addresses(deps: Deps) -> StdResult<Vec<(String, String)>> {
+        // Create a vector to store all entries
+        let mut all_entries = Vec::new();
+    
+        // Use the prefix_range function to iterate over all key-value pairs in the map
+        let pairs = USER_ADDR_TO_OUTPOST_ADDR
+            .range(deps.storage, None, None, cosmwasm_std::Order::Ascending);
+    
+        // Collect each key-value pair
+        for pair in pairs {
+            let (key, value) = pair?;
+            all_entries.push((key.to_string(), value));
+        }
+    
+        Ok(all_entries)
     }
 }
 

@@ -8,6 +8,7 @@ type InstantiateMsg struct {
 type ExecuteMsg struct {
 	CreateOutpost  *ExecuteMsg_CreateOutpost  `json:"create_outpost,omitempty"`
 	MapUserOutpost *ExecuteMsg_MapUserOutpost `json:"map_user_outpost,omitempty"`
+	MigrateOutpost *ExecuteMsg_MigrateOutpost `json:"migrate_outpost,omitempty"`
 }
 
 type QueryMsg struct {
@@ -136,6 +137,11 @@ const (
 type ExecuteMsg_CreateOutpost struct {
 	Salt                   *string                `json:"salt,omitempty"`
 	ChannelOpenInitOptions ChannelOpenInitOptions `json:"channel_open_init_options"`
+}
+
+type ExecuteMsg_MigrateOutpost struct {
+	OutpostOwner     string `json:"outpost_owner,omitempty"`
+	NewOutpostCodeId string `json:"new_outpost_code_id,omitempty"`
 }
 
 type ExecuteMsg_MapUserOutpost struct {
