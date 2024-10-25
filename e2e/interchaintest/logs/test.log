@@ -1,3 +1,7 @@
-INFO: 2024/10/22 17:33:18 The sender of instantiate is wasmd-localwasm-1-scr
-INFO: 2024/10/22 17:33:30 [0x14001388900]
-INFO: 2024/10/22 17:34:09 /
+INFO: 2024/10/25 14:26:27 contract Info is: address:"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" contract_info:<code_id:2 creator:"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag" admin:"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag" label:"wasm-contract" created:<block_height:54 > ibc_port_id:"wasm.wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" > 
+INFO: 2024/10/25 14:26:31 outpostContractInfo is: address:"wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay" contract_info:<code_id:1 creator:"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" admin:"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" label:"storage_outpost-owned by: wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag" created:<block_height:56 > ibc_port_id:"wasm.wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay" > 
+INFO: 2024/10/25 14:27:27 new outpost code id is: 3
+INFO: 2024/10/25 14:27:31 codeID is: 3
+INFO: 2024/10/25 14:27:36 data:"\"migration successful\"" 
+INFO: 2024/10/25 14:28:04 factory state is: data:"{\"storage_outpost_code_id\":3}" 
+

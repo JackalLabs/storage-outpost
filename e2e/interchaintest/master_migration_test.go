@@ -50,7 +50,7 @@ func (s *FactoryTestSuite) SetupMigrationTestSuite(ctx context.Context, encoding
 	s.Require().Equal(factoryContractInfoRes.Admin, s.UserA.FormattedAddress())
 	logger.LogInfo(fmt.Sprintf("contract Info is: %s", factoryContractInfoRes))
 
-	// TODO: wrapping the encoding with 'TxEncoding' is not needed anymore because 'Proto3Json'
+	// NOTE: wrapping the encoding with 'TxEncoding' is not needed anymore because 'Proto3Json'
 	// is not the recommended encoding type for the ICA channel
 	// we should just use an optional string
 	proto3Encoding := outpostfactory.TxEncoding(encoding)
@@ -99,18 +99,12 @@ func (s *FactoryTestSuite) SetupMigrationTestSuite(ctx context.Context, encoding
 	}
 	s.Require().Equal(outpostAddressFromEvent, mappedOutpostAddress)
 
-	// TODO: Confirm that outpost still works to post a key
-
 	wasmd, canined := s.ChainA, s.ChainB
 	err = testutil.WaitForBlocks(ctx, 10, wasmd, canined)
 	s.Require().NoError(err)
 
 	contractState, err := s.Contract.QueryContractState(ctx)
 	s.Require().NoError(err)
-
-	// NOTE: note sure if Jackal Outpost needs the ownership feature
-	// ownershipResponse, err := s.Contract.QueryOwnership(ctx)
-	// s.Require().NoError(err)
 
 	s.Contract.IcaAddress = contractState.IcaInfo.IcaAddress
 	s.Contract.SetIcaAddress(s.Contract.IcaAddress)
@@ -209,6 +203,11 @@ func (s *FactoryTestSuite) TestMasterMigration() {
 	pubRes, pubErr := testsuite.PubKey(ctx, s.ChainB, s.Contract.IcaAddress)
 	s.Require().NoError(pubErr)
 	s.Require().Equal(pubRes.PubKey.GetKey(), filetreeMsg.GetKey(), "Expected PubKey does not match the returned PubKey")
+
+	// Make sure factory saved outpost's new code id
+	stateRes, stateErr := testsuite.GetContractState(ctx, s.ChainA, s.FactoryAddress)
+	s.Require().NoError(stateErr)
+	logger.LogInfo(fmt.Sprintf("factory state is: %s\n", stateRes))
 
 	fmt.Println("END OF TEST")
 
