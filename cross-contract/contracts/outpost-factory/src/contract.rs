@@ -21,14 +21,17 @@ pub fn instantiate(
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     // NOTE: admin should be set in the wasm.Instanstiate protobuf msg
-    // Setting it into contract state is actually useless when wasmd checks for migration permissions
-    
-    // This contract cannot have an owner because it needs to be called by all users to map their outpost
+    // When wasmd checks for migration permissions, setting it into contract state is actually useless 
+    // We will, however, save the instantiator as admin in internal contract state--using it as a 'check'--ensuring that
+    // only we can call the migration function below. 
+    // ofcourse, The instantiator will set themselves as admin in the wasm.Instanstiate msg 
+
+    // This contract cannot have an owner because it needs to be called by all users to create and map their outposts
     // We have a check below which ensures that users cannot call 'map' twice 
 
     STATE.save(
         deps.storage,
-        &ContractState::new(msg.storage_outpost_code_id),
+        &ContractState::new(msg.storage_outpost_code_id, info.sender.to_string()),
     )?;
     Ok(Response::default())
 }
