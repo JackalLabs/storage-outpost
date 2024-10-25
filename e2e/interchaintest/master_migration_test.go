@@ -156,6 +156,12 @@ func (s *FactoryTestSuite) TestMasterMigration() {
 		},
 	}
 
+	// UserA2 fails to execute a migration
+	badRes, err := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), s.FactoryAddress, toString(migrateOutpostMsg), "--gas", "500000")
+	expectedErrorMsg := "error in transaction (code: 5): failed to execute message; message index: 0: Only the factory admin can perform outpost migrations: execute wasm contract failed"
+	s.Require().EqualError(err, expectedErrorMsg)
+	fmt.Println(badRes)
+
 	res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), s.FactoryAddress, toString(migrateOutpostMsg), "--gas", "500000")
 	s.Require().NoError(err)
 	fmt.Println(res)

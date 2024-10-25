@@ -1,9 +1,9 @@
-INFO: 2024/10/25 14:49:11 contract Info is: address:"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" contract_info:<code_id:2 creator:"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag" admin:"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag" label:"wasm-contract" created:<block_height:53 > ibc_port_id:"wasm.wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" > 
-INFO: 2024/10/25 14:49:11 factory state is: data:"{\"storage_outpost_code_id\":1,\"admin\":\"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag\"}" 
+INFO: 2024/10/25 17:16:01 contract Info is: address:"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" contract_info:<code_id:2 creator:"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag" admin:"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag" label:"wasm-contract" created:<block_height:53 > ibc_port_id:"wasm.wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" > 
+INFO: 2024/10/25 17:16:01 factory state is: data:"{\"storage_outpost_code_id\":1,\"admin\":\"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag\"}" 
 
-INFO: 2024/10/25 14:49:15 outpostContractInfo is: address:"wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay" contract_info:<code_id:1 creator:"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" admin:"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" label:"storage_outpost-owned by: wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag" created:<block_height:55 > ibc_port_id:"wasm.wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay" > 
-INFO: 2024/10/25 14:50:11 new outpost code id is: 3
-INFO: 2024/10/25 14:50:15 codeID is: 3
-INFO: 2024/10/25 14:50:20 data:"\"migration successful\"" 
-INFO: 2024/10/25 14:50:48 factory state is: data:"{\"storage_outpost_code_id\":3,\"admin\":\"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag\"}" 
+INFO: 2024/10/25 17:16:06 outpostContractInfo is: address:"wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay" contract_info:<code_id:1 creator:"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" admin:"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" label:"storage_outpost-owned by: wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag" created:<block_height:55 > ibc_port_id:"wasm.wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay" > 
+INFO: 2024/10/25 17:17:02 new outpost code id is: 3
+INFO: 2024/10/25 17:17:10 codeID is: 3
+INFO: 2024/10/25 17:17:15 data:"\"migration successful\"" 
+INFO: 2024/10/25 17:17:43 factory state is: data:"{\"storage_outpost_code_id\":3,\"admin\":\"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag\"}" 
 
