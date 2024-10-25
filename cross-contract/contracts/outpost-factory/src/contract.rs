@@ -92,6 +92,8 @@ mod execute {
             return Err(ContractError::AlreadyCreated(value))
         }
 
+        // Whoever calls this function will save a lock for themselves, which can only be used once. 
+        // 'map_user_outpost' executed via callback from the instantiated outpost, can only run if this lock exists
         let _lock = LOCK.save(deps.storage, &info.sender.to_string(), &true);
 
         let callback = Callback {
@@ -114,7 +116,7 @@ mod execute {
         let label
          = format!("storage_outpost-owned by: {}", &info.sender.to_string());
 
-        // 'instantiate2' which has the ability to pre compute the outpost's address
+        // 'instantiate2' has the ability to pre compute the outpost's address
         // Unsure if 'instantiate2_address' from cosmwasm-std will work on Archway so we're not doing this for now
 
         let cosmos_msg = storage_outpost_code_id.instantiate(
@@ -122,12 +124,6 @@ mod execute {
             label,
             Some(env.contract.address.to_string()), // Factory address is now admin of outpost
         )?;
-
-        // Idea: this owner contract can instantiate multiple outpost (ica) contracts. The CONTRACT_ADDR_TO_ICA_ID mapping
-        // simply maps the contract address of the instantiated outpost to the ica_id--the ica_id being just a number that indicates
-        // how many outposts have been deployed before them
-        // It depends on what this owner contract is doing, but each user only needs 1 outpost to be instantiated for them
-        // Why not have the mapping be 'sender address : outpost contract address'? The sender address being the user that executes this function
 
         let mut event = Event::new("FACTORY: create_ica_contract");
         event = event.add_attribute("info.sender", &info.sender.to_string());
@@ -144,7 +140,7 @@ mod execute {
         // this contract can't have an owner because it needs to be called back by every outpost it instantiates 
 
         // Load the lock state for the outpost owner
-        let lock = LOCK.may_load(deps.storage, &outpost_owner)?; // WARNING-just hardcoding for testing 
+        let lock = LOCK.may_load(deps.storage, &outpost_owner)?; 
 
         // Check if the lock exists and is true
         if let Some(true) = lock {
@@ -159,18 +155,9 @@ mod execute {
     USER_ADDR_TO_OUTPOST_ADDR.save(deps.storage, &outpost_owner, &info.sender.to_string())?; // again, info.sender is actually the outpost address
 
     let mut event = Event::new("FACTORY:map_user_outpost");
-        event = event.add_attribute("info.sender", &info.sender.to_string());
+    event = event.add_attribute("info.sender", &info.sender.to_string());
 
-    // DOCUMENT: note in README that a successful outpost creation shall return the address in the tx.res.attribute 
-    // and a failure will throw 'AlreadyCreated' contractError
-
-    // NOTE: calling '.add_attribute' just adds a key value pair to the main wasm attribute 
-    // WARNING: is it possible at all that these bytes are non-deterministic?
-    // This can't be because we take from 'info.sender' which only exists if this function is called in the first place
-    // This function is called only if the outpost executes the callback, otherwise the Tx was abandoned while sitting in the 
-    // mem pool
-
-    Ok(Response::new().add_event(event)) // this data is not propagated back up to the tx resp of the 'create_outpost' call
+    Ok(Response::new().add_event(event)) // NOTE: this event is not propagated back up to the tx resp of the 'create_outpost' call
     }
 
     pub fn migrate_outpost(
