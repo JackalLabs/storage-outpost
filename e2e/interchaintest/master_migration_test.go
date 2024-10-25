@@ -39,7 +39,7 @@ func (s *FactoryTestSuite) SetupMigrationTestSuite(ctx context.Context, encoding
 	s.Require().NoError(err)
 
 	instantiateMsg := outpostfactory.InstantiateMsg{StorageOutpostCodeId: int(s.OutpostContractCodeId)}
-	// this is the outpost factory
+	// This is the outpost factory
 	outpostfactoryContractAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), factoryCodeId, toString(instantiateMsg), false, "--gas", "500000", "--admin", s.UserA.KeyName())
 	s.Require().NoError(err)
 	s.FactoryAddress = outpostfactoryContractAddr
@@ -49,6 +49,11 @@ func (s *FactoryTestSuite) SetupMigrationTestSuite(ctx context.Context, encoding
 	s.Require().NoError(infoErr)
 	s.Require().Equal(factoryContractInfoRes.Admin, s.UserA.FormattedAddress())
 	logger.LogInfo(fmt.Sprintf("contract Info is: %s", factoryContractInfoRes))
+
+	// Make sure userA is set as admin in internal contract state
+	stateRes, stateErr := testsuite.GetContractState(ctx, s.ChainA, s.FactoryAddress)
+	s.Require().NoError(stateErr)
+	logger.LogInfo(fmt.Sprintf("factory state is: %s\n", stateRes))
 
 	// NOTE: wrapping the encoding with 'TxEncoding' is not needed anymore because 'Proto3Json'
 	// is not the recommended encoding type for the ICA channel
