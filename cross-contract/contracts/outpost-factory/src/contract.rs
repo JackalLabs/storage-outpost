@@ -167,8 +167,12 @@ mod execute {
         outpost_owner: String,
         new_outpost_code_id: String,
     ) -> Result<Response, ContractError> {
-        let state = STATE.load(deps.storage)?;
-        // WARNING: This function is called by the user, so we cannot error:unauthorized if info.sender != admin 
+        // TODO: Migration is done via a cross contract call, which means this factory address will make the call
+        // Given that the factory is the admin of all outposts, every migration call will succeed
+        // We don't want this to be called by any random person though, so let's save an admin 
+        // when the factory is instantiated
+
+
 
         // Find the owner's outpost address
         let outpost_address = USER_ADDR_TO_OUTPOST_ADDR.load(deps.storage, &outpost_owner)?;
@@ -178,7 +182,7 @@ mod execute {
         // Call the outpost's helper API 
         let storage_outpost_code = StorageOutpostContract::new(deps.api.addr_validate(&outpost_address).expect(&error_msg));
 
-        // // The outpost's migrate entry point is just '{}'
+        // The outpost's migrate entry point is just '{}'
         let migrate_msg = MigrateMsg {};
 
         let cast_err: String = String::from("Could not cast new outpost code to u64");
@@ -191,8 +195,17 @@ mod execute {
 
         let mut event = Event::new("Migration: success");
 
-        // TODO: Save the new code ID of the outpost after migration
+        // Optimistically make sure the factory knows the new code id of the outpost 
+        let mut state = STATE.load(deps.storage)?;
 
+        // A new code id will trigger many migrations, so we only need to save it once
+        if state.storage_outpost_code_id != new_outpost_code_id_u64 {
+
+            state.storage_outpost_code_id = new_outpost_code_id_u64;
+            STATE.save(deps.storage, &state)?;
+
+        }
+        
         Ok(Response::new().add_message(cosmos_msg).add_event(event)) 
     }
 }
