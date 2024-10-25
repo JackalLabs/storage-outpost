@@ -170,12 +170,12 @@ mod execute {
         outpost_owner: String,
         new_outpost_code_id: String,
     ) -> Result<Response, ContractError> {
-        // TODO: Migration is done via a cross contract call, which means this factory address will make the call
-        // Given that the factory is the admin of all outposts, every migration call will succeed
-        // We don't want this to be called by any random person though, so let's save an admin 
-        // when the factory is instantiated
 
+        let mut state = STATE.load(deps.storage)?;
 
+        if info.sender.to_string() != state.admin {
+            return Err(ContractError::NotAdmin {  })
+        }
 
         // Find the owner's outpost address
         let outpost_address = USER_ADDR_TO_OUTPOST_ADDR.load(deps.storage, &outpost_owner)?;
@@ -199,8 +199,6 @@ mod execute {
         let mut event = Event::new("Migration: success");
 
         // Optimistically make sure the factory knows the new code id of the outpost 
-        let mut state = STATE.load(deps.storage)?;
-
         // A new code id will trigger many migrations, so we only need to save it once
         if state.storage_outpost_code_id != new_outpost_code_id_u64 {
 
