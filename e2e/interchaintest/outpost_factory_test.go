@@ -9,11 +9,14 @@ import (
 	"testing"
 	"time"
 
+	filetreetypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/filetreetypes"
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	mysuite "github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
+	testtypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 	outpostfactory "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types/outpostfactory"
+	"github.com/cosmos/gogoproto/proto"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/suite"
@@ -184,9 +187,15 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	expectedErrorMsg3 := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
 	s.Require().EqualError(maliciousErr, expectedErrorMsg3)
 
+	// UserA3 makes their own outpost
+	_, makeOutpostA3Error := s.ChainA.ExecuteContract(ctx, s.UserA3.KeyName(), outpostfactoryContractAddr, toString(createOutpostMsg), "--gas", "500000")
+	s.Require().NoError(makeOutpostA3Error)
+
 	factoryMapRes, mapErr := testsuite.GetFactoryMap(ctx, s.ChainA, outpostfactoryContractAddr)
 	s.Require().NoError(mapErr)
 	logger.LogInfo(fmt.Sprintf("factory map is: %s", factoryMapRes))
+
+	logger.LogInfo(fmt.Sprintf("users are: %s, %s, %s\n", s.UserA.FormattedAddress(), s.UserA2.FormattedAddress(), s.UserA3.FormattedAddress()))
 
 	type UserOutpostMapping [][]string
 	// Parse the JSON response into the UserOutpostMapping type
@@ -200,8 +209,28 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 		logger.LogInfo(mappingStr)
 	}
 
-	// TODO: Confirm that outpost made actually works to store pubkey
+	// Save userA2's outpost to post a key
+	s.Contract = types.NewIcaContract(types.NewContract(outpostAddressA2FromEvent, outpostCodeId, s.ChainA))
 
+	contractState, err := s.Contract.QueryContractState(ctx)
+	s.Require().NoError(err)
+
+	s.Contract.IcaAddress = contractState.IcaInfo.IcaAddress
+	s.Contract.SetIcaAddress(s.Contract.IcaAddress)
+
+	filetreeMsg := &filetreetypes.MsgPostKey{
+		Creator: s.Contract.IcaAddress,
+		Key:     "A2's key",
+	}
+	typeURL := "/canine_chain.filetree.MsgPostKey"
+
+	sendStargateMsg := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
+		[]proto.Message{filetreeMsg}, nil, nil, typeURL,
+	)
+
+	// Ensure user A2 can post a key
+	_, error := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostAddressA2FromEvent, toString(sendStargateMsg), "--gas", "500000")
+	s.Require().NoError(error)
 }
 
 func TestWithFactoryTestSuite(t *testing.T) {
