@@ -24,8 +24,7 @@ pub enum ExecuteMsg {
         new_outpost_code_id: String,
     }
 }
-// TODO: WARNING URGENT DO NOW
-// Query the entire mapping of all user address to outpost address
+
 #[cw_serde]
 #[derive(QueryResponses)]
 pub enum QueryMsg {
