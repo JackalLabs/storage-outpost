@@ -79,14 +79,7 @@ impl StorageOutpostContract {
         .into()
     }
 
-    /// `clear_admin` creates a [`WasmMsg::ClearAdmin`] message targeting this contract
-    #[must_use]
-    pub fn clear_admin(&self) -> CosmosMsg {
-        WasmMsg::ClearAdmin {
-            contract_addr: self.addr().into(),
-        }
-        .into()
-    }
+
 
     /// `migrate` creates a [`WasmMsg::Migrate`] message targeting this contract
     ///
