@@ -7,6 +7,9 @@ use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{ContractState, STATE, FILE_NOTE};
 
+use storage_outpost::types::msg::ExecuteMsg as OutpostExecuteMsg;
+
+
 /*
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:outpost-factory"; // just a placeholder, not yet published
@@ -44,7 +47,11 @@ pub fn execute(
         ExecuteMsg::SaveNote { note} => execute::save_note(deps, env, info, note),
         ExecuteMsg::CallOutpost { msg } => execute::call_outpost(deps, env, info, msg),
         ExecuteMsg::SaveOutpost { address } => execute::save_outpost(deps, env, info, address),
-
+        ExecuteMsg::Outpost(outpost_msg) => match outpost_msg {
+            OutpostExecuteMsg::SendCosmosMsgs{messages,packet_memo,timeout_seconds}=>{
+                execute::send_cosmos_msgs(deps,env,info,messages,packet_memo,timeout_seconds)
+            },
+            OutpostExecuteMsg::CreateChannel { channel_open_init_options } => todo!(), },
     }
 }
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -52,8 +59,6 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::GetContractState {} => to_json_binary(&query::state(deps)?),
         QueryMsg::GetNote { address } => to_json_binary(&query::query_note_by_address(deps, address)?),
-
-
     }
 }
 
@@ -110,6 +115,38 @@ mod execute {
         let outpost_contract = StorageOutpostContract::new(deps.api
             .addr_validate(&storage_outpost_address)
             .expect(&error_msg));
+
+        let outpost_msg = outpost_contract.call(outpost_msg)?;
+
+    // TODO: Save the note after posting the file 
+    Ok(Response::new().add_message(outpost_msg)) 
+    }
+
+    // same name as the outpost's 'send_cosmos_msg' but it actually just re-makes the cosmos msg and ships it off to the outpost to handle
+    pub fn send_cosmos_msgs(
+        deps: DepsMut,
+        env: Env,
+        info: MessageInfo,
+        messages: Vec<CosmosMsg>,
+        packet_memo: Option<String>,
+        timeout_seconds: Option<u64>,
+    ) -> Result<Response, ContractError> {
+
+        let state = STATE.load(deps.storage)?;
+        // WARNING: This function is called by the user, so we cannot error:unauthorized if info.sender != admin 
+
+        let storage_outpost_address = state.storage_outpost_address;
+
+        // Convert the bech32 string back to 'Addr' type before passing to the canine_bindings helper API
+        let error_msg: String = String::from("Bindings contract address is not a valid bech32 address. Conversion back to addr failed");
+        let outpost_contract = StorageOutpostContract::new(deps.api
+            .addr_validate(&storage_outpost_address)
+            .expect(&error_msg));
+
+        let outpost_msg = OutpostExecuteMsg::SendCosmosMsgs { 
+            messages: messages, 
+            packet_memo: packet_memo, 
+            timeout_seconds: timeout_seconds };
 
         let outpost_msg = outpost_contract.call(outpost_msg)?;
 

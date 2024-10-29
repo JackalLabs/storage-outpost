@@ -26,8 +26,10 @@ pub enum ExecuteMsg {
     // This is useful for contracts that are already on mainnet and need to migrate to enable calling the outpost
     SaveOutpost {
         address: String, 
-    }
+    },
 
+    // Wrap the outpost's API directly for easier jjs integration
+    Outpost(OutpostExecuteMsg),
 }
 
 // NOTE type aliasing outpost's ExecuteMsg enum means we don't need the below?
