@@ -47,11 +47,13 @@ pub fn execute(
         ExecuteMsg::SaveNote { note} => execute::save_note(deps, env, info, note),
         ExecuteMsg::CallOutpost { msg } => execute::call_outpost(deps, env, info, msg),
         ExecuteMsg::SaveOutpost { address } => execute::save_outpost(deps, env, info, address),
-        ExecuteMsg::Outpost(outpost_msg) => match outpost_msg {
-            OutpostExecuteMsg::SendCosmosMsgs{messages,packet_memo,timeout_seconds}=>{
-                execute::send_cosmos_msgs(deps,env,info,messages,packet_memo,timeout_seconds)
-            },
-            OutpostExecuteMsg::CreateChannel { channel_open_init_options } => todo!(), },
+        ExecuteMsg::SendCosmosMsgs {
+            messages,
+            packet_memo,
+            timeout_seconds,
+        } => {
+            execute::send_cosmos_msgs(deps, env, info, messages, packet_memo, timeout_seconds)
+        },
     }
 }
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -118,7 +120,6 @@ mod execute {
 
         let outpost_msg = outpost_contract.call(outpost_msg)?;
 
-    // TODO: Save the note after posting the file 
     Ok(Response::new().add_message(outpost_msg)) 
     }
 
