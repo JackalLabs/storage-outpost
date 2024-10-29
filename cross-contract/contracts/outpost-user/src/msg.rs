@@ -28,8 +28,14 @@ pub enum ExecuteMsg {
         address: String, 
     },
 
-    // Wrap the outpost's API directly for easier jjs integration
-    Outpost(OutpostExecuteMsg),
+    // === Wrap the outpost's API directly for easier jjs integration ===
+
+    // NOTE: This was first attempt. The entry point in 'contract.rs' can't immediately resolve that 
+    // 'send_cosmos_msgs' is an enum variant of 'OutpostExecuteMsg' 
+    // Outpost(OutpostExecuteMsg),
+
+    // We have to just copy and paste the outpost's enum variant exactly. 
+
 }
 
 // NOTE type aliasing outpost's ExecuteMsg enum means we don't need the below?
