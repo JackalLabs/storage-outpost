@@ -1,9 +1,13 @@
-INFO: 2024/10/29 13:20:19 contract Info is: address:"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" contract_info:<code_id:2 creator:"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag" admin:"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag" label:"wasm-contract" created:<block_height:54 > ibc_port_id:"wasm.wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" > 
-INFO: 2024/10/29 13:20:19 factory state is: data:"{\"storage_outpost_code_id\":1,\"admin\":\"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag\"}" 
+INFO: 2024/10/29 16:10:01 The sender of instantiate is wasmd-localwasm-1-gtn
+INFO: 2024/10/29 16:10:12 [0x140013e0200]
+INFO: 2024/10/29 16:11:12 outpost user address is: wasm1qg5ega6dykkxc307y25pecuufrjkxkaggkkxh7nad0vhyhtuhw3sq29c3m
 
-INFO: 2024/10/29 13:20:23 outpostContractInfo is: address:"wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay" contract_info:<code_id:1 creator:"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" admin:"wasm1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqhs9hr8" label:"storage_outpost-owned by: wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag" created:<block_height:56 > ibc_port_id:"wasm.wasm1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrss5maay" > 
-INFO: 2024/10/29 13:21:19 new outpost code id is: 3
-INFO: 2024/10/29 13:21:28 codeID is: 3
-INFO: 2024/10/29 13:21:32 data:"\"migration successful\"" 
-INFO: 2024/10/29 13:22:00 factory state is: data:"{\"storage_outpost_code_id\":3,\"admin\":\"wasm13w0fse6k9tvrq6zn68smdl6ln4s7kmh9fvq8ag\"}" 
+INFO: 2024/10/29 16:11:17 The outpost address is: wasm1yyca08xqdgvjz0psg56z67ejh9xms6l436u8y58m82npdqqhmmtqas0cl7
 
+INFO: 2024/10/29 16:11:17 The outpost owner is: data:"\"wasm1qg5ega6dykkxc307y25pecuufrjkxkaggkkxh7nad0vhyhtuhw3sq29c3m\"" 
+
+INFO: 2024/10/29 16:11:29 The outpost state is: &{{jkl1lz2e3mpcc84xykt08dsyxst77xcyka0wp2rl33xgzzfxk7u3vjxshk0xup channel-1} true}
+
+INFO: 2024/10/29 16:11:29 The outpost jkl (ica) address is: jkl1lz2e3mpcc84xykt08dsyxst77xcyka0wp2rl33xgzzfxk7u3vjxshk0xup
+
+INFO: 2024/10/29 16:11:42 data:"\"{\\\"description\\\": \\\"outpost user note\\\", \\\"additional_info\\\": \\\"placeholder\\\"}\"" 

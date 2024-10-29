@@ -169,6 +169,18 @@ func (s *ContractTestSuite) TestOutpostUser() {
 		logger.LogInfo(pubRes)
 		s.Require().NoError(pubErr)
 
+		// Call the API directly
+
+		postFileMsg.Note = `{"description": "outpost user note from API directly", "additional_info": "NONE"}`
+
+		sendStargateMsg = testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
+			[]proto.Message{postFileMsg}, nil, nil, typeURL,
+		)
+
+		Res2, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostUserContract, sendStargateMsg.ToString(), "--gas", "500000")
+		s.Require().NoError(err)
+		fmt.Println(Res2)
+
 	},
 	)
 	// implement mock query server
