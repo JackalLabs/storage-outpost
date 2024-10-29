@@ -24,7 +24,7 @@ pub mod channel {
         Channel, Counterparty, MsgChannelOpenInit, Order, State,
     };
 
-    use cosmwasm_std::CosmosMsg;
+    use cosmwasm_std::{CosmosMsg, IbcOrder};
 
     use super::super::{keys, metadata};
 
@@ -38,6 +38,7 @@ pub mod channel {
         counterparty_port_id: Option<impl Into<String>>,
         counterparty_connection_id: impl Into<String>,
         tx_encoding: Option<metadata::TxEncoding>,
+        ordering: Option<IbcOrder>,
     ) -> CosmosMsg {
         let version_metadata = metadata::IcaMetadata::new(
             keys::ICA_VERSION.into(),
@@ -54,6 +55,7 @@ pub mod channel {
             connection_id,
             counterparty_port_id,
             version_metadata.to_string(),
+            ordering,
         );
 
         CosmosMsg::Stargate {
@@ -70,6 +72,7 @@ pub mod channel {
         connection_id: impl Into<String>,
         counterparty_port_id: Option<impl Into<String>>,
         version: impl Into<String>,
+        ordering: Option<IbcOrder>,
     ) -> MsgChannelOpenInit {
         let counterparty_port_id = if let Some(port_id) = counterparty_port_id {
             port_id.into()
@@ -77,11 +80,17 @@ pub mod channel {
             keys::HOST_PORT_ID.into()
         };
 
+        let ordering = ordering.map_or(Order::Ordered, |ordering| match ordering {
+            IbcOrder::Ordered => Order::Ordered,
+            IbcOrder::Unordered => Order::Unordered,
+        });
+
+        
         MsgChannelOpenInit {
             port_id: port_id.into(),
             channel: Some(Channel {
                 state: State::Init.into(),
-                ordering: Order::Ordered.into(),
+                ordering: ordering.into(),
                 counterparty: Some(Counterparty {
                     port_id: counterparty_port_id,
                     channel_id: String::new(),

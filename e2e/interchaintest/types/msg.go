@@ -137,3 +137,23 @@ Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It
 This is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>. See also <https://github.com/CosmWasm/cosmwasm/blob/main/docs/MESSAGE_TYPES.md>.
 */
 type Binary string
+
+// Status is the status of an IBC channel.
+type ChannelStatus string
+
+const (
+	// Uninitialized is the default state of the channel.
+	ChannelStatus_StateUninitializedUnspecified ChannelStatus = "STATE_UNINITIALIZED_UNSPECIFIED"
+	// Init is the state of the channel when it is created.
+	ChannelStatus_StateInit ChannelStatus = "STATE_INIT"
+	// TryOpen is the state of the channel when it is trying to open.
+	ChannelStatus_StateTryopen ChannelStatus = "STATE_TRYOPEN"
+	// Open is the state of the channel when it is open.
+	ChannelStatus_StateOpen ChannelStatus = "STATE_OPEN"
+	// Closed is the state of the channel when it is closed.
+	ChannelStatus_StateClosed ChannelStatus = "STATE_CLOSED"
+	// The channel has just accepted the upgrade handshake attempt and is flushing in-flight packets. Added in `ibc-go` v8.1.0.
+	ChannelStatus_StateFlushing ChannelStatus = "STATE_FLUSHING"
+	// The channel has just completed flushing any in-flight packets. Added in `ibc-go` v8.1.0.
+	ChannelStatus_StateFlushcomplete ChannelStatus = "STATE_FLUSHCOMPLETE"
+)
