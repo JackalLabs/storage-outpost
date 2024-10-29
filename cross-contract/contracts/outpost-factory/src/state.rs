@@ -1,5 +1,4 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::Addr;
 use cw_storage_plus::{Item, Map};
 
 pub use contract::ContractState;
@@ -8,7 +7,6 @@ pub use contract::ContractState;
 pub const STATE: Item<ContractState> = Item::new("state");
 
 /// A mapping of the user's address to the outpost address they own
-/// NOTE: Should we consider calling this 'OWNER_ADDR...' given that each outpost belongs to one user and is owned by that user?
 pub const USER_ADDR_TO_OUTPOST_ADDR: Map<&str, String> = Map::new("user_addr_to_outpost_addr");
 
 /// This behaves like a lock file which ensures that users can only create an outpost for themselves
