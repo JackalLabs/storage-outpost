@@ -5,7 +5,6 @@ use cw_storage_plus::{Item, Map};
 pub use contract::ContractState;
 
 /// The item used for storing the outpost's code id 
-/// TODO: need a function to update the code ID when we release an updated version of the outpost 
 pub const STATE: Item<ContractState> = Item::new("state");
 
 /// A mapping of the user's address to the outpost address they own
