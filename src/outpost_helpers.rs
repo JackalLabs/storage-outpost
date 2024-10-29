@@ -70,17 +70,6 @@ impl StorageOutpostContract {
         querier.query_wasm_smart(self.addr(), &msg::QueryMsg::GetContractState {})
     }
 
-    /// `update_admin` creates a [`WasmMsg::UpdateAdmin`] message targeting this contract
-    pub fn update_admin(&self, admin: impl Into<String>) -> CosmosMsg {
-        WasmMsg::UpdateAdmin {
-            contract_addr: self.addr().into(),
-            admin: admin.into(),
-        }
-        .into()
-    }
-
-
-
     /// `migrate` creates a [`WasmMsg::Migrate`] message targeting this contract
     ///
     /// # Errors
