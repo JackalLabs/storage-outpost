@@ -130,24 +130,9 @@ func (s *ContractTestSuite) TestOutpostUser() {
 			[]proto.Message{postFileMsg}, nil, nil, typeURL,
 		)
 
-		// NOTE: Double check this before calling it
-		innerOutpostMsg := outpostuser.ExecuteMsg_CallOutpost{
-			Msg: &sendStargateMsg,
-		}
-
-		outpostUserMsg := outpostuser.ExecuteMsg{
-			CallOutpost: &innerOutpostMsg,
-		}
-
-		// WARNING NOTE: Only the owner of the outpost can call it.
-		// The below execution doesn't work because cross contract calls are made with the calling contract's address as the sender
-		// Unfortunately, UserA is set as the outpost owner because UserA instantiated it
-		// Seems there's no way around this but to have the outpost user contract also instantiate the outpost
-
-		// We know 'instantiate2' works on canine-chain, so perhaps we can use that and avoid having to use a callback
-		Res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostUserContract, outpostUserMsg.ToString(), "--gas", "500000")
+		Res2, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostUserContract, sendStargateMsg.ToString(), "--gas", "500000")
 		s.Require().NoError(err)
-		fmt.Println(Res)
+		fmt.Println(Res2)
 
 		saveNoteMsg := outpostuser.ExecuteMsg{
 			SaveNote: &outpostuser.ExecuteMsg_SaveNote{
@@ -164,22 +149,10 @@ func (s *ContractTestSuite) TestOutpostUser() {
 		// We guarantee that multiple execute messages can be broadcast in the same transaction with the cosmos-sdk.
 		// We recommend building this out on testnet.
 
-		// Query a PubKey
+		// Query For the note
 		pubRes, pubErr := testsuite.GetNote(ctx, s.ChainA, s.UserA.FormattedAddress(), outpostUserContract)
 		logger.LogInfo(pubRes)
 		s.Require().NoError(pubErr)
-
-		// Call the API directly
-
-		postFileMsg.Note = `{"description": "outpost user note from API directly", "additional_info": "NONE"}`
-
-		sendStargateMsg = testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
-			[]proto.Message{postFileMsg}, nil, nil, typeURL,
-		)
-
-		Res2, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostUserContract, sendStargateMsg.ToString(), "--gas", "500000")
-		s.Require().NoError(err)
-		fmt.Println(Res2)
 
 	},
 	)
