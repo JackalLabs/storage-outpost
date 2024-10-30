@@ -68,8 +68,7 @@ pub fn instantiate(
     if let Some(ref options) = msg.channel_open_init_options {
         CHANNEL_OPEN_INIT_OPTIONS.save(deps.storage, options)?;
     }
-    // WARNING
-    // TODO: how to ensure that only outpost owner can do this?
+
     ALLOW_CHANNEL_OPEN_INIT.save(deps.storage, &true)?;
 
     // If channel open init options are provided, open the channel.
