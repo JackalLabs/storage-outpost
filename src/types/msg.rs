@@ -95,7 +95,6 @@ pub enum QueryMsg {
     /// GetCallbackCounter returns the callback counter.
     #[returns(crate::types::state::CallbackCounter)]
     GetCallbackCounter {},
-    
 }
 
 /// The message to migrate this contract.
