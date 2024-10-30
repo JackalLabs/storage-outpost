@@ -1,28 +1,13 @@
-INFO: 2024/10/30 13:04:57 Wasmd First light client is
-INFO: 2024/10/30 13:04:57 [
-  {
-    "client_id": "07-tendermint-0",
-    "client_state": {
-      "chain_id": "puppy-1"
-    }
-  },
-  {
-    "client_id": "09-localhost",
-    "client_state": {
-      "chain_id": ""
-    }
-  }
-]
-INFO: 2024/10/30 13:04:57 Wasmd Second light client is
-INFO: 2024/10/30 13:04:57 null
-INFO: 2024/10/30 13:04:57 jackal first light client is
-INFO: 2024/10/30 13:04:57 [
-  {
-    "client_id": "07-tendermint-0",
-    "client_state": {
-      "chain_id": "localwasm-1"
-    }
-  }
-]
-INFO: 2024/10/30 13:04:57 jackal second light client is
-INFO: 2024/10/30 13:04:57 null
+INFO: 2024/10/30 13:06:02 The sender of instantiate is wasmd-localwasm-1-bqt
+INFO: 2024/10/30 13:06:14 [0x140007a6000]
+INFO: 2024/10/30 13:07:14 outpost user address is: wasm1qg5ega6dykkxc307y25pecuufrjkxkaggkkxh7nad0vhyhtuhw3sq29c3m
+
+INFO: 2024/10/30 13:07:19 The outpost address is: wasm1yyca08xqdgvjz0psg56z67ejh9xms6l436u8y58m82npdqqhmmtqas0cl7
+
+INFO: 2024/10/30 13:07:19 The outpost owner is: data:"\"wasm1qg5ega6dykkxc307y25pecuufrjkxkaggkkxh7nad0vhyhtuhw3sq29c3m\"" 
+
+INFO: 2024/10/30 13:07:30 The outpost state is: &{{jkl10f2wdw28qqlkn2afefq7tzw82ulu4hhsa3sgqs88x2yc9m4kwz5q6y3c6t channel-1} true}
+
+INFO: 2024/10/30 13:07:30 The outpost jkl (ica) address is: jkl10f2wdw28qqlkn2afefq7tzw82ulu4hhsa3sgqs88x2yc9m4kwz5q6y3c6t
+
+INFO: 2024/10/30 13:07:43 data:"\"{\\\"description\\\": \\\"outpost user note\\\", \\\"additional_info\\\": \\\"placeholder\\\"}\"" 
