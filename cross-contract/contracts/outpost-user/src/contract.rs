@@ -1,20 +1,12 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
-// use cw2::set_contract_version;
 
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{ContractState, STATE, FILE_NOTE};
 
 use storage_outpost::types::msg::ExecuteMsg as OutpostExecuteMsg;
-
-
-/*
-// version info for migration info
-const CONTRACT_NAME: &str = "crates.io:outpost-factory"; // just a placeholder, not yet published
-const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
-*/
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(

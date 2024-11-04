@@ -49,21 +49,6 @@ pub enum ExecuteMsg {
 
 }
 
-// NOTE type aliasing outpost's ExecuteMsg enum means we don't need the below?
-
-// #[cw_serde]
-// pub struct SendCosmosMsgs {
-//     /// The stargate messages to convert and send to the ICA host.
-//     messages: Vec<CosmosMsg>,
-//     /// Optional memo to include in the ibc packet.
-//     #[serde(skip_serializing_if = "Option::is_none")]
-//     packet_memo: Option<String>,
-//     /// Optional timeout in seconds to include with the ibc packet. 
-//     /// If not specified, the [default timeout](crate::ibc::types::packet::DEFAULT_TIMEOUT_SECONDS) is used.
-//     #[serde(skip_serializing_if = "Option::is_none")]
-//     timeout_seconds: Option<u64>,
-// }
-
 #[cw_serde]
 #[derive(QueryResponses)]
 pub enum QueryMsg {
