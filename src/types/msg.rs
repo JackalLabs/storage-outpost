@@ -45,10 +45,6 @@ pub enum ExecuteMsg {
         channel_open_init_options: Option<options::ChannelOpenInitOptions>,
     },
 
-    /// CreateTransferChannel makes the contract submit a stargate MsgChannelOpenInit to the chain.
-    /// This works the same as above but opens a channel for the transfer module specifically.
-    CreateTransferChannel(options::ChannelOpenInitOptions),
-
     /// `SendCosmosMsgs` converts the provided array of [`CosmosMsg`] to an ICA tx and sends them to the ICA host.
     /// [`CosmosMsg::Stargate`] and [`CosmosMsg::Wasm`] are only supported if the [`TxEncoding`](crate::ibc::types::metadata::TxEncoding) is 
     /// [`TxEncoding::Protobuf`](crate::ibc::types::metadata::TxEncoding).
@@ -64,38 +60,6 @@ pub enum ExecuteMsg {
         /// If not specified, the [default timeout](crate::ibc::types::packet::DEFAULT_TIMEOUT_SECONDS) is used.
         #[serde(skip_serializing_if = "Option::is_none")]
         timeout_seconds: Option<u64>,
-    },
-    /// WARNING: This ExecuteMsg is completely experimental and not ready for production.
-    /// `SendCosmosMsgsCli` works the same as above, with the addition that canine-chain's filetree msgs can be 
-    /// packed into CosmosMsgs completely from the cli
-    SendCosmosMsgsCli {
-        // NOTE: we can include Vec<CosmosMsg> here if needed, but if it's unused in contract.rs,
-        // the chain tx to execute the contract will not parse into this enum variant 
-
-        /// Optional memo to include in the ibc packet.
-        #[serde(skip_serializing_if = "Option::is_none")]
-        packet_memo: Option<String>,
-        /// Optional timeout in seconds to include with the ibc packet. 
-        /// If not specified, the [default timeout](crate::ibc::types::packet::DEFAULT_TIMEOUT_SECONDS) is used.
-        #[serde(skip_serializing_if = "Option::is_none")]
-        timeout_seconds: Option<u64>,
-
-        /// readable path
-        path: String,
-    },
-    /// `SendTransferMsg` sends a local token to Jackal using ICS-20 
-    SendTransferMsg {
-        /// Let's hard code one specific transfer msg for now just to see if it works 
-        // messages: Vec<CosmosMsg>,
-        /// Optional memo to include in the ibc packet.
-        #[serde(skip_serializing_if = "Option::is_none")]
-        packet_memo: Option<String>,
-        /// Optional timeout in seconds to include with the ibc packet. 
-        /// If not specified, the [default timeout](crate::ibc::types::packet::DEFAULT_TIMEOUT_SECONDS) is used.
-        #[serde(skip_serializing_if = "Option::is_none")]
-        timeout_seconds: Option<u64>,
-        /// The receiver of the tokens on the Jackal chain
-        recipient: String,
     },
 }
 

@@ -1,5 +1,5 @@
 [package]
-name = "outpost-factory"
+name = "outpost-user"
 version = "0.1.0"
 authors = ["Bi Phan <bi@jackallabs.io>", "Serdar Turkmenafsar <IBC Protocol>"]
 edition = "2021"
@@ -52,7 +52,6 @@ cw-ica-controller = { version = "0.4.2", default-features = false} # The ica_cal
 schemars = "0.8.10"
 serde = { version = "1.0.145", default-features = false, features = ["derive"] }
 serde-json-wasm = "0.5.1"
-serde_json = "1.0.128"
 thiserror = { version = "1.0.31" }
 
 [dev-dependencies]

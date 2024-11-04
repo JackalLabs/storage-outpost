@@ -112,6 +112,20 @@ func (s *ContractTestSuite) TestReOpenOrderedChannel() {
 	})
 
 	s.Run("TestReOpenOrderedChannelAndPostKey", func() {
+
+		// Ensure that only the owner can re-open the channel
+
+		badCreateChannelMsg := testtypes.ExecuteMsg{
+			CreateChannel: &testtypes.ExecuteMsg_CreateChannel{
+				ChannelOpenInitOptions: nil, // consequence of not putting open init options?...
+			},
+		}
+
+		executeErr := s.Contract.Execute(ctx, s.UserA2.KeyName(), badCreateChannelMsg, "--gas", "500000")
+
+		expectedCreationErrorMsg := fmt.Sprintf("error in transaction (code: 5): failed to execute message; message index: 0: Caller is not the contract's current owner: execute wasm contract failed")
+		s.Require().EqualError(executeErr, expectedCreationErrorMsg)
+
 		// Reopen the channel:
 
 		createChannelMsg := testtypes.ExecuteMsg{
@@ -119,9 +133,8 @@ func (s *ContractTestSuite) TestReOpenOrderedChannel() {
 				ChannelOpenInitOptions: nil, // consequence of not putting open init options?...
 			},
 		}
-		//	contractAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), codeId, instantiateMsg, false, "--gas", "500000", "--admin", s.UserA.KeyName())
 
-		executeErr := s.Contract.Execute(ctx, wasmdUser.KeyName(), createChannelMsg, "--gas", "500000")
+		executeErr = s.Contract.Execute(ctx, wasmdUser.KeyName(), createChannelMsg, "--gas", "500000")
 		s.Require().NoError(executeErr)
 
 		// Wait for the channel to get set up

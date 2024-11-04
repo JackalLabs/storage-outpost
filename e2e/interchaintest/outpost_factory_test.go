@@ -7,12 +7,16 @@ import (
 	"log"
 	"strconv"
 	"testing"
+	"time"
 
+	filetreetypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/filetreetypes"
 	logger "github.com/JackalLabs/storage-outpost/e2e/interchaintest/logger"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	mysuite "github.com/JackalLabs/storage-outpost/e2e/interchaintest/testsuite"
 	"github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
+	testtypes "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types"
 	outpostfactory "github.com/JackalLabs/storage-outpost/e2e/interchaintest/types/outpostfactory"
+	"github.com/cosmos/gogoproto/proto"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/suite"
@@ -21,6 +25,7 @@ import (
 type FactoryTestSuite struct {
 	mysuite.TestSuite
 
+	FactoryAddress        string
 	OutpostContractCodeId int64
 
 	Contract              *types.IcaContract
@@ -37,19 +42,19 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	logger.InitLogger()
 
 	// Upload the outpost's wasm module on Wasmd
-	codeId, err := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/storage_outpost.wasm")
+	outpostCodeId, err := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/storage_outpost.wasm")
 	s.Require().NoError(err)
 
 	// codeId is string and needs to be converted to uint64
-	s.OutpostContractCodeId, err = strconv.ParseInt(codeId, 10, 64)
+	s.OutpostContractCodeId, err = strconv.ParseInt(outpostCodeId, 10, 64)
 	s.Require().NoError(err)
 
-	codeId, err = s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/outpost_factory.wasm")
+	factoryCodeId, err := s.ChainA.StoreContract(ctx, s.UserA.KeyName(), "../../artifacts/outpost_factory.wasm")
 	s.Require().NoError(err)
 
 	instantiateMsg := outpostfactory.InstantiateMsg{StorageOutpostCodeId: int(s.OutpostContractCodeId)}
 	// this is the outpost factory
-	outpostfactoryContractAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), codeId, toString(instantiateMsg), false, "--gas", "500000", "--admin", s.UserA.KeyName())
+	outpostfactoryContractAddr, err := s.ChainA.InstantiateContract(ctx, s.UserA.KeyName(), factoryCodeId, toString(instantiateMsg), false, "--gas", "500000", "--admin", s.UserA.KeyName())
 	s.Require().NoError(err)
 
 	// Confirm that UserA is the admin of the outpost factory
@@ -57,11 +62,9 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	factoryContractInfoRes, infoErr := testsuite.GetContractInfo(ctx, s.ChainA, outpostfactoryContractAddr)
 	s.Require().NoError(infoErr)
 	s.Require().Equal(factoryContractInfoRes.Admin, s.UserA.FormattedAddress())
-	logger.LogInfo(fmt.Sprintf("contract Info is: %s", factoryContractInfoRes))
+	logger.LogInfo(fmt.Sprintf("Factory contract Info is: %s\n", factoryContractInfoRes))
+	logger.LogInfo(fmt.Sprintf("Admin of factory is: %s\n", factoryContractInfoRes.Admin))
 
-	// TODO: wrapping the encoding with 'TxEncoding' is not needed anymore because 'Proto3Json'
-	// is not the recommended encoding type for the ICA channel
-	// we should just use an optional string
 	proto3Encoding := outpostfactory.TxEncoding(encoding)
 
 	// Create UserA's outpost
@@ -78,14 +81,20 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 
 	res, err := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(createOutpostMsg), "--gas", "500000")
 	s.Require().NoError(err)
-	logger.LogEvents(res.Events)
-	// Confirm that UserA is the admin of the created outpost
-	// For now, Jackal Labs does not want to be the admin of all users' created outposts--this violates ethos.
+
+	// Confirm that UserA's outpost is administered by the factory
 	outpostAddressFromEvent := logger.ParseOutpostAddressFromEvent(res.Events)
 	outpostContractInfoRes, outpostInfoErr := testsuite.GetContractInfo(ctx, s.ChainA, outpostAddressFromEvent)
 	s.Require().NoError(outpostInfoErr)
-	s.Require().Equal(outpostContractInfoRes.Admin, s.UserA.FormattedAddress())
-	logger.LogInfo(fmt.Sprintf("outpostContractInfo is: %s", outpostContractInfoRes))
+	s.Require().Equal(outpostContractInfoRes.Admin, outpostfactoryContractAddr)
+	logger.LogInfo(fmt.Sprintf("outpostContractInfo is: %s\n", outpostContractInfoRes))
+	logger.LogInfo(fmt.Sprintf("Admin of user A's outpost is: %s\n", outpostContractInfoRes.Admin))
+
+	// Retrieve the internal state of the contract
+	// NOTE: This is NOT the same as contract info query defined by the wasm module
+	contractStateQueryRes, err := testsuite.GetContractState(ctx, s.ChainA, outpostAddressFromEvent)
+	s.Require().NoError(err)
+	logger.LogInfo(fmt.Sprintf("outpostContractState is: %s\n", contractStateQueryRes))
 
 	// Confirm UserA is the owner of the outpost they just made
 	ownerQueryRes, ownerError := testsuite.GetOutpostOwner(ctx, s.ChainA, outpostAddressFromEvent)
@@ -95,6 +104,7 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 		log.Fatalf("Error parsing response data: %v", err)
 	}
 	s.Require().Equal(s.UserA.FormattedAddress(), outpostOwner)
+	logger.LogInfo(fmt.Sprintf("Owner of user A's outpost is: %s\n", outpostOwner))
 
 	// We know that the outpost we just made emitted an event showing its address
 	// We can now query the mapping inside of 'outpost factory' to confirm that we mapped the correct address
@@ -106,6 +116,7 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 		log.Fatalf("Error parsing response data: %v", err)
 	}
 	s.Require().Equal(outpostAddressFromEvent, mappedOutpostAddress)
+	logger.LogInfo(fmt.Sprintf("Mapped outpost address is: %s\n", mappedOutpostAddress))
 
 	// is UserA allowed to just create another outpost again? They shouldn't be able to
 	_, creationErr := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(createOutpostMsg), "--gas", "500000")
@@ -124,6 +135,7 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 			OutpostOwner: s.UserA.FormattedAddress(),
 		},
 	}
+
 	// This failed because UserA already used their lock when creating the outpost
 	_, mapOutpostError := s.ChainA.ExecuteContract(ctx, s.UserA.KeyName(), outpostfactoryContractAddr, toString(mapOutpostMsg), "--gas", "500000")
 	expectedErrorMsg := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
@@ -145,11 +157,11 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	makeOutpostA2Res, makeOutpostA2Error := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostfactoryContractAddr, toString(createOutpostMsg), "--gas", "500000")
 	s.Require().NoError(makeOutpostA2Error)
 
-	// Confirm that A2 is the admin of their created outpost
+	// Confirm that A2's outpost is administered by the factory
 	outpostAddressA2FromEvent := logger.ParseOutpostAddressFromEvent(makeOutpostA2Res.Events)
 	outpostContractInfoA2Res, outpostInfoA2Err := testsuite.GetContractInfo(ctx, s.ChainA, outpostAddressA2FromEvent)
 	s.Require().NoError(outpostInfoA2Err)
-	s.Require().Equal(outpostContractInfoA2Res.Admin, s.UserA2.FormattedAddress())
+	s.Require().Equal(outpostContractInfoA2Res.Admin, outpostfactoryContractAddr)
 
 	// Confirm that A2's address<>outpostAddress mapping was done correctly
 	outpostAddressA2FromMap, addressA2Err := testsuite.GetOutpostAddressFromFactoryMap(ctx, s.ChainA, outpostfactoryContractAddr, s.UserA2.FormattedAddress())
@@ -175,8 +187,50 @@ func (s *FactoryTestSuite) SetupFactoryTestSuite(ctx context.Context, encoding s
 	expectedErrorMsg3 := "error in transaction (code: 5): failed to execute message; message index: 0: lock file does not exist: execute wasm contract failed"
 	s.Require().EqualError(maliciousErr, expectedErrorMsg3)
 
-	// TODO: Confirm that outpost made actually works to store pubkey
+	// UserA3 makes their own outpost
+	_, makeOutpostA3Error := s.ChainA.ExecuteContract(ctx, s.UserA3.KeyName(), outpostfactoryContractAddr, toString(createOutpostMsg), "--gas", "500000")
+	s.Require().NoError(makeOutpostA3Error)
 
+	factoryMapRes, mapErr := testsuite.GetFactoryMap(ctx, s.ChainA, outpostfactoryContractAddr)
+	s.Require().NoError(mapErr)
+	logger.LogInfo(fmt.Sprintf("factory map is: %s", factoryMapRes))
+
+	logger.LogInfo(fmt.Sprintf("users are: %s, %s, %s\n", s.UserA.FormattedAddress(), s.UserA2.FormattedAddress(), s.UserA3.FormattedAddress()))
+
+	type UserOutpostMapping [][]string
+	// Parse the JSON response into the UserOutpostMapping type
+	var userOutpostMappings UserOutpostMapping
+	parseError := json.Unmarshal(factoryMapRes.Data, &userOutpostMappings)
+	s.Require().NoError(parseError)
+
+	for i, mapping := range userOutpostMappings {
+		// Join each sub-array (mapping) into a readable string
+		mappingStr := fmt.Sprintf("Mapping %d: %v", i, mapping)
+		logger.LogInfo(mappingStr)
+	}
+
+	// Save userA2's outpost to post a key
+	s.Contract = types.NewIcaContract(types.NewContract(outpostAddressA2FromEvent, outpostCodeId, s.ChainA))
+
+	contractState, err := s.Contract.QueryContractState(ctx)
+	s.Require().NoError(err)
+
+	s.Contract.IcaAddress = contractState.IcaInfo.IcaAddress
+	s.Contract.SetIcaAddress(s.Contract.IcaAddress)
+
+	filetreeMsg := &filetreetypes.MsgPostKey{
+		Creator: s.Contract.IcaAddress,
+		Key:     "A2's key",
+	}
+	typeURL := "/canine_chain.filetree.MsgPostKey"
+
+	sendStargateMsg := testtypes.NewExecuteMsg_SendCosmosMsgs_FromProto(
+		[]proto.Message{filetreeMsg}, nil, nil, typeURL,
+	)
+
+	// Ensure user A2 can post a key
+	_, error := s.ChainA.ExecuteContract(ctx, s.UserA2.KeyName(), outpostAddressA2FromEvent, toString(sendStargateMsg), "--gas", "500000")
+	s.Require().NoError(error)
 }
 
 func TestWithFactoryTestSuite(t *testing.T) {
@@ -186,13 +240,11 @@ func TestWithFactoryTestSuite(t *testing.T) {
 func (s *FactoryTestSuite) TestFactoryCreateOutpost() {
 	ctx := context.Background()
 
-	//TODO: Accidentally put the entire testing logic inside a function called 'SetupFactoryTestSuite'
-	//rename it accordingly
 	// This starts the chains, relayer, creates the user accounts, creates the ibc clients and connections,
 	// sets up the contract and does the channel handshake for the contract test suite.
 	s.SetupFactoryTestSuite(ctx, icatypes.EncodingProtobuf) // NOTE: canined's ibc-go is outdated and does not support proto3json
 
-	// time.Sleep(time.Duration(10) * time.Hour)
+	time.Sleep(time.Duration(10) * time.Hour)
 
 }
 

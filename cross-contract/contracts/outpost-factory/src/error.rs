@@ -23,4 +23,7 @@ pub enum ContractError {
 
     #[error("Outpost already created. Outpost Address: {0}")]
     AlreadyCreated(String),
+
+    #[error("Only the factory admin can perform outpost migrations")]
+    NotAdmin {},
 }

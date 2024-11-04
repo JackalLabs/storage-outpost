@@ -49,8 +49,6 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 	s.Run(fmt.Sprintf("TestSendCustomIcaMesssagesSuccess-%s", encoding), func() {
 		filetreeMsg := &filetreetypes.MsgPostKey{
 			Creator: s.Contract.IcaAddress,
-			// we're just hard coding this temporarily for debugging purposes
-			// It's the correct jkl ICA address
 
 			// This will soon be the contract address
 			// This has to be the jkl address that's created by the controller (this contract)
@@ -59,7 +57,7 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 			Key: "Wow it really works <3",
 		}
 
-		// func NewAnyWithValue(v proto.Message) (*Any, error) {} inside ica_msg.go is not returning the type URL of the filetree msg
+		// NOTE: func NewAnyWithValue(v proto.Message) (*Any, error) {} inside ica_msg.go is not returning the type URL of the filetree msg
 
 		referencedTypeUrl := sdk.MsgTypeURL(filetreeMsg)
 
@@ -163,7 +161,6 @@ func (s *ContractTestSuite) TestIcaContractExecutionTestWithFiletree() {
 		// s.Require().NoError(allErr)
 	},
 	)
-
 	// implement mock query server
 
 	time.Sleep(time.Duration(10) * time.Hour)

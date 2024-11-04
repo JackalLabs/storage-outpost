@@ -39,8 +39,8 @@ pub fn instantiate(
     let owner = msg.owner.unwrap_or_else(|| info.sender.to_string());
     cw_ownable::initialize_owner(deps.storage, deps.api, Some(&owner))?;
 
-    // TODO: consider deleting this, I'm not sure verifying the admin here is needed because the admin is
-    // set when wasm.Instantiate is called and the caller set their address as admin in wasm's InstantiateMsg  
+    // NOTE: This doesn't actually have much effect because admin is set when the factory makes a cross contract instantiate
+    // call, but we'll leave this anyway.
     let admin = if let Some(admin) = msg.admin {
         deps.api.addr_validate(&admin)?
     } else {
@@ -51,21 +51,24 @@ pub fn instantiate(
     event = event.add_attribute("info.sender", info.sender.clone());
     event = event.add_attribute("outpost_address", env.contract.address.to_string());
 
-    // TODO: consider deleting admin from 'ContractState'
-    // This is not the same thing as saving the admin properly to ContractInfo struct defined in wasmd types 
+    // NOTE: saving admin to ContractState doesn't have much effect, but we'll leave it as is because the outpost
+    // factory lists itself as admin in storage_outpost.InstantiateMsg 
+
+    // The below is not the same thing as saving the admin properly to ContractInfo struct defined in wasmd types
+    // wasmd's instantiate msg has an admin field which serves as the absolute admin for migration purposes
 
     // Save the admin. Ica address is determined during handshake.
     STATE.save(deps.storage, &ContractState::new(admin))?;
 
-    // TODO: consider deleting CALLBACK_COUNTER
+    // NOTE: The callback counter is used for troubleshooting the callback mechanism--i.e., did it fail?
+    // Not needed so far but leaving it in for future use
     // Initialize the callback counter.
     CALLBACK_COUNTER.save(deps.storage, &CallbackCounter::default())?;
 
     if let Some(ref options) = msg.channel_open_init_options {
         CHANNEL_OPEN_INIT_OPTIONS.save(deps.storage, options)?;
     }
-    // WARNING
-    // TODO: how to ensure that only outpost owner can do this?
+
     ALLOW_CHANNEL_OPEN_INIT.save(deps.storage, &true)?;
 
     // If channel open init options are provided, open the channel.
@@ -118,7 +121,6 @@ pub fn execute(
         ExecuteMsg::CreateChannel {
             channel_open_init_options,
         } => execute::create_channel(deps, env, info, channel_open_init_options),
-        ExecuteMsg::CreateTransferChannel(options) => execute::create_transfer_channel(deps, env, info, options),
         ExecuteMsg::SendCosmosMsgs {
             messages,
             packet_memo,
@@ -126,20 +128,6 @@ pub fn execute(
         } => {
             execute::send_cosmos_msgs(deps, env, info, messages, packet_memo, timeout_seconds)
         },
-        ExecuteMsg::SendCosmosMsgsCli {
-            packet_memo,
-            timeout_seconds,
-            path,
-        } => {
-            execute::send_cosmos_msgs_cli(deps, env, info, packet_memo, timeout_seconds, &path)
-        },
-        ExecuteMsg::SendTransferMsg { 
-            packet_memo, 
-            timeout_seconds,
-            recipient,
-        } => {
-            execute::send_transfer_msg(deps, env, info, packet_memo, timeout_seconds, recipient)
-        }
     }
 }
 
@@ -194,8 +182,6 @@ mod execute {
     ) -> Result<Response, ContractError> {
         cw_ownable::assert_owner(deps.storage, &info.sender)?;
 
-        // TODO: make this more readable and less confusing?
-        // TODO: get rid of 'state::' usage
         let options = if let Some(new_options) = options {
             state::CHANNEL_OPEN_INIT_OPTIONS.save(deps.storage, &new_options)?;
             new_options
@@ -205,9 +191,6 @@ mod execute {
                 .ok_or(ContractError::NoChannelInitOptions)?
         };
 
-        // WARNING
-        // TODO: ponder - I think that 'assert_owner' ensures that only the only can call create_channel and update
-        // 'ALLOW_CHANNEL_OPEN INIT'. It's also updated during instantiation and the owner is set there 
         state::ALLOW_CHANNEL_OPEN_INIT.save(deps.storage, &true)?;
 
         let ica_channel_open_init_msg = new_ica_channel_open_init_cosmos_msg(
@@ -222,31 +205,6 @@ mod execute {
         Ok(Response::new().add_message(ica_channel_open_init_msg))
     }
 
-    // TODO: add a 'close channel' function? why would the user ever close the channel?...
-
-    /// Submits a stargate MsgChannelOpenInit to the chain for the transfer module
-    pub fn create_transfer_channel(
-        deps: DepsMut,
-        env: Env,
-        info: MessageInfo,
-        options: ChannelOpenInitOptions,
-    ) -> Result<Response, ContractError> {
-        let mut contract_state = STATE.load(deps.storage)?;
-        contract_state.verify_admin(info.sender)?;
-
-        contract_state.enable_channel_open_init();
-        STATE.save(deps.storage, &contract_state)?;
-
-        let transfer_channel_open_init_msg = channel::new_transfer_channel_open_init_cosmos_msg(
-            env.contract.address.to_string(),
-            options.connection_id,
-            options.counterparty_port_id,
-            options.counterparty_connection_id,
-        );
-
-        Ok(Response::new().add_message(transfer_channel_open_init_msg))
-    }
-
     /// Sends an array of [`CosmosMsg`] to the ICA host.
     #[allow(clippy::needless_pass_by_value)]
     pub fn send_cosmos_msgs(
@@ -256,6 +214,7 @@ mod execute {
         messages: Vec<CosmosMsg>,
         packet_memo: Option<String>,
         timeout_seconds: Option<u64>,
+        // Optional Size_of_data - v0.1.1 release?
     ) -> Result<Response, ContractError> {
 
         // NOTE: Ownership of the root Files{} object for filetree is also checked in canine-chain
@@ -276,117 +235,6 @@ mod execute {
 
         Ok(Response::default().add_message(send_packet_msg))
 
-    }
-
-    // TODO: add explanation for why this function is useful to us
-
-    /// Sends an array of [`CosmosMsg`] to the ICA host.
-    #[allow(clippy::needless_pass_by_value)]
-    pub fn send_cosmos_msgs_cli(
-        deps: DepsMut,
-        env: Env,
-        info: MessageInfo,
-        packet_memo: Option<String>,
-        timeout_seconds: Option<u64>,
-        path: &str,
-    ) -> Result<Response, ContractError> {
-
-        cw_ownable::assert_owner(deps.storage, &info.sender)?;
-        let contract_state = STATE.load(deps.storage)?;
-        let ica_info = contract_state.get_ica_info()?;
-
-        // TODO: Create Vec<CosmosMsg>
-        // This isn't the final implementation of the function, we're just prototyping to see what works 
-
-        // TODO: port this type  into src/types 
-        // and pack it into a CosmosMsg
-
-        let (parent_hash, child_hash) = merkle_helper(path);
-
-        // Declare an instance of msg_post_file
-        let msg_post_file = MsgPostFile {
-            // TODO: implement proper borrowing and don't use clone. Poor memory manamgement leads to high transaction gas cost
-            creator: ica_info.ica_address.clone(), 
-            account: hash_and_hex(&ica_info.ica_address),
-            hash_parent: parent_hash,
-            hash_child: child_hash,
-            contents: format!("placeholder - {}", path),
-            viewers: format!("placeholder - {}", path),
-            editors: format!("placeholder - {}", path),
-            tracking_number: format!("placeholder - {}", path),
-        };
-
-        // Let's marshal post key to bytes and pack it into stargate API 
-        let encoded = msg_post_file.encode_to_vec();
-
-        // WARNING: This is first attempt, there's a good chance we did something wrong when converting post key to bytes
-        let cosmos_msg: CosmosMsg<Empty> = CosmosMsg::Stargate { 
-            type_url: String::from("/canine_chain.filetree.MsgPostFile"), 
-            value: cosmwasm_std::Binary(encoded.to_vec()) 
-        };
-
-        let mut messages = Vec::<CosmosMsg>::new();
-        messages.insert(0, cosmos_msg);
-
-        let ica_packet = IcaPacketData::from_cosmos_msgs(
-            messages,
-            &ica_info.encoding,
-            packet_memo,
-            &ica_info.ica_address,
-        )?;
-        let send_packet_msg = ica_packet.to_ibc_msg(&env, ica_info.channel_id, timeout_seconds)?;
-
-        // Make a logging event 
-        let mut event = Event::new("logging");
-
-        // Add some placeholder logs
-        event = event.add_attribute("creator", msg_post_file.creator);
-        event = event.add_attribute("account", msg_post_file.account);
-        event = event.add_attribute("hash_parent", msg_post_file.hash_parent);
-        event = event.add_attribute("hash_child", msg_post_file.hash_child);
-        event = event.add_attribute("editors", msg_post_file.editors);
-        event = event.add_attribute("tracking_number", msg_post_file.tracking_number);
-        event = event.add_attribute("contract executor", info.sender.to_string());
-
-        Ok(Response::default().add_message(send_packet_msg).add_event(event))
-    }
-
-    /// Sends an IBC Transfer 
-    #[allow(clippy::needless_pass_by_value)]
-    pub fn send_transfer_msg(
-        deps: DepsMut,
-        env: Env,
-        info: MessageInfo,
-        packet_memo: Option<String>,
-        timeout_seconds: Option<u64>,
-        recipient: String
-    ) -> Result<Response, ContractError> {
-
-        let contract_state = STATE.load(deps.storage)?;
-        let ica_info = contract_state.get_ica_info()?;
-
-        // let jackakl_host_address = "jkl1jvnz5jcymt3357k63vemme6vfmagvc07clvmwu0csapvvelvsm8q40cwxz".to_string();
-
-        let timeout_block = IbcTimeoutBlock {
-            revision: 10,
-            height: 1000000,
-        };
-
-        // WARNING: This moves tokens that the CONTRACT owns over to the jkl address on canine-chain, NOT tokens
-        // that the admin owns
-
-        // TODO: Need to fund the contract address with tokens before calling this.
-        // UX is: One Click to fund contract address, and another click to send the transfer msg?
-        // Or can you bundle both messages in the web client's 'signAndBroadcast'? 
-
-        // let cosmos_bank_msg: CosmosMsg<Empty> = CosmosMsg::Bank(BankMsg::Send { to_address: (), amount: () })
-        let cosmos_msg: CosmosMsg<Empty> = CosmosMsg::Ibc(IbcMsg::Transfer { 
-            channel_id: "channel-1".to_string(),
-            to_address: recipient,
-            amount: coin(6000, "stake"),
-            timeout: IbcTimeout::with_block(timeout_block) });
-
-        Ok(Response::default().add_message(cosmos_msg))
     }
 }
 

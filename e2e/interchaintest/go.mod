@@ -1,11 +1,10 @@
 module github.com/JackalLabs/storage-outpost/e2e/interchaintest
 
-go 1.21
+go 1.22.2
 
-toolchain go1.21.3
+toolchain go1.23.1
 
 require (
-	cosmossdk.io/api v0.3.1
 	cosmossdk.io/math v1.1.2
 	github.com/CosmWasm/wasmd v0.41.0
 	github.com/cosmos/cosmos-sdk v0.47.5
@@ -20,8 +19,12 @@ require (
 	go.uber.org/zap v1.26.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20230822172742-b8732ec3820d
 	google.golang.org/grpc v1.59.0
-	google.golang.org/protobuf v1.31.0
 	gopkg.in/yaml.v2 v2.4.0
+)
+
+require (
+	cosmossdk.io/api v0.3.1 // indirect
+	google.golang.org/protobuf v1.31.0 // indirect
 )
 
 require (
@@ -62,9 +65,9 @@ require (
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect
 	github.com/cockroachdb/redact v1.1.5 // indirect
 	github.com/coinbase/rosetta-sdk-go/types v1.0.0 // indirect
-	github.com/cometbft/cometbft v0.37.2 // indirect
+	github.com/cometbft/cometbft v0.37.2
 	github.com/cometbft/cometbft-db v0.8.0 // indirect
-	github.com/confio/ics23/go v0.9.0 // indirect
+	github.com/confio/ics23/go v0.9.1 // indirect
 	github.com/cosmos/btcutil v1.0.5 // indirect
 	github.com/cosmos/cosmos-proto v1.0.0-beta.3 // indirect
 	github.com/cosmos/go-bip39 v1.0.0 // indirect

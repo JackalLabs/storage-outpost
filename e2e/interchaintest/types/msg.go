@@ -27,18 +27,26 @@ type Callback struct {
 
 // ExecuteMsg is the message to execute cw-ica-controller
 type ExecuteMsg struct {
-	CreateChannel         *ExecuteMsg_CreateChannel         `json:"create_channel,omitempty"`
+	SetDataAfterMigration *ExecuteMsg_SetDataAfterMigration `json:"set_data_after_migration,omitempty"`
 	CreateTransferChannel *ExecuteMsg_CreateTransferChannel `json:"create_transfer_channel,omitempty"`
 	SendCosmosMsgs        *ExecuteMsg_SendCosmosMsgs        `json:"send_cosmos_msgs,omitempty"`
 	SendCustomIcaMessages *ExecuteMsg_SendCustomIcaMessages `json:"send_custom_ica_messages,omitempty"`
 	UpdateCallbackAddress *ExecuteMsg_UpdateCallbackAddress `json:"update_callback_address,omitempty"`
+	CreateChannel         *ExecuteMsg_CreateChannel         `json:"create_channel,omitempty"`
 }
 
 // QueryMsg is the message to query cw-ica-controller
 type QueryMsg struct {
-	GetChannel       *struct{} `json:"get_channel,omitempty"`
-	GetContractState *struct{} `json:"get_contract_state,omitempty"`
-	Ownership        *struct{} `json:"ownership,omitempty"`
+	GetChannel       *struct{}       `json:"get_channel,omitempty"`
+	GetContractState *struct{}       `json:"get_contract_state,omitempty"`
+	GetMigrationData *struct{}       `json:"get_migration_data,omitempty"`
+	Ownership        *struct{}       `json:"ownership,omitempty"`
+	GetNote          *GetNoteRequest `json:"get_note,omitempty"`
+}
+
+// GetNoteRequest is the struct for the GetNote query
+type GetNoteRequest struct {
+	Address string `json:"address"`
 }
 
 // MigrateMsg is the message to migrate cw-ica-controller
@@ -57,6 +65,10 @@ type ExecuteMsg_CreateChannel struct {
 	// The options to initialize the IBC channel.
 	// If not specified, the options specified in the contract instantiation are used.
 	ChannelOpenInitOptions *ChannelOpenInitOptions `json:"channel_open_init_options,omitempty"`
+}
+
+type ExecuteMsg_SetDataAfterMigration struct {
+	Data string `json:"data,omitempty"`
 }
 
 // `CreateTransferChannel` is opening a transfer channel

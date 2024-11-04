@@ -42,6 +42,34 @@ func GetOutpostAddressFromFactoryMap(ctx context.Context, chain *cosmos.CosmosCh
 	return queryClient.SmartContractState(ctx, params)
 }
 
+// Get the entire factory map
+func GetFactoryMap(ctx context.Context, chain *cosmos.CosmosChain, factoryContractAddress string) (*wasmtypes.QuerySmartContractStateResponse, error) {
+	grpcConn, err := grpc.Dial(
+		chain.GetHostGRPCAddress(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer grpcConn.Close()
+	queryClient := wasmtypes.NewQueryClient(grpcConn)
+
+	queryData := map[string]interface{}{
+		"get_all_user_outpost_addresses": struct{}{},
+	}
+
+	queryDataBytes, err := json.Marshal(queryData)
+	if err != nil {
+		return nil, err
+	}
+
+	params := &wasmtypes.QuerySmartContractStateRequest{
+		Address:   factoryContractAddress,
+		QueryData: queryDataBytes,
+	}
+	return queryClient.SmartContractState(ctx, params)
+}
+
 func GetContractInfo(ctx context.Context, chain *cosmos.CosmosChain, contractAddress string) (*wasmtypes.QueryContractInfoResponse, error) {
 	grpcConn, err := grpc.Dial(
 		chain.GetHostGRPCAddress(),
@@ -118,6 +146,93 @@ func GetChannelFromState(ctx context.Context, chain *cosmos.CosmosChain, outpost
 
 	params := &wasmtypes.QuerySmartContractStateRequest{
 		Address:   outpostAddress,
+		QueryData: queryDataBytes,
+	}
+	return queryClient.SmartContractState(ctx, params)
+}
+
+func GetNote(ctx context.Context, chain *cosmos.CosmosChain, userAddress, outpostUserAddress string) (*wasmtypes.QuerySmartContractStateResponse, error) {
+	grpcConn, err := grpc.Dial(
+		chain.GetHostGRPCAddress(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer grpcConn.Close()
+	queryClient := wasmtypes.NewQueryClient(grpcConn)
+
+	// // TODO: replace with query msg type in types/outpostfactory/msg.go
+	// queryData := map[string]interface{}{
+	// 	"ownership": map[string]string{},
+	// }
+
+	queryData := outposttypes.QueryMsg{
+		GetNote: &outposttypes.GetNoteRequest{Address: userAddress},
+	}
+
+	queryDataBytes, err := json.Marshal(queryData)
+	if err != nil {
+		return nil, err
+	}
+
+	params := &wasmtypes.QuerySmartContractStateRequest{
+		Address:   outpostUserAddress,
+		QueryData: queryDataBytes,
+	}
+	return queryClient.SmartContractState(ctx, params)
+}
+
+func GetMigrationData(ctx context.Context, chain *cosmos.CosmosChain, outpostAddress string) (*wasmtypes.QuerySmartContractStateResponse, error) {
+	grpcConn, err := grpc.Dial(
+		chain.GetHostGRPCAddress(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer grpcConn.Close()
+	queryClient := wasmtypes.NewQueryClient(grpcConn)
+
+	queryData := outposttypes.QueryMsg{
+		GetMigrationData: &struct{}{},
+	}
+
+	queryDataBytes, err := json.Marshal(queryData)
+	if err != nil {
+		return nil, err
+	}
+
+	params := &wasmtypes.QuerySmartContractStateRequest{
+		Address:   outpostAddress,
+		QueryData: queryDataBytes,
+	}
+	return queryClient.SmartContractState(ctx, params)
+}
+
+// Query for internal contract state
+func GetContractState(ctx context.Context, chain *cosmos.CosmosChain, contractAddress string) (*wasmtypes.QuerySmartContractStateResponse, error) {
+	grpcConn, err := grpc.Dial(
+		chain.GetHostGRPCAddress(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer grpcConn.Close()
+	queryClient := wasmtypes.NewQueryClient(grpcConn)
+
+	queryData := outposttypes.QueryMsg{
+		GetContractState: &struct{}{},
+	}
+
+	queryDataBytes, err := json.Marshal(queryData)
+	if err != nil {
+		return nil, err
+	}
+
+	params := &wasmtypes.QuerySmartContractStateRequest{
+		Address:   contractAddress,
 		QueryData: queryDataBytes,
 	}
 	return queryClient.SmartContractState(ctx, params)

@@ -70,24 +70,6 @@ impl StorageOutpostContract {
         querier.query_wasm_smart(self.addr(), &msg::QueryMsg::GetContractState {})
     }
 
-    /// `update_admin` creates a [`WasmMsg::UpdateAdmin`] message targeting this contract
-    pub fn update_admin(&self, admin: impl Into<String>) -> CosmosMsg {
-        WasmMsg::UpdateAdmin {
-            contract_addr: self.addr().into(),
-            admin: admin.into(),
-        }
-        .into()
-    }
-
-    /// `clear_admin` creates a [`WasmMsg::ClearAdmin`] message targeting this contract
-    #[must_use]
-    pub fn clear_admin(&self) -> CosmosMsg {
-        WasmMsg::ClearAdmin {
-            contract_addr: self.addr().into(),
-        }
-        .into()
-    }
-
     /// `migrate` creates a [`WasmMsg::Migrate`] message targeting this contract
     ///
     /// # Errors

@@ -21,14 +21,17 @@ pub fn instantiate(
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     // NOTE: admin should be set in the wasm.Instanstiate protobuf msg
-    // Setting it into contract state is actually useless when wasmd checks for migration permissions
-    
-    // This contract cannot have an owner because it needs to be called by all users to map their outpost
+    // When wasmd checks for migration permissions, setting it into contract state is actually useless 
+    // We will, however, save the instantiator as admin in internal contract state--using it as a 'check'--ensuring that
+    // only we can call the migration function below. 
+    // ofcourse, The instantiator will set themselves as admin in the wasm.Instanstiate msg 
+
+    // This contract cannot have an owner because it needs to be called by all users to create and map their outposts
     // We have a check below which ensures that users cannot call 'map' twice 
 
     STATE.save(
         deps.storage,
-        &ContractState::new(msg.storage_outpost_code_id),
+        &ContractState::new(msg.storage_outpost_code_id, info.sender.to_string()),
     )?;
     Ok(Response::default())
 }
@@ -45,6 +48,7 @@ pub fn execute(
             channel_open_init_options,
         } => execute::create_outpost(deps, env, info, channel_open_init_options),
         ExecuteMsg::MapUserOutpost { outpost_owner} => execute::map_user_outpost(deps, env, info, outpost_owner),
+        ExecuteMsg::MigrateOutpost { outpost_owner, new_outpost_code_id } => execute::migrate_outpost(deps, env, info, outpost_owner, new_outpost_code_id),
     }
 }
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -52,6 +56,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::GetContractState {} => to_json_binary(&query::state(deps)?),
         QueryMsg::GetUserOutpostAddress { user_address } => to_json_binary(&query::user_outpost_address(deps, user_address)?),
+        QueryMsg::GetAllUserOutpostAddresses {  } => to_json_binary(&query::get_all_user_outpost_addresses(deps)?),
     }
 }
 
@@ -59,12 +64,14 @@ mod execute {
     use cosmwasm_std::{Addr, BankMsg, Coin, CosmosMsg, Uint128, Event, to_json_binary};
     use storage_outpost::outpost_helpers::StorageOutpostContract;
     use storage_outpost::types::msg::ExecuteMsg as IcaControllerExecuteMsg;
+    use storage_outpost::types::msg::MigrateMsg;
     use storage_outpost::types::state::{CallbackCounter, ChannelState /*ChannelStatus*/};
     use storage_outpost::{
         outpost_helpers::StorageOutpostCode,
         types::msg::options::ChannelOpenInitOptions,
     };
     use storage_outpost::types::callback::Callback;
+    use serde_json_wasm::from_str;
 
     use crate::state::{self, USER_ADDR_TO_OUTPOST_ADDR, LOCK};
 
@@ -88,6 +95,8 @@ mod execute {
             return Err(ContractError::AlreadyCreated(value))
         }
 
+        // Whoever calls this function will save a lock for themselves, which can only be used once. 
+        // 'map_user_outpost' executed via callback from the instantiated outpost, can only run if this lock exists
         let _lock = LOCK.save(deps.storage, &info.sender.to_string(), &true);
 
         let callback = Callback {
@@ -102,7 +111,7 @@ mod execute {
         let instantiate_msg = storage_outpost::types::msg::InstantiateMsg {
             // NOTE: The user that executes this function is both the owner and the admin of the outpost they create
             owner: Some(info.sender.to_string()), 
-            admin: Some(info.sender.to_string()), 
+            admin: Some(env.contract.address.to_string()), // Factory address is now admin of outpost
             channel_open_init_options: Some(channel_open_init_options),
             callback: Some(callback),
         };
@@ -110,20 +119,14 @@ mod execute {
         let label
          = format!("storage_outpost-owned by: {}", &info.sender.to_string());
 
-        // 'instantiate2' which has the ability to pre compute the outpost's address
+        // 'instantiate2' has the ability to pre compute the outpost's address
         // Unsure if 'instantiate2_address' from cosmwasm-std will work on Archway so we're not doing this for now
 
         let cosmos_msg = storage_outpost_code_id.instantiate(
             instantiate_msg,
             label,
-            Some(info.sender.to_string()),
+            Some(env.contract.address.to_string()), // Factory address is now admin of outpost
         )?;
-
-        // Idea: this owner contract can instantiate multiple outpost (ica) contracts. The CONTRACT_ADDR_TO_ICA_ID mapping
-        // simply maps the contract address of the instantiated outpost to the ica_id--the ica_id being just a number that indicates
-        // how many outposts have been deployed before them
-        // It depends on what this owner contract is doing, but each user only needs 1 outpost to be instantiated for them
-        // Why not have the mapping be 'sender address : outpost contract address'? The sender address being the user that executes this function
 
         let mut event = Event::new("FACTORY: create_ica_contract");
         event = event.add_attribute("info.sender", &info.sender.to_string());
@@ -140,7 +143,7 @@ mod execute {
         // this contract can't have an owner because it needs to be called back by every outpost it instantiates 
 
         // Load the lock state for the outpost owner
-        let lock = LOCK.may_load(deps.storage, &outpost_owner)?; // WARNING-just hardcoding for testing 
+        let lock = LOCK.may_load(deps.storage, &outpost_owner)?; 
 
         // Check if the lock exists and is true
         if let Some(true) = lock {
@@ -155,18 +158,56 @@ mod execute {
     USER_ADDR_TO_OUTPOST_ADDR.save(deps.storage, &outpost_owner, &info.sender.to_string())?; // again, info.sender is actually the outpost address
 
     let mut event = Event::new("FACTORY:map_user_outpost");
-        event = event.add_attribute("info.sender", &info.sender.to_string());
+    event = event.add_attribute("info.sender", &info.sender.to_string());
 
-    // DOCUMENT: note in README that a successful outpost creation shall return the address in the tx.res.attribute 
-    // and a failure will throw 'AlreadyCreated' contractError
+    Ok(Response::new().add_event(event)) // NOTE: this event is not propagated back up to the tx resp of the 'create_outpost' call
+    }
 
-    // NOTE: calling '.add_attribute' just adds a key value pair to the main wasm attribute 
-    // WARNING: is it possible at all that these bytes are non-deterministic?
-    // This can't be because we take from 'info.sender' which only exists if this function is called in the first place
-    // This function is called only if the outpost executes the callback, otherwise the Tx was abandoned while sitting in the 
-    // mem pool
+    pub fn migrate_outpost(
+        deps: DepsMut,
+        env: Env,
+        info: MessageInfo,
+        outpost_owner: String,
+        new_outpost_code_id: String,
+    ) -> Result<Response, ContractError> {
 
-    Ok(Response::new().add_event(event)) // this data is not propagated back up to the tx resp of the 'create_outpost' call
+        let mut state = STATE.load(deps.storage)?;
+
+        if info.sender.to_string() != state.admin {
+            return Err(ContractError::NotAdmin {  })
+        }
+
+        // Find the owner's outpost address
+        let outpost_address = USER_ADDR_TO_OUTPOST_ADDR.load(deps.storage, &outpost_owner)?;
+
+        let error_msg: String = String::from("Outpost contract address is not a valid bech32 address. Conversion back to addr failed");
+
+        // Call the outpost's helper API 
+        let storage_outpost_code = StorageOutpostContract::new(deps.api.addr_validate(&outpost_address).expect(&error_msg));
+
+        // The outpost's migrate entry point is just '{}'
+        let migrate_msg = MigrateMsg {};
+
+        let cast_err: String = String::from("Could not cast new outpost code to u64");
+        let new_outpost_code_id_u64 = new_outpost_code_id.parse::<u64>().expect(&cast_err);
+
+        let cosmos_msg = storage_outpost_code.migrate(
+            migrate_msg,
+            new_outpost_code_id_u64,
+        )?;
+
+        let mut event = Event::new("Migration: success");
+
+        // Optimistically make sure the factory knows the new code id of the outpost 
+        // A new code id will trigger many migrations, so we only need to save it once
+        if state.storage_outpost_code_id != new_outpost_code_id_u64 {
+
+            state.storage_outpost_code_id = new_outpost_code_id_u64;
+            STATE.save(deps.storage, &state)?;
+
+        }
+        
+        Ok(Response::new().add_message(cosmos_msg).add_event(event)) 
     }
 }
 
@@ -183,6 +224,24 @@ mod query {
     /// Returns the outpost address this user owns
     pub fn user_outpost_address(deps: Deps, user_address: String) -> StdResult<String> {
         USER_ADDR_TO_OUTPOST_ADDR.load(deps.storage, &user_address)
+    }
+
+    // Get every key value pair from the 'USER_ADDR_TO_OUTPOST_ADDR' map
+    pub fn get_all_user_outpost_addresses(deps: Deps) -> StdResult<Vec<(String, String)>> {
+        // Create a vector to store all entries
+        let mut all_entries = Vec::new();
+    
+        // Use the prefix_range function to iterate over all key-value pairs in the map
+        let pairs = USER_ADDR_TO_OUTPOST_ADDR
+            .range(deps.storage, None, None, cosmwasm_std::Order::Ascending);
+    
+        // Collect each key-value pair
+        for pair in pairs {
+            let (key, value) = pair?;
+            all_entries.push((key.to_string(), value));
+        }
+    
+        Ok(all_entries)
     }
 }
 
