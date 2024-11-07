@@ -1,6 +1,6 @@
 [package]
 name = "storage-outpost"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Bi Phan <bi@jackallabs.io>", "Serdar Turkmenafsar <IBC Protocol>"]
 edition = "2021"
 description = "Bringing decentralized, private, and self-custodial storage to the IBC"
